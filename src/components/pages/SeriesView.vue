@@ -32,6 +32,7 @@
           <EpisodeList
             v-for="(episodes, index) in series"
             v-bind:episodes="episodes"
+            v-bind:show="showData"
             v-bind:key="index"
             v-bind:title="index">
 

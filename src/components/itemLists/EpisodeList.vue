@@ -9,7 +9,7 @@
           v-bind:episodeId="episode.tvdbid"
           v-bind:downloaded="episode.downloaded"
           v-bind:downloading="false"
-             v-bind:subtitle="'S' + episode.airedSeason + 'E' + episode.airedEpisodeNumber + ' - ' + episode.show"
+             v-bind:subtitle="'S' + episode.airedSeason + 'E' + episode.airedEpisodeNumber + ' - ' + show.seriesName"
           v-bind:key="episode.id"
     ></Episode>
     </div>
@@ -22,7 +22,7 @@
   export default {
     name: 'episodes-list',
     components: {Episode: Episode},
-    props: ['episodes', 'title']
+    props: ['episodes', 'title', 'show']
   }
 </script>
 
