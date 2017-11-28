@@ -15,7 +15,7 @@ Vue.axios.defaults.baseURL = require('./config.json').server.host
 
 // Initiate Vue authenticate
 Vue.use(VueAuthenticate, {
-  baseUrl: 'http://localhost:8080'
+  baseUrl: Vue.axios.defaults.baseURL
 })
 
 Vue.component('tabs', Tabs)

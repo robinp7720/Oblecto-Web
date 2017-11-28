@@ -2,9 +2,9 @@ import Vue from 'vue'
 import Vuex from 'vuex'
 import axios from 'axios'
 
-Vue.use(Vuex)
+Vue.axios.defaults.baseURL = require('../config.json').server.host
 
-let host = 'http://localhost:8080'
+Vue.use(Vuex)
 
 export default new Vuex.Store({
   state: {
@@ -22,7 +22,7 @@ export default new Vuex.Store({
   actions: {
     search: function (state, query) {
       // Clear the list first
-      axios.get(host + `/search/` + query)
+      axios.get(`/search/` + query)
         .then(response => {
           // JSON responses are automatically parsed.
           state.commit('storeShows', response.data)
@@ -30,7 +30,7 @@ export default new Vuex.Store({
         .catch(e => {})
     },
     updateWatching: function (state) {
-      axios.get(host + `/shows/recent`)
+      axios.get(`/shows/recent`)
         .then(response => {
           // JSON responses are automatically parsed.
           state.commit('saveWatching', response.data)
