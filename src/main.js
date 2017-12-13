@@ -21,8 +21,6 @@ Vue.use(VueAuthenticate, {
   baseUrl: Vue.axios.defaults.baseURL
 })
 
-console.log(axios)
-
 Vue.component('tabs', Tabs)
 Vue.component('tab', Tab)
 
