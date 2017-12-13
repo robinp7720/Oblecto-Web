@@ -56,7 +56,9 @@ router.beforeEach((to, from, next) => {
           vueAuth.logout()
         }
       })
-      .catch(e => {})
+      .catch(e => {
+        vueAuth.logout()
+      })
 
     // this route requires auth, check if logged in
     // if not, redirect to login page.

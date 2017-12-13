@@ -53,7 +53,7 @@
       axios.get('/episode/' + this.$route.params.episodeId + `/info`)
         .then(response => {
           this.episode = response.data
-          console.log(response.data)
+          this.player.video.seek(this.episode.watchTime)
         })
         .catch(e => {
           console.log(e)
@@ -61,7 +61,6 @@
       axios.get('/episode/' + this.$route.params.episodeId + `/next`)
         .then(response => {
           this.next = response.data
-          console.log(response.data)
         })
         .catch(e => {
           console.log(e)
@@ -110,6 +109,12 @@
         console.log('play callback')
       },
       playing () {
+        this.$socket.emit('playing', {
+          time: this.player.video.currentTime(),
+          progress: this.player.video.currentTime() / this.player.video.duration,
+          tvshow: this.episode.tvdbid
+        })
+
         if (this.player.video.duration < 100) {
           this.showNext = false
         } else {
