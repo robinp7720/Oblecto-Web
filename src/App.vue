@@ -20,6 +20,11 @@
       WatchPanel: WatchPanel,
       'nav-bar': NavBar
     },
+    created () {
+      if (this.$auth.getToken()) {
+        this.$socket.emit('authenticate', {token: this.$auth.getToken()})
+      }
+    },
     methods: {
 
     }
@@ -44,6 +49,10 @@
     min-height: 100vh
 
     color: #eee
+
+  @media screen and (max-height: 800px)
+    #app
+      padding-top: 0
 
   ul
     margin: 0

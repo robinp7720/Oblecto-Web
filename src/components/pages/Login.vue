@@ -44,7 +44,8 @@
 
         this.$auth.login(credentials).then(function (response) {
           this_.response = response
-          console.log(response)
+          this_.$socket.emit('authenticate', {token: response.data['access_token']})
+          console.log(response.data['access_token'])
           this_.$router.push({name: 'Main'})
         })
       }
