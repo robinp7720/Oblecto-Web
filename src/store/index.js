@@ -1,13 +1,12 @@
 import Vue from 'vue'
 import Vuex from 'vuex'
-import axios from 'axios'
-
-Vue.axios.defaults.baseURL = require('../config.json').server.host
+import VueSocketio from 'vue-socket.io'
 
 Vue.use(Vuex)
 
 export default new Vuex.Store({
   state: {
+    host: null,
     shows: {},
     watching: []
   },
@@ -17,12 +16,19 @@ export default new Vuex.Store({
     },
     saveWatching: function (state, watching) {
       Vue.set(state, 'watching', watching)
+    },
+    updateHost: function (state, host) {
+      Vue.set(state, 'host', host)
+
+      // Update sockets and axios http urls
+      Vue.use(VueSocketio, host)
+      Vue.axios.defaults.baseURL = host
     }
   },
   actions: {
     search: function (state, query) {
       // Clear the list first
-      axios.get(`/search/` + query)
+      Vue.axios.get(`/search/` + query)
         .then(response => {
           // JSON responses are automatically parsed.
           state.commit('storeShows', response.data)
@@ -30,12 +36,15 @@ export default new Vuex.Store({
         .catch(e => {})
     },
     updateWatching: function (state) {
-      axios.get(`/shows/recent`)
+      Vue.axios.get(`/shows/recent`)
         .then(response => {
           // JSON responses are automatically parsed.
           state.commit('saveWatching', response.data)
         })
         .catch(e => {})
+    },
+    updateHost: function (state, host) {
+      state.commit('updateHost', host)
     }
   }
 })

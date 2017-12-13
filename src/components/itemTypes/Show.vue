@@ -24,15 +24,19 @@
 </template>
 
 <script>
+  import { mapState } from 'vuex'
+
   export default {
     name: 'show',
     props: ['title', 'subtitle', 'tvdbId'],
     data () {
       return {
-        optionsOpen: false,
-        host: require('../../config.json').server.host
+        optionsOpen: false
       }
     },
+    computed: mapState([
+      'host'
+    ]),
     methods: {
       viewEpisodes: function (event) {
         this.$router.push({name: 'SeriesView', params: {seriesId: this.tvdbId}})

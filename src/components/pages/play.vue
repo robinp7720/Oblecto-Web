@@ -28,7 +28,7 @@
 <script>
   import Episode from '@/components/itemTypes/Episode'
   import VueDPlayer from 'vue-dplayer'
-  import axios from 'axios'
+  import { mapState } from 'vuex'
 
   export default {
     name: 'player',
@@ -36,6 +36,9 @@
       'd-player': VueDPlayer,
       Episode: Episode
     },
+    computed: mapState([
+      'host'
+    ]),
     data () {
       return {
         episode: {},
@@ -44,13 +47,13 @@
         player: null,
         showNext: false,
         video: {
-          url: require('../../config.json').server.host + '/episode/' + this.$route.params.episodeId + '/play'
+          url: this.axios.defaults.baseURL + '/episode/' + this.$route.params.episodeId + '/play'
         },
         contextmenu: []
       }
     },
     created () {
-      axios.get('/episode/' + this.$route.params.episodeId + `/info`)
+      this.axios.get('/episode/' + this.$route.params.episodeId + `/info`)
         .then(response => {
           this.episode = response.data
           this.player.video.seek(this.episode.watchTime)
@@ -58,7 +61,7 @@
         .catch(e => {
           console.log(e)
         })
-      axios.get('/episode/' + this.$route.params.episodeId + `/next`)
+      this.axios.get('/episode/' + this.$route.params.episodeId + `/next`)
         .then(response => {
           this.next = response.data
         })
@@ -69,17 +72,15 @@
     mounted () {
       this.player = this.$refs.player.dp
     },
-    computed: {
-
-    },
     watch: {
       '$route' (to, from) {
+        console.log(this.host)
         this.player.switchVideo({
-          url: require('../../config.json').server.host + '/episode/' + this.$route.params.episodeId + '/play'
+          url: this.axios.defaults.baseURL + '/episode/' + this.$route.params.episodeId + '/play'
         })
         this.player.play()
 
-        axios.get('/episode/' + this.$route.params.episodeId + `/info`)
+        this.axios.get('/episode/' + this.$route.params.episodeId + `/info`)
           .then(response => {
             this.episode = response.data
             console.log(response.data)
@@ -87,7 +88,7 @@
           .catch(e => {
             console.log(e)
           })
-        axios.get('/episode/' + this.$route.params.episodeId + `/next`)
+        this.axios.get('/episode/' + this.$route.params.episodeId + `/next`)
           .then(response => {
             this.next = response.data
             console.log(response.data)

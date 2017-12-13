@@ -9,17 +9,12 @@ import VueAxios from 'vue-axios'
 import VueAuthenticate from 'vue-authenticate'
 import {Tabs, Tab} from 'vue-tabs-component'
 
-import VueSocketio from 'vue-socket.io'
-Vue.use(VueSocketio, require('./config.json').server.host)
-
 Vue.use(VueAxios, axios)
 
-Vue.axios.defaults.baseURL = require('./config.json').server.host
+store.dispatch('updateHost', require('./config').server.host)
 
 // Initiate Vue authenticate
-Vue.use(VueAuthenticate, {
-  baseUrl: Vue.axios.defaults.baseURL
-})
+Vue.use(VueAuthenticate)
 
 Vue.component('tabs', Tabs)
 Vue.component('tab', Tab)

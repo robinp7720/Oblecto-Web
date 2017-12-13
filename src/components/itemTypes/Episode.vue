@@ -12,14 +12,14 @@
 </template>
 
 <script>
+  import { mapState } from 'vuex'
+
   export default {
     name: 'episode',
     props: ['title', 'episodeId', 'downloaded', 'downloading', 'subtitle', 'inside'],
-    data () {
-      return {
-        host: require('../../config.json').server.host
-      }
-    },
+    computed: mapState([
+      'host'
+    ]),
     methods: {
       playEpisode: function (event) {
         event.preventDefault()
