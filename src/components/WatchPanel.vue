@@ -48,6 +48,12 @@
     box-shadow: 0px 0px 5px 2px rgba(darken(#55535b, 20), 0.75)
     z-index: 2
 
+    @media screen and (max-height: 800px)
+      position: static !important
+      margin-top: 50px
+      margin-bottom: 20px
+
+
 </style>
 
 <style lang="sass">

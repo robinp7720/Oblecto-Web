@@ -9,7 +9,6 @@
           v-on:before-enter="beforeEnter"
           v-on:enter="enter"
           v-on:leave="leave"
-          style="position: fixed; right: 75%; min-height: 10px"
         >
         <Show
               v-bind:title="showData.seriesName"
@@ -161,7 +160,11 @@
   -webkit-border-radius: 3px
   -moz-border-radius: 3px
   border-radius: 3px
-  margin-right: 20px
+  margin: 0 10px
+
+  @media screen and (min-height: 800px)
+    margin: 0
+    margin-right: 20px
 
   //box-shadow: 0px 0px 5px 2px rgba(darken(#55535b, 20), 0.75)
   h2
@@ -171,20 +174,37 @@
   overflow: hidden
 
 .left
-  width: 25%
+  width: 100%
   float: left
   overflow: hidden
+  text-align: center
+  @media screen and (min-height: 800px)
+    width: 25%
+    float: left
+    overflow: hidden
+    ul
+      position: fixed
+      right: 75%
+      min-height: 10px
+
+
+
 .right
-  width: 75%
+  width: 100%
   float: right
-  padding: 0 20px
   padding-right: 0
   overflow: hidden
+  @media screen and (min-height: 800px)
+    width: 75%
+    float: right
+    padding: 0 20px
+    padding-right: 0
+    overflow: hidden
 p
   max-width: 700px
   font-weight: 300
   line-height: 1.5em
-  font-family: Poppins, Ubuntu, Lato, sans-serif;
+  font-family: Poppins, Ubuntu, Lato, sans-serif
 .episodes
   width: 100%
 
