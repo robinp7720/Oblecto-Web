@@ -8,6 +8,7 @@
               lang="en"
 
               @play="play"
+              @canplay="canplay"
               @playing="playing"
     > </d-player>
 
@@ -49,14 +50,15 @@
         video: {
           url: this.axios.defaults.baseURL + '/episode/' + this.$route.params.episodeId + '/play'
         },
-        contextmenu: []
+        contextmenu: [],
+        firstPlay: true
       }
     },
     created () {
       this.axios.get('/episode/' + this.$route.params.episodeId + `/info`)
         .then(response => {
           this.episode = response.data
-          this.player.video.seek(this.episode.watchTime)
+          this.firstPlay = true
         })
         .catch(e => {
           console.log(e)
@@ -84,6 +86,7 @@
           .then(response => {
             this.episode = response.data
             console.log(response.data)
+            this.firstPlay = true
           })
           .catch(e => {
             console.log(e)
@@ -108,6 +111,12 @@
       },
       play () {
         console.log('play callback')
+      },
+      canplay () {
+        if (this.firstPlay) {
+          this.player.video.seek(this.episode.watchTime)
+          this.firstPlay = false
+        }
       },
       playing () {
         this.$socket.emit('playing', {
