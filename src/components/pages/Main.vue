@@ -3,12 +3,12 @@
     <EpisodeList title="Recently aired"
                  v-bind:episodes="episodesRecentlyAired"
     ></EpisodeList>
-    <ShowList title="Recently added"
+    <ShowList title="Recently added shows"
               v-bind:shows="recent"
     ></ShowList>
-    <ShowList title="Recommend"
-              v-bind:shows="recommended"
-    ></ShowList>
+    <EpisodeList title="Recently added episodes"
+                 v-bind:episodes="episodesRecentlyAdded"
+    ></EpisodeList>
     <ShowList title="Newly aired"
               v-bind:shows="recent"
     ></ShowList>
@@ -38,10 +38,10 @@
     data () {
       return {
         recent: [],
-        recommended: [],
         rating: [],
         others: [],
-        episodesRecentlyAired: []
+        episodesRecentlyAired: [],
+        episodesRecentlyAdded: []
       }
     },
     created () {
@@ -63,6 +63,11 @@
       this.axios.get('/episodes/list/firstAired/DESC')
         .then(response => {
           this.episodesRecentlyAired = response.data
+        })
+        .catch(e => {})
+      this.axios.get('/episodes/list/createdAt/DESC')
+        .then(response => {
+          this.episodesRecentlyAdded = response.data
         })
         .catch(e => {})
     }
