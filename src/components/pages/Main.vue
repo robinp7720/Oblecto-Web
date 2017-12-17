@@ -45,7 +45,7 @@
       }
     },
     created () {
-      this.axios.get('/shows/recent')
+      this.axios.get('/shows/list/createdAt/DESC')
         .then(response => {
           this.recent = response.data
         })
