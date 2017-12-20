@@ -2,6 +2,9 @@
   <div class="watching">
     <tabs :options="{ useUrlFragment: false }">
       <tab name="watching" v-bind:suffix="'<span class=badge>' + watching.length + '</span>'">
+        <EpisodeList v-bind:episodes="watching"></EpisodeList>
+      </tab>
+      <tab name="next up" v-bind:suffix="'<span class=badge>' + watching.length + '</span>'">
         <ShowList v-bind:shows="watching"></ShowList>
       </tab>
     </tabs>

@@ -36,7 +36,7 @@ export default new Vuex.Store({
         .catch(e => {})
     },
     updateWatching: function (state) {
-      Vue.axios.get(`/shows/recent`)
+      Vue.axios.get(`/watching`)
         .then(response => {
           // JSON responses are automatically parsed.
           state.commit('saveWatching', response.data)
