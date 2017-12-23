@@ -4,7 +4,7 @@
       <h3>{{ show.seriesName }}</h3>
       <ul>
         <li>
-          <a href="#">Re-index show</a>
+          <a href="#" v-on:click="indexShow">Re-index show</a>
         </li>
         <li>
           <a href="#">Edit show data</a>
@@ -25,6 +25,13 @@
     methods: {
       beforeOpen (event) {
         this.show = event.params.show
+      },
+      indexShow: function () {
+        this.axios.get('/series/' + this.show.id + '/index')
+          .then(response => {
+            this.rating = response.data
+          })
+          .catch(e => {})
       }
     }
   }
