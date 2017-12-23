@@ -15,7 +15,7 @@
     <a v-on:click="seriesView" class="return">Go back</a>
     <div class="nextEpisode" v-if="showNext">
       <Episode v-bind:title="next.episodeName"
-               v-bind:episodeId="next.tvdbid"
+               v-bind:episodeId="next.id"
                v-bind:downloaded="next.downloaded"
                v-bind:downloading="false"
                v-bind:subtitle="'S' + next.airedSeason + 'E' + next.airedEpisodeNumber + ' - ' + next.show"
@@ -58,6 +58,7 @@
       this.axios.get('/episode/' + this.$route.params.episodeId + `/info`)
         .then(response => {
           this.episode = response.data
+
           this.firstPlay = true
         })
         .catch(e => {
@@ -85,7 +86,6 @@
         this.axios.get('/episode/' + this.$route.params.episodeId + `/info`)
           .then(response => {
             this.episode = response.data
-            console.log(response.data)
             this.firstPlay = true
           })
           .catch(e => {
@@ -104,7 +104,7 @@
     methods: {
       seriesView: function (event) {
         event.preventDefault()
-        this.$router.push({name: 'SeriesView', params: {seriesId: this.episode.showid}})
+        this.$router.push({name: 'SeriesView', params: {seriesId: this.episode.tvshowId}})
       },
       pause: function () {
         this.pause()
