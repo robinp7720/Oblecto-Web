@@ -13,7 +13,7 @@
     <div class="show-poster" v-bind:style="{ backgroundImage: 'url(' + host + '/series/' + tvdbId + '/poster)' }">
       <a class="play" v-on:click="viewEpisodes"><i class="fa fa-play" aria-hidden="true"></i></a>
       <div class="actions">
-        <a class="action-item"v-on:click="optionsOpen = !optionsOpen" title="Options">
+        <a class="action-item"v-on:click="openModal" title="Options">
           <i class="fa fa-info" aria-hidden="true"></i>
         </a>
       </div>
@@ -28,7 +28,7 @@
 
   export default {
     name: 'show',
-    props: ['title', 'subtitle', 'tvdbId'],
+    props: ['title', 'subtitle', 'tvdbId', 'id', 'show'],
     data () {
       return {
         optionsOpen: false
@@ -38,6 +38,9 @@
       'host'
     ]),
     methods: {
+      openModal: function (event) {
+        this.$modal.show('modifyShow', {show: this.show})
+      },
       viewEpisodes: function (event) {
         this.$router.push({name: 'SeriesView', params: {seriesId: this.tvdbId}})
       },

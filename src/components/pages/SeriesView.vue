@@ -15,6 +15,8 @@
               v-bind:tvdbId="showData.tvdbid"
               v-bind:watching="showData.watching"
               v-bind:key="showData.id"
+              v-bind:id="showData.id"
+              v-bind:show="showData"
         ></Show>
         </transition-group>
       </div>

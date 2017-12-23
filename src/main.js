@@ -8,6 +8,9 @@ import axios from 'axios'
 import VueAxios from 'vue-axios'
 import VueAuthenticate from 'vue-authenticate'
 import {Tabs, Tab} from 'vue-tabs-component'
+import VModal from 'vue-js-modal'
+
+Vue.use(VModal)
 
 Vue.use(VueAxios, axios)
 
