@@ -15,7 +15,7 @@
       >
         <Episode v-for="(episode, index) in episodes"
                  v-bind:title="episode.episodeName"
-                 v-bind:episodeId="episode.tvdbid"
+                 v-bind:episodeId="episode.id"
                  v-bind:downloaded="episode.downloaded"
                  v-bind:downloading="false"
                  v-bind:subtitle="'S' + episode.airedSeason + 'E' + episode.airedEpisodeNumber + ' - ' + episode.tvshow.seriesName"

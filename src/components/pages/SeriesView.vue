@@ -12,10 +12,9 @@
         >
         <Show
               v-bind:title="showData.seriesName"
-              v-bind:tvdbId="showData.tvdbid"
+              v-bind:showId="showData.id"
               v-bind:watching="showData.watching"
               v-bind:key="showData.id"
-              v-bind:id="showData.id"
               v-bind:show="showData"
         ></Show>
         </transition-group>

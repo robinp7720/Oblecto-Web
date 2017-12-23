@@ -15,8 +15,7 @@
       >
     <Show v-for="(show, index) in shows"
           v-bind:title="show.seriesName"
-          v-bind:tvdbId="show.tvdbid"
-          v-bind:id="show.id"
+          v-bind:showId="show.id"
           v-bind:show="show"
           v-bind:watching="show.watching"
           v-bind:key="show.id"
