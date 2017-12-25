@@ -122,8 +122,9 @@
         this.$socket.emit('playing', {
           time: this.player.video.currentTime(),
           progress: this.player.video.currentTime() / this.player.video.duration,
-          tvshow: this.episode.tvshowId,
-          episode: this.episode.id
+          tvshowId: this.episode.tvshowId,
+          episodeId: this.episode.id,
+          type: 'tv'
         })
 
         if (this.player.video.duration < 100) {

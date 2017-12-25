@@ -1,7 +1,7 @@
 import Vue from 'vue'
 import Router from 'vue-router'
 
-import Main from '@/components/pages/Main'
+import TVShows from '@/components/pages/TVShows'
 import SeriesView from '@/components/pages/SeriesView'
 import play from '@/components/pages/play'
 import Login from '@/components/pages/Login'
@@ -24,7 +24,7 @@ const router = new Router({
     {
       path: '/',
       name: 'Main',
-      component: Main,
+      component: TVShows,
       meta: { requiresAuth: true }
     },
     {
