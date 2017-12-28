@@ -1,11 +1,11 @@
 <template>
   <div class="container">
-    <div class="form">
+    <div class="form" @keyup.enter="submit">
       <label for="username">Username</label>
       <input type="text" id="username" v-model="credentials.username">
       <label for="password">Password</label>
       <input type="text" id="password" v-model="credentials.password">
-      <button type="submit" @click="submit()">Login</button>
+      <button type="submit" @click="submit">Login</button>
     </div>
   </div>
 </template>
