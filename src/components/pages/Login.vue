@@ -47,6 +47,13 @@
           this_.$socket.emit('authenticate', {token: response.data['access_token']})
           console.log(response.data['access_token'])
           this_.$router.push({name: 'Main'})
+        }).catch(function () {
+          this_.$notify({
+            group: 'system',
+            title: 'Error occurred',
+            text: 'An error occured during login',
+            type: 'error'
+          })
         })
       }
     }

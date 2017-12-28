@@ -1,6 +1,7 @@
 <template>
   <div id="app">
     <showModifyModal></showModifyModal>
+    <notifications group="system" />
 
     <nav-bar v-if="$router.history.current.name !== 'play' && $router.history.current.name !== 'login'"></nav-bar>
     <div class="watching" v-if="$router.history.current.name !== 'play' && $router.history.current.name !== 'login'">
