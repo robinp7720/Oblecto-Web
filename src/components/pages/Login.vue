@@ -73,6 +73,8 @@
     align-items: center
     justify-content: center
   .form
+    box-shadow: 0px 0px 5px 2px rgba(darken(darken(#696060,17) + #000000,6), 0.75)
+
     width: 100%
     max-width: 500px
     background-color: rgba(0,0,0,0.3)
