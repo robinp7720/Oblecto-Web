@@ -27,11 +27,6 @@
       'nav-bar': NavBar,
       showModifyModal
     },
-    created () {
-      if (this.$auth.getToken()) {
-        this.$socket.emit('authenticate', {token: this.$auth.getToken()})
-      }
-    },
     methods: {
     }
   }

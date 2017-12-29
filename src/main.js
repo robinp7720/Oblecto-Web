@@ -32,13 +32,19 @@ new Vue({
   el: '#app',
   store,
   sockets: {
-    reconnect_error: function () {
+    connect_error: function () {
       this.$notify({
         group: 'system',
         title: 'Connection failed',
         text: 'Failed to connect to the Oblecto web socket server. Is the server online?',
         type: 'error'
       })
+    },
+    connect: function () {
+      // Authenticate socket if auth token exits
+      if (this.$auth.getToken()) {
+        this.$socket.emit('authenticate', {token: this.$auth.getToken()})
+      }
     }
   },
   router,
