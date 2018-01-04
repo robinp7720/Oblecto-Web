@@ -16,7 +16,7 @@
 
   export default {
     name: 'episode',
-    props: ['title', 'episodeId', 'downloaded', 'downloading', 'subtitle', 'inside'],
+    props: ['title', 'episodeId', 'subtitle', 'inside'],
     computed: mapState([
       'host'
     ]),
