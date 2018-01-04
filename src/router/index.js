@@ -5,6 +5,7 @@ import TVShows from '@/components/pages/TVShows'
 import SeriesView from '@/components/pages/SeriesView'
 import play from '@/components/pages/play'
 import Login from '@/components/pages/Login'
+import Movies from '@/components/pages/Movies'
 
 import { VueAuthenticate } from 'vue-authenticate'
 import VueAxios from 'vue-axios'
@@ -25,6 +26,12 @@ const router = new Router({
       path: '/',
       name: 'Main',
       component: TVShows,
+      meta: { requiresAuth: true }
+    },
+    {
+      path: '/movies',
+      name: 'Movies',
+      component: Movies,
       meta: { requiresAuth: true }
     },
     {
