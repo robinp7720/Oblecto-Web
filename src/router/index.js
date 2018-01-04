@@ -3,9 +3,11 @@ import Router from 'vue-router'
 
 import TVShows from '@/components/pages/TVShows'
 import SeriesView from '@/components/pages/SeriesView'
-import play from '@/components/pages/play'
+import PlayEpisode from '@/components/pages/playEpisode'
+import PlayMovie from '@/components/pages/playMovie'
 import Login from '@/components/pages/Login'
 import Movies from '@/components/pages/Movies'
+import Main from '@/components/pages/Main'
 
 import { VueAuthenticate } from 'vue-authenticate'
 import VueAxios from 'vue-axios'
@@ -25,6 +27,12 @@ const router = new Router({
     {
       path: '/',
       name: 'Main',
+      component: Main,
+      meta: { requiresAuth: true }
+    },
+    {
+      path: '/tvshows',
+      name: 'TVShows',
       component: TVShows,
       meta: { requiresAuth: true }
     },
@@ -42,8 +50,14 @@ const router = new Router({
     },
     {
       path: '/episode/:episodeId/play',
-      name: 'play',
-      component: play,
+      name: 'PlayEpisode',
+      component: PlayEpisode,
+      meta: { requiresAuth: true }
+    },
+    {
+      path: '/movie/:movieId/play',
+      name: 'PlayMovie',
+      component: PlayMovie,
       meta: { requiresAuth: true }
     },
     {

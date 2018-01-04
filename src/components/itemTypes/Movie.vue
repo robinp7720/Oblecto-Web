@@ -13,7 +13,7 @@
 
     <li class="movie-horizontal" v-if="horizontal">
       <div class="movie-poster" v-bind:style="{ backgroundImage: 'url(' + host + '/movie/' + movieId + '/banner)' }">
-        <a class="play" v-on:click="playEpisode"><i class="fa fa-play" aria-hidden="true"></i></a>
+        <a class="play" v-on:click="playMovie"><i class="fa fa-play" aria-hidden="true"></i></a>
         <div :title="title" class="title" v-if="inside">{{ title }}</div>
       </div>
       <div :title="title" class="title" v-if="!inside">{{ title }}</div>
@@ -22,7 +22,7 @@
 
     <li class="movie-vertical" v-if="!horizontal">
       <div class="movie-poster" v-bind:style="{ backgroundImage: 'url(' + host + '/movie/' + movieId + '/poster)' }">
-        <a class="play" v-on:click="viewEpisodes"><i class="fa fa-play" aria-hidden="true"></i></a>
+        <a class="play" v-on:click="playMovie"><i class="fa fa-play" aria-hidden="true"></i></a>
         <div class="actions">
           <a class="action-item"v-on:click="openModal" title="Options">
             <i class="fa fa-info" aria-hidden="true"></i>
@@ -45,9 +45,9 @@
       'host'
     ]),
     methods: {
-      playEpisode: function (event) {
+      playMovie: function (event) {
         event.preventDefault()
-        this.$router.push({name: 'play', params: {episodeId: this.episodeId}})
+        this.$router.push({name: 'PlayMovie', params: {movieId: this.movieId}})
       }
     }
   }

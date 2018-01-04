@@ -28,7 +28,7 @@
   import EpisodeList from '@/components/itemLists/EpisodeList'
 
   export default {
-    name: 'Main',
+    name: 'TVShows',
     components: {
       WatchPanel: WatchPanel,
       'search-results': SearchResults,

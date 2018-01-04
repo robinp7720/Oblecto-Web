@@ -23,7 +23,7 @@
     methods: {
       playEpisode: function (event) {
         event.preventDefault()
-        this.$router.push({name: 'play', params: {episodeId: this.episodeId}})
+        this.$router.push({name: 'PlayEpisode', params: {episodeId: this.episodeId}})
       }
     }
   }

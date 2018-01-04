@@ -3,8 +3,8 @@
     <showModifyModal></showModifyModal>
     <notifications group="system" />
 
-    <nav-bar v-if="$router.history.current.name !== 'play' && $router.history.current.name !== 'login'"></nav-bar>
-    <div class="watching" v-if="$router.history.current.name !== 'play' && $router.history.current.name !== 'login'">
+    <nav-bar v-if="$router.history.current.name !== 'PlayEpisode' && $router.history.current.name !== 'login' && $router.history.current.name !== 'PlayMovie'"></nav-bar>
+    <div class="watching" v-if="$router.history.current.name !== 'PlayEpisode' && $router.history.current.name !== 'login' && $router.history.current.name !== 'PlayMovie'">
       <WatchPanel></WatchPanel>
     </div>
     <transition name="fade" mode="out-in">
