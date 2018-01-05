@@ -2,7 +2,7 @@
   <nav class="nav-bar">
     <div class="container">
       <div class="brand">Oblecto</div>
-      <router-link :to="{ name: 'Main'}" class="nav-link">TV Shows</router-link>
+      <router-link :to="{ name: 'TVShows'}" class="nav-link">TV Shows</router-link>
       <router-link :to="{ name: 'Movies'}" class="nav-link">Movies</router-link>
       <div class="nav-right">
         <router-link :to="{ name: 'Main'}" class="nav-link">Settings</router-link>
