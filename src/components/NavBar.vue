@@ -5,7 +5,7 @@
       <router-link :to="{ name: 'TVShows'}" class="nav-link">TV Shows</router-link>
       <router-link :to="{ name: 'Movies'}" class="nav-link">Movies</router-link>
       <div class="nav-right">
-        <router-link :to="{ name: 'Main'}" class="nav-link">Settings</router-link>
+        <router-link :to="{ name: 'Settings'}" class="nav-link">Settings</router-link>
         <div class="search">
           <form action="" class="search" id="search-form" v-on:submit.prevent="onSubmit">
             <input type="text" id="search-input" class="input-text" v-on:keyup.enter="search">

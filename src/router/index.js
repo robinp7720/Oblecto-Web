@@ -8,6 +8,7 @@ import PlayMovie from '@/components/pages/playMovie'
 import Login from '@/components/pages/Login'
 import Movies from '@/components/pages/Movies'
 import Main from '@/components/pages/Main'
+import Settings from '@/components/pages/Settings'
 
 import { VueAuthenticate } from 'vue-authenticate'
 import VueAxios from 'vue-axios'
@@ -64,6 +65,12 @@ const router = new Router({
       path: '/login',
       name: 'login',
       component: Login
+    },
+    {
+      path: '/settings',
+      name: 'Settings',
+      component: Settings,
+      meta: { requiresAuth: true }
     }
   ]
 })
