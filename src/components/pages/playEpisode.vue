@@ -1,15 +1,19 @@
 <template>
   <div class="container">
-    <d-player ref="player"
-              :video="video"
+    <d-player
+              ref="player"
               :autoplay="autoplay"
               :contextmenu="contextmenu"
               :loop="false"
+              :video="video"
               lang="en"
+
+              v-if="episode"
 
               @play="play"
               @canplay="canplay"
               @playing="playing"
+
     > </d-player>
 
     <a v-on:click="seriesView" class="return">Go back</a>
@@ -42,63 +46,38 @@
     ]),
     data () {
       return {
-        episode: {},
+        episode: false,
         next: {},
         autoplay: true,
         player: null,
         showNext: false,
+        contextmenu: [],
+        firstPlay: true, // firstplay defines whether or not to seek to the last point watched which is sent by the server
         video: {
           url: this.axios.defaults.baseURL + '/episode/' + this.$route.params.episodeId + '/play'
-        },
-        contextmenu: [],
-        firstPlay: true
+        }
       }
     },
-    created () {
-      this.axios.get('/episode/' + this.$route.params.episodeId + `/info`)
-        .then(response => {
-          this.episode = response.data
+    async created () {
+      let { data: episode } = await this.axios.get('/episode/' + this.$route.params.episodeId + `/info`)
+      this.episode = episode
 
-          this.firstPlay = true
-        })
-        .catch(e => {
-          console.log(e)
-        })
-      this.axios.get('/episode/' + this.$route.params.episodeId + `/next`)
-        .then(response => {
-          this.next = response.data
-        })
-        .catch(e => {
-          console.log(e)
-        })
-    },
-    mounted () {
-      this.player = this.$refs.player.dp
+      let { data: next } = await this.axios.get('/episode/' + this.$route.params.episodeId + `/next`)
+      this.next = next
     },
     watch: {
-      '$route' (to, from) {
-        console.log(this.host)
+      async '$route' (to, from) {
         this.player.switchVideo({
           url: this.axios.defaults.baseURL + '/episode/' + this.$route.params.episodeId + '/play'
         })
+
         this.player.play()
 
-        this.axios.get('/episode/' + this.$route.params.episodeId + `/info`)
-          .then(response => {
-            this.episode = response.data
-            this.firstPlay = true
-          })
-          .catch(e => {
-            console.log(e)
-          })
-        this.axios.get('/episode/' + this.$route.params.episodeId + `/next`)
-          .then(response => {
-            this.next = response.data
-            console.log(response.data)
-          })
-          .catch(e => {
-            console.log(e)
-          })
+        let { data: episode } = await this.axios.get('/episode/' + this.$route.params.episodeId + `/info`)
+        this.episode = episode
+
+        let { data: next } = await this.axios.get('/episode/' + this.$route.params.episodeId + `/next`)
+        this.next = next
       }
     },
     methods: {
@@ -107,18 +86,25 @@
         this.$router.push({name: 'SeriesView', params: {seriesId: this.episode.tvshowId}})
       },
       pause: function () {
-        this.pause()
+        this.player.video.pause()
       },
       play () {
-        console.log('play callback')
       },
       canplay () {
-        if (this.firstPlay) {
-          this.player.video.seek(this.episode.watchTime)
-          this.firstPlay = false
+        this.player = this.$refs.player.dp
+
+        if (!this.firstPlay) {
+          return false
         }
+
+        this.player.video.seek(this.episode.watchTime)
+        this.firstPlay = false
       },
-      playing () {
+      playing: function () {
+        if (!this.player) {
+          return false
+        }
+
         this.$socket.emit('playing', {
           time: this.player.video.currentTime(),
           progress: this.player.video.currentTime() / this.player.video.duration,
