@@ -12,7 +12,7 @@
       <button>Cleanup movies without linked files</button>
       <hr>
       <button>Download new artwork</button>
-      <button>Download artwork for TV Shows and Episodes</button>
+      <button @click="DownloadTVShowArt">Download artwork for TV Shows and Episodes</button>
       <button>Download artwork for Movies</button>
       </div>
 
@@ -33,16 +33,23 @@
   export default {
     name: 'Settings',
     methods: {
-      index (type) {
-        this.axios.get('/settings/maintenance/index/' + type)
-          .then(response => {
-            this.$notify({
-              group: 'system',
-              title: 'Library update requested successfully',
-              text: 'A library index update has been started',
-              type: 'warning'
-            })
-          })
+      async DownloadTVShowArt () {
+        await this.axios.get('/settings/maintenance/tvshows/download/art')
+        this.$notify({
+          group: 'system',
+          title: 'A TV Show artwork update has been requested',
+          text: 'Missing artwork will be downloaded',
+          type: 'warning'
+        })
+      },
+      async index (type) {
+        await this.axios.get('/settings/maintenance/index/' + type)
+        this.$notify({
+          group: 'system',
+          title: 'Library update requested successfully',
+          text: 'A library index update has been started',
+          type: 'warning'
+        })
       }
     }
   }
