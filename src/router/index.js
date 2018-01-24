@@ -16,9 +16,7 @@ import axios from 'axios'
 
 Vue.use(VueAxios, axios)
 
-const vueAuth = new VueAuthenticate(Vue.prototype.$http, {
-  baseUrl: 'http://localhost:8080'
-})
+const vueAuth = new VueAuthenticate(Vue.prototype.$http)
 
 Vue.use(Router)
 
@@ -79,7 +77,6 @@ router.beforeEach((to, from, next) => {
   if (to.matched.some(record => record.meta.requiresAuth)) {
     axios.get(require('../config.json').server.host + '/auth/isAuthenticated')
       .then(response => {
-        console.log(response.data)
         if (response.data[0] === false) {
           vueAuth.logout()
         }
