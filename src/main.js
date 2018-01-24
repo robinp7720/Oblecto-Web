@@ -45,6 +45,13 @@ new Vue({
       if (this.$auth.getToken()) {
         this.$socket.emit('authenticate', {token: this.$auth.getToken()})
       }
+
+      this.$notify({
+        group: 'system',
+        title: 'Connection to Oblecto succeeded',
+        text: 'Client has successfully connected to the Oblecto websocket interface!',
+        type: 'success'
+      })
     }
   },
   router,
