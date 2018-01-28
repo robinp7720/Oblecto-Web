@@ -2,6 +2,7 @@ import Vue from 'vue'
 import Vuex from 'vuex'
 import movies from './modules/movies'
 import tvshows from './modules/tvshows'
+import episodes from './modules/episodes'
 import VueSocketio from 'vue-socket.io'
 
 Vue.use(Vuex)
@@ -14,7 +15,8 @@ export default new Vuex.Store({
   },
   modules: {
     movies,
-    tvshows
+    tvshows,
+    episodes
   },
   mutations: {
     storeShows: function (state, search) {

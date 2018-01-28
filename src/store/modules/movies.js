@@ -13,12 +13,12 @@ const actions = {
   async getMovies ({commit, state}, {sort, order}) {
     let { data: movies } = await Vue.axios.get(`/movies/list/${sort}/${order}`)
 
-    commit(types.RECIEVE_MOVIES, {movies, sort})
+    commit(types.RECEIVE_MOVIES, {movies, sort})
   }
 }
 
 const mutations = {
-  [types.RECIEVE_MOVIES] (state, {movies, sort}) {
+  [types.RECEIVE_MOVIES] (state, {movies, sort}) {
     console.log(movies, sort)
     state[sort] = movies
   }
