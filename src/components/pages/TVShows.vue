@@ -4,62 +4,47 @@
                  v-bind:episodes="episodesRecentlyAired"
     ></EpisodeList>
     <ShowList title="Recently added shows"
-              v-bind:shows="recent"
+              v-bind:shows="tvshows.createdAt"
     ></ShowList>
     <EpisodeList title="Recently added episodes"
                  v-bind:episodes="episodesRecentlyAdded"
     ></EpisodeList>
-    <ShowList title="Newly aired"
-              v-bind:shows="recent"
-    ></ShowList>
     <ShowList title="Watched by others"
-              v-bind:shows="others"
+              v-bind:shows="tvshows.siteRatingCount"
     ></ShowList>
     <ShowList title="Best rated"
-              v-bind:shows="rating"
+              v-bind:shows="tvshows.siteRating"
     ></ShowList>
   </div>
 </template>
 
 <script>
+  import { mapState } from 'vuex'
   import WatchPanel from '@/components/WatchPanel'
   import ShowList from '@/components/itemLists/ShowList'
-  import SearchResults from '@/components/SearchResults'
   import EpisodeList from '@/components/itemLists/EpisodeList'
 
   export default {
     name: 'TVShows',
     components: {
       WatchPanel: WatchPanel,
-      'search-results': SearchResults,
       ShowList: ShowList,
       EpisodeList: EpisodeList
     },
+    computed: mapState([
+      'tvshows'
+    ]),
     data () {
       return {
-        recent: [],
-        rating: [],
-        others: [],
         episodesRecentlyAired: [],
         episodesRecentlyAdded: []
       }
     },
     created () {
-      this.axios.get('/shows/list/createdAt/DESC')
-        .then(response => {
-          this.recent = response.data
-        })
-        .catch(e => {})
-      this.axios.get('/shows/list/siteRating/DESC')
-        .then(response => {
-          this.rating = response.data
-        })
-        .catch(e => {})
-      this.axios.get('/shows/list/siteRatingCount/DESC')
-        .then(response => {
-          this.others = response.data
-        })
-        .catch(e => {})
+      this.$store.dispatch('getTVShows', {sort: 'createdAt', order: 'DESC'})
+      this.$store.dispatch('getTVShows', {sort: 'siteRating', order: 'DESC'})
+      this.$store.dispatch('getTVShows', {sort: 'siteRatingCount', order: 'DESC'})
+
       this.axios.get('/episodes/list/firstAired/DESC')
         .then(response => {
           this.episodesRecentlyAired = response.data

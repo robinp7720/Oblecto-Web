@@ -1,1 +1,2 @@
 export const RECIEVE_MOVIES = 'RECIEVE_MOVIES'
+export const RECEIVE_SHOWS = 'RECEIVE_SHOWS'
