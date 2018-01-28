@@ -1,25 +1,29 @@
 <template>
   <div class="container">
     <MovieList title="Recently Added"
-                 v-bind:movies="recent"
+                 v-bind:movies="movies.createdAt"
     ></MovieList>
     <MovieList title="Popular movies"
-              v-bind:movies="popular"
+              v-bind:movies="movies.popularity"
     ></MovieList>
     <MovieList title="Recently released movies"
-                 v-bind:movies="releaseDate"
+                 v-bind:movies="movies.releaseDate"
     ></MovieList>
   </div>
 </template>
 
 <script>
   import MovieList from '@/components/itemLists/MovieList'
+  import { mapState } from 'vuex'
 
   export default {
     name: 'Movies',
     components: {
       MovieList: MovieList
     },
+    computed: mapState([
+      'movies'
+    ]),
     data () {
       return {
         recent: [],
@@ -27,22 +31,10 @@
         releaseDate: []
       }
     },
-    created () {
-      this.axios.get('/movies/list/createdAt/DESC')
-        .then(response => {
-          this.recent = response.data
-        })
-        .catch(e => {})
-      this.axios.get('/movies/list/popularity/DESC')
-        .then(response => {
-          this.popular = response.data
-        })
-        .catch(e => {})
-      this.axios.get('/movies/list/releaseDate/DESC')
-        .then(response => {
-          this.releaseDate = response.data
-        })
-        .catch(e => {})
+    created: function () {
+      this.$store.dispatch('getMovies', {sort: 'createdAt', order: 'DESC'})
+      this.$store.dispatch('getMovies', {sort: 'popularity', order: 'DESC'})
+      this.$store.dispatch('getMovies', {sort: 'releaseDate', order: 'DESC'})
     }
   }
 </script>
