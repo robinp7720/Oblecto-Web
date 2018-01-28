@@ -2,7 +2,7 @@ import * as types from '../mutation-types'
 import Vue from 'vue'
 
 const state = {
-  createdAt: {}
+
 }
 
 const getters = {
