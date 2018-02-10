@@ -11,17 +11,8 @@
 </template>
 
 <script>
-  import WatchPanel from '@/components/WatchPanel'
-  import ShowList from '@/components/itemLists/ShowList'
-  import SearchResults from '@/components/SearchResults'
-
   export default {
-    name: 'Main',
-    components: {
-      WatchPanel: WatchPanel,
-      'search-results': SearchResults,
-      ShowList: ShowList
-    },
+    name: 'Login',
     data () {
       return {
         credentials: {
@@ -31,8 +22,7 @@
       }
     },
     methods: {
-      submit () {
-        let this_ = this
+      async submit () {
         let credentials = {
           username: this.credentials.username,
           password: this.credentials.password
@@ -42,19 +32,27 @@
           this.$auth.logout()
         }
 
-        this.$auth.login(credentials).then(function (response) {
-          this_.response = response
-          this_.$socket.emit('authenticate', {token: response.data['access_token']})
-          console.log(response.data['access_token'])
-          this_.$router.push({name: 'Main'})
-        }).catch(function () {
-          this_.$notify({
+        try {
+          // Send the login credentials to the backend server
+          // If the credentials are incorrect, the client will not be issued an JWT token
+          // and the client will be redirected back to here
+          let response = await this.$auth.login(credentials)
+
+          // Authenticate the socket.io connection to the server
+          // This allows the server to update the client in realtime
+          this.$socket.emit('authenticate', {token: response.data['access_token']})
+
+          // After the login proceduce is complete, send the user to the homepage
+          this.$router.push({name: 'Main'})
+        } catch (e) {
+          // If an error has occurred during the login process, send an error message to the client
+          this.$notify({
             group: 'system',
             title: 'Error occurred',
             text: 'An error occured during login',
             type: 'error'
           })
-        })
+        }
       }
     }
   }
@@ -72,40 +70,40 @@
     display: flex
     align-items: center
     justify-content: center
-  .form
-    box-shadow: 0px 0px 5px 2px rgba(darken(darken(#696060,17) + #000000,6), 0.75)
+    .form
+      box-shadow: 0px 0px 5px 2px rgba(darken(darken(#696060,17) + #000000, 6), 0.75)
 
-    width: 100%
-    max-width: 500px
-    background-color: rgba(0,0,0,0.3)
-    -webkit-border-radius: 6px
-    -moz-border-radius: 6px
-    border-radius: 6px
-
-    padding: 20px 30px
-    label
-      display: block
-      color: #f2f2f2
-      padding: 5px
-      font:
-        family: Roboto
-        size: 1.2em
-    input
-      display: block
       width: 100%
-      padding: 10px
+      max-width: 500px
+      background-color: rgba(0, 0, 0, 0.3)
       -webkit-border-radius: 6px
       -moz-border-radius: 6px
       border-radius: 6px
-      border: #ccc solid 1px
-      outline: none
-    button
-      -webkit-border-radius: 6px
-      -moz-border-radius: 6px
-      border-radius: 6px
-      background: #ccc
-      padding: 10px 30px
-      border: none
-      margin-top: 20px
-      float: right
+
+      padding: 20px 30px
+      label
+        display: block
+        color: #f2f2f2
+        padding: 5px
+        font:
+          family: Roboto
+          size: 1.2em
+      input
+        display: block
+        width: 100%
+        padding: 10px
+        -webkit-border-radius: 6px
+        -moz-border-radius: 6px
+        border-radius: 6px
+        border: #ccc solid 1px
+        outline: none
+      button
+        -webkit-border-radius: 6px
+        -moz-border-radius: 6px
+        border-radius: 6px
+        background: #ccc
+        padding: 10px 30px
+        border: none
+        margin-top: 20px
+        float: right
 </style>
