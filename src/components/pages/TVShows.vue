@@ -2,19 +2,19 @@
   <div class="container">
     <EpisodeList title="Recently aired"
                  v-bind:episodes="episodes.firstAired"
-    ></EpisodeList>
+    />
     <ShowList title="Recently added shows"
               v-bind:shows="tvshows.createdAt"
-    ></ShowList>
+    />
     <EpisodeList title="Recently added episodes"
                  v-bind:episodes="episodes.createdAt"
-    ></EpisodeList>
+    />
     <ShowList title="Watched by others"
               v-bind:shows="tvshows.siteRatingCount"
-    ></ShowList>
+    />
     <ShowList title="Best rated"
               v-bind:shows="tvshows.siteRating"
-    ></ShowList>
+    />
   </div>
 </template>
 

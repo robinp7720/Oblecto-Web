@@ -1,14 +1,19 @@
 <template>
   <div id="app">
-    <showModifyModal></showModifyModal>
+    <showModifyModal/>
     <notifications group="system" />
 
-    <nav-bar v-if="$router.history.current.name !== 'PlayEpisode' && $router.history.current.name !== 'login' && $router.history.current.name !== 'PlayMovie'"></nav-bar>
+    <nav-bar
+      v-if="$router.history.current.name !== 'PlayEpisode' &&
+      $router.history.current.name !== 'login' &&
+      $router.history.current.name !== 'PlayMovie'"/>
+
     <div class="watching" v-if="$router.history.current.name !== 'PlayEpisode' && $router.history.current.name !== 'login' && $router.history.current.name !== 'PlayMovie'">
-      <WatchPanel></WatchPanel>
+      <WatchPanel/>
     </div>
+
     <transition name="fade" mode="out-in">
-    <router-view></router-view>
+      <router-view/>
     </transition>
   </div>
 </template>
@@ -26,6 +31,18 @@
       WatchPanel: WatchPanel,
       'nav-bar': NavBar,
       showModifyModal
+    },
+    created () {
+      this.$store.dispatch('getTVShows', {sort: 'createdAt', order: 'DESC'})
+      this.$store.dispatch('getTVShows', {sort: 'siteRating', order: 'DESC'})
+      this.$store.dispatch('getTVShows', {sort: 'siteRatingCount', order: 'DESC'})
+
+      this.$store.dispatch('getEpisodes', {sort: 'firstAired', order: 'DESC'})
+      this.$store.dispatch('getEpisodes', {sort: 'createdAt', order: 'DESC'})
+
+      this.$store.dispatch('getMovies', {sort: 'createdAt', order: 'DESC'})
+      this.$store.dispatch('getMovies', {sort: 'popularity', order: 'DESC'})
+      this.$store.dispatch('getMovies', {sort: 'releaseDate', order: 'DESC'})
     },
     methods: {
     }

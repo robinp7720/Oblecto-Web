@@ -1,14 +1,11 @@
 <template>
   <div class="container">
     <MovieList title="Recently Added"
-                 v-bind:movies="movies.createdAt"
-    ></MovieList>
+               v-bind:movies="movies.createdAt"/>
     <MovieList title="Popular movies"
-              v-bind:movies="movies.popularity"
-    ></MovieList>
+               v-bind:movies="movies.popularity"/>
     <MovieList title="Recently released movies"
-                 v-bind:movies="movies.releaseDate"
-    ></MovieList>
+               v-bind:movies="movies.releaseDate"/>
   </div>
 </template>
 
