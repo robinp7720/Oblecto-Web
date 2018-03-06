@@ -29,7 +29,12 @@
       indexShow: function () {
         this.axios.get('/series/' + this.show.id + '/index')
           .then(response => {
-            this.rating = response.data
+            this.$notify({
+              group: 'system',
+              title: 'Library update requested successfully for ' + this.show.seriesName,
+              text: 'A library index update has been started',
+              type: 'warning'
+            })
           })
           .catch(e => {})
       }
