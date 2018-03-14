@@ -2,7 +2,9 @@ import * as types from '../mutation-types'
 import Vue from 'vue'
 
 const state = {
-
+  createdAt: [],
+  siteRating: [],
+  siteRatingCount: []
 }
 
 const getters = {
@@ -19,7 +21,6 @@ const actions = {
 
 const mutations = {
   [types.RECEIVE_SHOWS] (state, {shows, sort}) {
-    console.log(shows, sort)
     state[sort] = shows
   }
 }
