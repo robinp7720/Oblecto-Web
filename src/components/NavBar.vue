@@ -1,7 +1,7 @@
 <template>
   <nav class="nav-bar">
     <div class="container">
-      <div class="brand">Oblecto</div>
+      <div class="brand"><router-link :to="{ name: 'Main'}" class="nav-link">Oblecto</router-link></div>
       <router-link :to="{ name: 'TVShows'}" class="nav-link">TV Shows</router-link>
       <router-link :to="{ name: 'Movies'}" class="nav-link">Movies</router-link>
       <div class="nav-right">
