@@ -33,16 +33,7 @@
       showModifyModal
     },
     created () {
-      this.$store.dispatch('getTVShows', {sort: 'createdAt', order: 'DESC'})
-      this.$store.dispatch('getTVShows', {sort: 'siteRating', order: 'DESC'})
-      this.$store.dispatch('getTVShows', {sort: 'siteRatingCount', order: 'DESC'})
 
-      this.$store.dispatch('getEpisodes', {sort: 'firstAired', order: 'DESC'})
-      this.$store.dispatch('getEpisodes', {sort: 'createdAt', order: 'DESC'})
-
-      this.$store.dispatch('getMovies', {sort: 'createdAt', order: 'DESC'})
-      this.$store.dispatch('getMovies', {sort: 'popularity', order: 'DESC'})
-      this.$store.dispatch('getMovies', {sort: 'releaseDate', order: 'DESC'})
     },
     methods: {
     }

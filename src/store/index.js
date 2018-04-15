@@ -43,6 +43,21 @@ export default new Vuex.Store({
         })
         .catch(e => {})
     },
+    updateAll: ({dispatch}) => {
+      // Update all movies in vuex storage
+      dispatch('getMovies', {sort: 'createdAt', order: 'DESC'})
+      dispatch('getMovies', {sort: 'popularity', order: 'DESC'})
+      dispatch('getMovies', {sort: 'releaseDate', order: 'DESC'})
+
+      // Update all tv shows in vuex storage
+      dispatch('getTVShows', {sort: 'createdAt', order: 'DESC'})
+      dispatch('getTVShows', {sort: 'siteRating', order: 'DESC'})
+      dispatch('getTVShows', {sort: 'siteRatingCount', order: 'DESC'})
+
+      // Update all episodes in vuex storage
+      dispatch('getEpisodes', {sort: 'firstAired', order: 'DESC'})
+      dispatch('getEpisodes', {sort: 'createdAt', order: 'DESC'})
+    },
     updateWatching: function (state) {
       Vue.axios.get(`/watching`)
         .then(response => {

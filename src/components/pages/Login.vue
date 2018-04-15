@@ -42,6 +42,8 @@
           // This allows the server to update the client in realtime
           this.$socket.emit('authenticate', {token: response.data['access_token']})
 
+          this.$store.dispatch('updateAll')
+
           // After the login proceduce is complete, send the user to the homepage
           this.$router.push({name: 'Main'})
         } catch (e) {

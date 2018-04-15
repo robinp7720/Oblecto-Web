@@ -29,9 +29,7 @@
       }
     },
     created: function () {
-      this.$store.dispatch('getMovies', {sort: 'createdAt', order: 'DESC'})
-      this.$store.dispatch('getMovies', {sort: 'popularity', order: 'DESC'})
-      this.$store.dispatch('getMovies', {sort: 'releaseDate', order: 'DESC'})
+
     }
   }
 </script>
