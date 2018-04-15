@@ -41,17 +41,33 @@ new Vue({
       })
     },
     connect: function () {
-      // Authenticate socket if auth token exits
-      if (this.$auth.getToken()) {
-        this.$socket.emit('authenticate', {token: this.$auth.getToken()})
-      }
-
       this.$notify({
         group: 'system',
         title: 'Connection to Oblecto succeeded',
         text: 'Client has successfully connected to the Oblecto websocket interface!',
         type: 'success'
       })
+
+      // Authenticate socket if auth token exits
+      if (this.$auth.isAuthenticated()) {
+        if (this.$auth.getToken()) {
+          this.$socket.emit('authenticate', {token: this.$auth.getToken()})
+
+          this.$notify({
+            group: 'system',
+            title: 'Authentication success',
+            text: 'Socket interface has been authenticated',
+            type: 'success'
+          })
+
+          this.$store.dispatch('updateAll')
+        }
+      }
+    },
+    indexer: function (val) {
+      if (val.event === 'added') {
+        this.$store.dispatch('updateAll')
+      }
     }
   },
   router,
