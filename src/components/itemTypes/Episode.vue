@@ -1,13 +1,15 @@
 <template>
   <transition name="slide-fade" appear>
-  <div class="episode">
-    <div class="episode-poster" v-bind:style="{ backgroundImage: 'url(' + host + '/episode/' + episodeId + '/image.png)' }">
-      <a class="play" v-on:click="playEpisode"><i class="fa fa-play" aria-hidden="true"></i></a>
-      <div :title="title" class="title" v-if="inside">{{ title }}</div>
+    <div class="episode">
+      <div class="episode-poster"
+           v-bind:style="{ backgroundImage: 'url(' + host + '/episode/' + episodeId + '/image.png)' }">
+        <a class="play" v-on:click="playEpisode"><i class="fa fa-play" aria-hidden="true"></i></a>
+        <div :title="title" class="title" v-if="inside">{{ title }}</div>
+        <div class="progress" v-bind:style="{ width: watchProgress * 100 + '%' }"></div>
+      </div>
+      <div :title="title" class="title" v-if="!inside">{{ title }}</div>
+      <div class="subtitle" v-if="subtitle && !inside">{{ subtitle }}</div>
     </div>
-    <div :title="title" class="title" v-if="!inside">{{ title }}</div>
-    <div class="subtitle" v-if="subtitle && !inside">{{ subtitle }}</div>
-  </div>
   </transition>
 </template>
 
@@ -16,7 +18,32 @@
 
   export default {
     name: 'episode',
-    props: ['title', 'episodeId', 'subtitle', 'inside'],
+    props: {
+      'title': String,
+      'episodeId': {
+        type: Number,
+        required: true
+      },
+      'subtitle': {
+        type: String,
+        required: false
+      },
+      'inside': {
+        type: Boolean,
+        required: false,
+        default: false
+      },
+      'watchProgress': {
+        type: Number,
+        required: false,
+        default: 0
+      },
+      'watched': {
+        type: Boolean,
+        required: false,
+        default: false
+      }
+    },
     computed: mapState([
       'host'
     ]),
@@ -34,11 +61,14 @@
   .slide-fade-enter-active {
     transition: all .5s;
   }
+
   .slide-fade-leave-active {
     transition: all .5s;
   }
+
   .slide-fade-enter, .slide-fade-leave-to
-    /* .slide-fade-leave-active below version 2.1.8 */ {
+    /* .slide-fade-leave-active below version 2.1.8 */
+  {
     transform: translateX(10px);
     opacity: 0;
   }
@@ -142,7 +172,7 @@
     margin: 0;
     width: 100px;
     height: 100px;
-    background-color: rgba(0,0,0,0.5);
+    background-color: rgba(0, 0, 0, 0.5);
     border: 2px solid white;
     border-radius: 100%;
     text-align: center;
@@ -153,16 +183,17 @@
     -o-transition: opacity 0.2s;
     transition: opacity 0.2s;
   }
+
   .fa {
     margin-left: 10px;
   }
 
-  .episode-poster:hover a.play{
+  .episode-poster:hover a.play {
     opacity: 0.4;
   }
 
   a.play:hover {
-    opacity: 1!important;
+    opacity: 1 !important;
   }
 
   .episode-poster .title {
@@ -171,5 +202,13 @@
     left: 0;
     font-size: 1.4em;
     padding: 10px;
+  }
+
+  .progress {
+    height: 5px;
+    background-color: #ae6600;
+    position: absolute;
+    bottom: 0;
+    left: 0;
   }
 </style>

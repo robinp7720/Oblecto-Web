@@ -15,6 +15,8 @@
       >
         <Episode v-for="(episode, index) in episodes"
                  v-bind:title="episode.episodeName"
+                 v-bind:watchProgress="episode.tracks ? (episode.tracks[0]? episode.tracks[0].progress : 0) : 0"
+                 v-bind:watched="episode.tracks ? (episode.tracks[0]? episode.tracks[0].progress > 0.9 : false) : false"
                  v-bind:episodeId="episode.id"
                  v-bind:subtitle="'S' + episode.airedSeason + 'E' + episode.airedEpisodeNumber + ' - ' + episode.tvshow.seriesName"
                  v-bind:key="episode.id"
@@ -63,6 +65,9 @@
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style scoped lang="sass">
+  .episodes
+    position: relative
+
   .staggered-fade-move
     transition: transform 1s
 
