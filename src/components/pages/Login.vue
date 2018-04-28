@@ -29,6 +29,7 @@
         }
 
         if (this.$auth.isAuthenticated()) {
+          this.$socket.disconnect()
           this.$auth.logout()
         }
 

@@ -5,6 +5,7 @@
       <router-link :to="{ name: 'TVShows'}" class="nav-link">TV Shows</router-link>
       <router-link :to="{ name: 'Movies'}" class="nav-link">Movies</router-link>
       <div class="nav-right">
+        <a v-on:click="logout" class="nav-link">Logout</a>
         <router-link :to="{ name: 'Settings'}" class="nav-link">Settings</router-link>
         <div class="search">
           <form action="" class="search" id="search-form" v-on:submit.prevent="onSubmit">
@@ -26,6 +27,12 @@
         this.$store.dispatch('search', event.target.value)
         this.$router.push({name: 'Main'})
         console.log(this.$router.history.current.name)
+      },
+      logout: function (event) {
+        this.$socket.disconnect()
+        this.$auth.logout()
+
+        this.$router.push({name: 'login'})
       }
     }
   }
