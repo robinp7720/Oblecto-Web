@@ -2,7 +2,7 @@
   <transition name="slide-fade" appear>
     <div class="episode">
       <div class="episode-poster"
-           v-bind:style="{ backgroundImage: 'url(' + host + '/episode/' + episodeId + '/image.png)' }">
+           v-bind:style="{ backgroundImage: 'url(' + host + '/episode/' + episodeId + '/banner)' }">
         <a class="play" v-on:click="playEpisode"><i class="fa fa-play" aria-hidden="true"></i></a>
         <div :title="title" class="title" v-if="inside">{{ title }}</div>
         <div class="progress" v-bind:style="{ width: watchProgress * 100 + '%' }"></div>
