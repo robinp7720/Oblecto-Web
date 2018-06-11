@@ -3,8 +3,6 @@ import Router from 'vue-router'
 
 import TVShows from '@/components/pages/TVShows'
 import SeriesView from '@/components/pages/SeriesView'
-import PlayEpisode from '@/components/pages/playEpisode'
-import PlayMovie from '@/components/pages/playMovie'
 import Login from '@/components/pages/Login'
 import Movies from '@/components/pages/Movies'
 import Main from '@/components/pages/Main'
@@ -45,18 +43,6 @@ const router = new Router({
       path: '/series/:seriesId',
       name: 'SeriesView',
       component: SeriesView,
-      meta: { requiresAuth: true }
-    },
-    {
-      path: '/episode/:episodeId/play',
-      name: 'PlayEpisode',
-      component: PlayEpisode,
-      meta: { requiresAuth: true }
-    },
-    {
-      path: '/movie/:movieId/play',
-      name: 'PlayMovie',
-      component: PlayMovie,
       meta: { requiresAuth: true }
     },
     {

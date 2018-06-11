@@ -1,5 +1,5 @@
 {
   "server": {
-    "host": "http://thinkl33t:8080"
+    "host": "http://prometheus:8080"
   }
 }

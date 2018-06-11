@@ -11,7 +11,10 @@ export default new Vuex.Store({
   state: {
     host: null,
     shows: {},
-    watching: []
+    watching: [],
+    playing: {
+      title: ''
+    }
   },
   modules: {
     movies,
@@ -24,6 +27,9 @@ export default new Vuex.Store({
     },
     saveWatching: function (state, watching) {
       Vue.set(state, 'watching', watching)
+    },
+    setPlaying: function (state, watching) {
+      Vue.set(state, 'playing', watching)
     },
     updateHost: function (state, host) {
       Vue.set(state, 'host', host)
@@ -68,6 +74,12 @@ export default new Vuex.Store({
     },
     updateHost: function (state, host) {
       state.commit('updateHost', host)
+    },
+    playEpisode: function (state, episode) {
+      state.commit('setPlaying', {
+        title: episode.episodeName,
+        entity: episode
+      })
     }
   }
 })

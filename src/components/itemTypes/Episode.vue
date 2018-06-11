@@ -42,6 +42,10 @@
         type: Boolean,
         required: false,
         default: false
+      },
+      'episode': {
+        required: true,
+        default: false
       }
     },
     computed: mapState([
@@ -50,7 +54,8 @@
     methods: {
       playEpisode: function (event) {
         event.preventDefault()
-        this.$router.push({name: 'PlayEpisode', params: {episodeId: this.episodeId}})
+        // this.$router.push({name: 'PlayEpisode', params: {episodeId: this.episodeId}})
+        this.$store.dispatch('playEpisode', this.episode)
       }
     }
   }

@@ -12,6 +12,8 @@
       <WatchPanel/>
     </div>
 
+    <playBar/>
+
     <transition name="fade" mode="out-in">
       <router-view/>
     </transition>
@@ -21,6 +23,7 @@
 <script>
   import NavBar from '@/components/NavBar'
   import WatchPanel from '@/components/WatchPanel'
+  import playBar from '@/components/playBar'
 
   // Modals
   import showModifyModal from '@/components/modals/showModify'
@@ -30,7 +33,8 @@
     components: {
       WatchPanel: WatchPanel,
       'nav-bar': NavBar,
-      showModifyModal
+      showModifyModal,
+      playBar
     },
     created () {
 

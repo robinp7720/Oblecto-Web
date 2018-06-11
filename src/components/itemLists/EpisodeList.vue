@@ -15,11 +15,12 @@
       >
         <Episode v-for="(episode, index) in episodes"
                  v-bind:title="episode.episodeName"
-                 v-bind:watchProgress="episode.tracks ? (episode.tracks[0]? episode.tracks[0].progress : 0) : 0"
-                 v-bind:watched="episode.tracks ? (episode.tracks[0]? episode.tracks[0].progress > 0.9 : false) : false"
+                 v-bind:watchProgress="episode.trackEpisodes ? (episode.trackEpisodes[0]? episode.trackEpisodes[0].progress : 0) : 0"
+                 v-bind:watched="episode.trackEpisodes ? (episode.trackEpisodes[0]? episode.trackEpisodes[0].progress > 0.9 : false) : false"
                  v-bind:episodeId="episode.id"
                  v-bind:subtitle="'S' + episode.airedSeason + 'E' + episode.airedEpisodeNumber + ' - ' + episode.tvshow.seriesName"
                  v-bind:key="episode.id"
+                 v-bind:episode="episode"
         ></Episode>
       </transition-group>
     </div>
