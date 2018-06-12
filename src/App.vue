@@ -58,6 +58,7 @@
     background-size: cover
 
     padding-top: 415px
+    padding-bottom: 70px
 
     min-height: 100vh
 
