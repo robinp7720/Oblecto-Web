@@ -1,16 +1,5 @@
 <template>
   <transition name="slide-fade" appear>
-    <div class="popup" v-if="optionsOpen">
-      <ul>
-        <li>
-          <a v-on:click="downloadArtwork">Fetch new artwork</a>
-        </li>
-        <li>
-          <a v-on:click="edit">Edit data</a>
-        </li>
-      </ul>
-    </div>
-
     <li class="movie-horizontal" v-if="horizontal">
       <div class="movie-poster" v-bind:style="{ backgroundImage: 'url(' + host + '/movie/' + movieId + '/banner)' }">
         <a class="play" v-on:click="playMovie"><i class="fa fa-play" aria-hidden="true"></i></a>
@@ -40,14 +29,14 @@
 
   export default {
     name: 'episode',
-    props: ['title', 'movieId', 'subtitle', 'inside', 'horizontal'],
+    props: ['title', 'movieId', 'subtitle', 'inside', 'horizontal', 'movie'],
     computed: mapState([
       'host'
     ]),
     methods: {
       playMovie: function (event) {
         event.preventDefault()
-        this.$router.push({name: 'PlayMovie', params: {movieId: this.movieId}})
+        this.$store.dispatch('playMovie', this.movie)
       }
     }
   }

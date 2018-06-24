@@ -17,6 +17,7 @@
                  v-bind:title="movie.movieName"
                  v-bind:movieId="movie.id"
                  v-bind:subtitle="'Released: ' + movie.releaseDate"
+                 v-bind:movie="movie"
                  v-bind:key="movie.id"
         ></Movie>
       </transition-group>

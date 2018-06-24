@@ -78,7 +78,15 @@ export default new Vuex.Store({
     playEpisode: function (state, episode) {
       state.commit('setPlaying', {
         title: episode.episodeName,
+        type: 'episode',
         entity: episode
+      })
+    },
+    playMovie: function (state, movie) {
+      state.commit('setPlaying', {
+        title: movie.movieName,
+        type: 'movie',
+        entity: movie
       })
     }
   }
