@@ -11,13 +11,6 @@ import {Tabs, Tab} from 'vue-tabs-component'
 import VModal from 'vue-js-modal'
 import Notifications from 'vue-notification'
 
-import VueVideoPlayer from 'vue-video-player'
-
-// require videojs style
-import 'video.js/dist/video-js.css'
-
-Vue.use(VueVideoPlayer)
-
 Vue.use(VModal)
 
 Vue.use(Notifications)

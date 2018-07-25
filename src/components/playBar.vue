@@ -1,6 +1,7 @@
 <template>
   <div class="playBar">
     <div class="bar">
+      <div class="progressbar" v-bind:style="{ width: progress * 100 + '%' }"></div>
       <span class="title">{{ playing.title }}</span>
       <div class="right">
         <span v-on:click="showVideo = !showVideo" class="toggle-button"><FontAwesomeIcon
@@ -9,24 +10,7 @@
     </div>
 
     <div class="player" v-bind:class="{ hidden: !showVideo }">
-      <video-player class="video-player-box"
-                    ref="videoPlayer"
-                    :options="playerOptions"
-                    :playsinline="false"
-
-                    @play="onPlayerPlay($event)"
-                    @pause="onPlayerPause($event)"
-                    @ended="onPlayerEnded($event)"
-                    @waiting="onPlayerWaiting($event)"
-                    @playing="onPlayerPlaying($event)"
-                    @loadeddata="onPlayerLoadeddata($event)"
-                    @timeupdate="onPlayerTimeupdate($event)"
-                    @canplay="onPlayerCanplay($event)"
-                    @canplaythrough="onPlayerCanplaythrough($event)"
-
-                    @statechanged="playerStateChanged($event)"
-                    @ready="playerReadied">
-      </video-player>
+      <video ref="videoPlayer"></video>
     </div>
   </div>
 </template>
@@ -44,19 +28,11 @@
     name: 'play-bar',
     data () {
       return {
+        progress: 0,
+        url: '',
         showVideo: false,
         firstSinceNewsource: false,
-        shouldAutoPlay: false,
-        playerOptions: {
-          // videojs options
-          autoplay: false,
-          fluid: false,
-          muted: false,
-          language: 'en',
-          playbackRates: [0.7, 1.0, 1.5, 2.0],
-          sources: [{}],
-          poster: '/static/images/author.jpg'
-        }
+        shouldAutoPlay: false
       }
     },
     mounted () {
@@ -64,7 +40,7 @@
     },
     computed: {
       player () {
-        return this.$refs.videoPlayer.player
+        return this.$refs.videoPlayer
       },
       iconUp () {
         return faUp
@@ -74,107 +50,65 @@
       },
       ...mapState(['playing'])
     },
+    created () {
 
+    },
     watch: {
       playing: function (newState, oldState) {
         this.showVideo = true
         this.firstSinceNewsource = true
 
-        let url
-
         switch (this.playing.type) {
           case 'episode':
-            url = this.axios.defaults.baseURL + '/episode/' + newState.entity.id + '/play'
+            this.url = this.axios.defaults.baseURL + '/episode/' + newState.entity.id + '/play'
             break
           case 'movie':
-            url = this.axios.defaults.baseURL + '/movie/' + newState.entity.id + '/play'
+            this.url = this.axios.defaults.baseURL + '/movie/' + newState.entity.id + '/play'
             break
         }
 
-        this.player.src([
-          {type: 'video/mp4', src: url}
-        ])
-      }
-    },
-    methods: {
-      // listen event
-      onPlayerPlay (player) {
-        // console.log('player play!', player)
-      },
-      onPlayerPause (player) {
-        // console.log('player pause!', player)
-      },
-      // ...player event
+        this.player.src = this.url
 
-      onPlayerEnded (player) {
+        this.player.addEventListener('loadedmetadata', () => {
+          if (!this.playing.entity.trackEpisodes[0].time && !this.playing.entity.trackMovies[0].time) {
+            this.player.play()
+            return
+          }
 
-      },
-
-      onPlayerPlaying (player) {
-
-      },
-
-      onPlayerWaiting (player) {
-
-      },
-
-      onPlayerLoadeddata (player) {
-
-      },
-
-      onPlayerTimeupdate (player) {
-        switch (this.playing.type) {
-          case 'episode':
-            this.$socket.emit('playing', {
-              time: player.currentTime(),
-              progress: player.currentTime() / player.duration(),
-              episodeId: this.playing.entity.id,
-              type: 'tv'
-            })
-            break
-          case 'movie':
-            this.$socket.emit('playing', {
-              time: player.currentTime(),
-              progress: player.currentTime() / player.duration(),
-              movieId: this.playing.entity.id,
-              type: 'movie'
-            })
-            break
-        }
-      },
-
-      onPlayerCanplay (player) {
-        if (this.firstSinceNewsource) {
-          this.shouldAutoPlay = true
-          this.firstSinceNewsource = false
           switch (this.playing.type) {
             case 'episode':
-              this.player.currentTime(this.playing.entity.trackEpisodes[0].time)
+              this.player.currentTime = this.playing.entity.trackEpisodes[0].time
               break
             case 'movie':
-              this.player.currentTime(this.playing.entity.trackMovies[0].time)
+              this.player.currentTime = this.playing.entity.trackMovies[0].time
               break
           }
-        }
 
-        if (this.shouldAutoPlay) {
-          player.play()
-          this.shouldAutoPlay = true
-        }
-      },
+          this.player.play()
+        })
 
-      onPlayerCanplaythrough (player) {
+        this.player.addEventListener('timeupdate', () => {
+          this.progress = this.player.currentTime / this.player.duration
 
-      },
-
-      // or listen state event
-      playerStateChanged (playerCurrentState) {
-
-      },
-
-      // player is ready
-      playerReadied (player) {
-
+          switch (this.playing.type) {
+            case 'episode':
+              this.$socket.emit('playing', {
+                time: this.player.currentTime,
+                progress: this.player.currentTime / this.player.duration,
+                episodeId: this.playing.entity.id,
+                type: 'tv'
+              })
+              break
+            case 'movie':
+              this.$socket.emit('playing', {
+                time: this.player.currentTime,
+                progress: this.player.currentTime / this.player.duration,
+                movieId: this.playing.entity.id,
+                type: 'movie'
+              })
+              break
+          }
+        })
       }
     }
   }
@@ -209,7 +143,7 @@
       height: calc(100% - 59px)
       width: 100%
 
-      background: rgba(0, 0, 80, 0.9)
+      background: black
       z-index: 5
 
       transition: top 0.2s
@@ -220,16 +154,20 @@
     .right
       float: right
 
-    .player .video-js
-      height: 100%
-      position: absolute
-      top: 0
-      left: 0
-      width: 100%
-      z-index: 110
-
     .toggle-button
       cursor: pointer
+
+  video
+    width: 100%
+    height: 100%
+
+  .progressbar
+    height: 5px
+    background-color: #ae6600
+    position: absolute
+    top: 0
+    left: 0
+
 
 
 </style>
