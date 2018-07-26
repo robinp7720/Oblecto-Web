@@ -1,15 +1,5 @@
 <template>
   <li class="show">
-    <div class="popup" v-if="optionsOpen">
-      <ul>
-        <li>
-          <a v-on:click="reIndex">Re-index episodes</a>
-        </li>
-        <li>
-          <a v-on:click="edit">Edit data</a>
-        </li>
-      </ul>
-    </div>
     <div class="show-poster" v-bind:style="{ backgroundImage: 'url(' + host + '/series/' + showId + '/poster)' }">
       <a class="play" v-on:click="viewEpisodes"><i class="fa fa-play" aria-hidden="true"></i></a>
       <div class="actions">
@@ -30,9 +20,7 @@
     name: 'show',
     props: ['title', 'subtitle', 'showId', 'show'],
     data () {
-      return {
-        optionsOpen: false
-      }
+      return {}
     },
     computed: mapState([
       'host'
@@ -43,12 +31,6 @@
       },
       viewEpisodes: function (event) {
         this.$router.push({name: 'SeriesView', params: {seriesId: this.showId}})
-      },
-      reIndex: function (event) {
-        this.optionsOpen = false
-      },
-      edit: function (event) {
-        this.optionsOpen = false
       }
     }
   }
@@ -123,37 +105,6 @@
     align-items: center;
     justify-content: center;
   }
-
-  .popup {
-    position: absolute;
-
-    z-index: 99;
-
-    bottom: 70px;
-    left: 50%;
-  }
-
-  .popup ul {
-    list-style-type: none;
-    padding: 0;
-    margin: 0;
-
-    -webkit-border-radius: 3px;
-    -moz-border-radius: 3px;
-    border-radius: 3px;
-    overflow: hidden;
-  }
-
-  .popup li {
-    background-color: #696060;
-  }
-
-  .popup li a {
-    display: inline-block;
-    padding: 10px;
-    font-family: Roboto;
-  }
-
 
 
   .actions {
