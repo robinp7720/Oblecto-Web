@@ -3,11 +3,10 @@
     <div class="title" v-if="title">
       <h3>{{ title }}</h3>
     </div>
-    <div class="episode-scroller">
       <transition-group
         name="staggered-fade"
         tag="ul"
-        class="show-scroller"
+        class="scroller"
         v-bind:css="true"
         v-on:before-enter="beforeEnter"
         v-on:enter="enter"
@@ -22,7 +21,6 @@
         ></Movie>
       </transition-group>
     </div>
-  </div>
 </template>
 
 <script>
@@ -67,14 +65,13 @@
   .staggered-fade-move
     transition: transform 1s
 
-  .episode-scroller
+  .scroller
     overflow: hidden
     overflow-x: visible
     white-space: nowrap
     padding: 0
+    padding-top: 5px
 
-  .episode-scroller::-webkit-scrollbar
-    display: none
 
   .title, .title h3
     padding: 0 20px

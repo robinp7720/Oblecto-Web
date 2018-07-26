@@ -3,7 +3,6 @@
     <div class="title" v-if="title">
       <h3>{{ title }}</h3>
     </div>
-    <div class="show-scroller">
       <transition-group
         name="staggered-fade"
         tag="ul"
@@ -21,7 +20,6 @@
           v-bind:key="show.id"
     ></Show>
       </transition-group>
-    </div>
   </div>
 </template>
 
@@ -73,15 +71,16 @@
 <style scoped lang="sass">
 .staggered-fade-move
   transition: transform 1s
+  
+.shows
+  overflow: visible
 
 .show-scroller
-  overflow: hidden
-  overflow-x: visible
+  overflow-y: visible
+  overflow-x: scroll
   white-space: nowrap
   padding: 0
-
-.show-scroller::-webkit-scrollbar
-  display: none
+  padding-top: 5px
 
 .title, .title h3
   padding: 0 20px

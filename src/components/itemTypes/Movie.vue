@@ -107,13 +107,11 @@
     -moz-border-radius: 3px;
     border-radius: 3px;
 
-    border: 0 solid #ae6600;
-
-    -webkit-transition: border 0.1s, opacity 0.1s;
-    -moz-transition: border 0.1s, opacity 0.1s;
-    -ms-transition: border 0.1s, opacity 0.1s;
-    -o-transition: border 0.1s, opacity 0.1s;
-    transition: border 0.1s, opacity 0.1s;
+    -webkit-transition: box-shadow 0.1s, opacity 0.1s;
+    -moz-transition: box-shadow 0.1s, opacity 0.1s;
+    -ms-transition: box-shadow 0.1s, opacity 0.1s;
+    -o-transition: box-shadow 0.1s, opacity 0.1s;
+    transition: box-shadow 0.1s, opacity 0.1s;
 
     position: relative;
     overflow: hidden;
@@ -154,8 +152,7 @@
   }
 
   .movie-poster:hover {
-    border: #ae6600 solid 2px;
-    box-shadow: 0px 0px 5px 0px rgba(174, 102, 0, 0.75);
+    box-shadow: 0px 0px 0px 2px rgba(174, 102, 0, 0.75);
     opacity: 1;
   }
 

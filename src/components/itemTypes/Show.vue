@@ -1,7 +1,7 @@
 <template>
   <li class="show">
     <div class="show-poster" v-bind:style="{ backgroundImage: 'url(' + host + '/series/' + showId + '/poster)' }">
-      <a class="play" v-on:click="viewEpisodes"><i class="fa fa-play" aria-hidden="true"></i></a>
+      <a class="play" v-on:click="viewEpisodes"><i class="fa fa-eye" aria-hidden="true"></i></a>
       <div class="actions">
         <a class="action-item"v-on:click="openModal" title="Options">
           <i class="fa fa-info" aria-hidden="true"></i>
@@ -76,6 +76,10 @@
   }
 
   .show-poster {
+    -webkit-box-sizing: border-box;
+    -moz-box-sizing: border-box;
+    box-sizing: border-box;
+
     box-shadow: 0px 0px 5px 0px rgba(0, 0, 0, 0.75);
 
     background-color: rgba(0, 0, 0, 0.8);
@@ -92,11 +96,11 @@
 
     border: 0 solid #ae6600;
 
-    -webkit-transition: border 0.1s, opacity 0.1s;
-    -moz-transition: border 0.1s, opacity 0.1s;
-    -ms-transition: border 0.1s, opacity 0.1s;
-    -o-transition: border 0.1s, opacity 0.1s;
-    transition: border 0.1s, opacity 0.1s;
+    -webkit-transition: box-shadow 0.1s, opacity 0.1s;
+    -moz-transition: box-shadow 0.1s, opacity 0.1s;
+    -ms-transition: box-shadow 0.1s, opacity 0.1s;
+    -o-transition: box-shadow 0.1s, opacity 0.1s;
+    transition: box-shadow 0.1s, opacity 0.1s;
 
     position: relative;
     overflow: hidden;
@@ -129,9 +133,7 @@
   }
 
   .show-poster:hover {
-    border: #ae6600 solid 2px;
-    box-shadow: 0px 0px 5px 0px rgba(174, 102, 0, 0.75);
-    opacity: 1;
+    box-shadow: 0px 0px 0px 2px rgba(174, 102, 0, 0.75);
   }
 
   .show-poster:hover .actions {
@@ -159,9 +161,6 @@
     -ms-transition: opacity 0.2s;
     -o-transition: opacity 0.2s;
     transition: opacity 0.2s;
-  }
-  .fa {
-    margin-left: 10px;
   }
 
   .show-poster:hover a.play{
