@@ -28,7 +28,7 @@
   import { mapState } from 'vuex'
 
   export default {
-    name: 'episode',
+    name: 'movie',
     props: ['title', 'movieId', 'subtitle', 'inside', 'horizontal', 'movie'],
     computed: mapState([
       'host'
@@ -37,6 +37,9 @@
       playMovie: function (event) {
         event.preventDefault()
         this.$store.dispatch('playMovie', this.movie)
+      },
+      openModal: function (event) {
+
       }
     }
   }
