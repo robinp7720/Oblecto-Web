@@ -70,25 +70,20 @@
         this.player.src = this.url
 
         this.player.addEventListener('loadedmetadata', () => {
-          if (!this.playing.entity.trackEpisodes[0].time && !this.playing.entity.trackMovies[0].time) {
+          let tracking = this.playing.entity.trackEpisodes || this.playing.entity.trackMovies
+
+          if (!tracking[0]) {
             this.player.play()
             return
           }
-
-          switch (this.playing.type) {
-            case 'episode':
-              this.player.currentTime = this.playing.entity.trackEpisodes[0].time
-              break
-            case 'movie':
-              this.player.currentTime = this.playing.entity.trackMovies[0].time
-              break
-          }
-
+  
+          this.player.currentTime = tracking[0].time
           this.player.play()
         })
 
         this.player.addEventListener('timeupdate', () => {
           this.progress = this.player.currentTime / this.player.duration
+          console.log(this.playing.entity)
 
           switch (this.playing.type) {
             case 'episode':
