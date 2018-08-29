@@ -10,7 +10,7 @@
     </div>
 
     <div class="player" v-bind:class="{ hidden: !showVideo }">
-      <video ref="videoPlayer"></video>
+      <video ref="videoPlayer" controls></video>
     </div>
   </div>
 </template>
@@ -83,7 +83,6 @@
 
         this.player.addEventListener('timeupdate', () => {
           this.progress = this.player.currentTime / this.player.duration
-          console.log(this.playing.entity)
 
           switch (this.playing.type) {
             case 'episode':
@@ -141,10 +140,23 @@
       background: black
       z-index: 5
 
-      transition: top 0.2s
+      transition: top 0.2s, height 0.2s, width 0.2s
 
     .hidden
-      top: 100%
+      height: 200px
+      width: auto
+      top: calc(100% - 269px)
+      right: 10px
+      border-radius: 3px
+      overflow: hidden
+      -webkit-box-shadow: 0px 0px 5px 0px rgba(0, 0, 0, 0.75)
+      box-shadow: 0px 0px 5px 0px rgba(0, 0, 0, 0.75)
+      @media only screen and (max-width: 600px)
+        height: 100px
+        top: calc(100% - 169px)
+      @media only screen and (max-height: 600px)
+        height: 100px
+        top: calc(100% - 169px)
 
     .right
       float: right
