@@ -1,24 +1,32 @@
 <template>
   <div class="playBar">
+    <div class="player" v-bind:class="{ small: !showVideo, hidden: !url}">
+      <video ref="videoPlayer" controls></video>
+    </div>
     <div class="bar">
       <div class="progressbar" v-bind:style="{ width: progress * 100 + '%' }"></div>
       <span class="title">{{ playing.title }}</span>
       <div class="right">
-        <span v-on:click="showVideo = !showVideo" class="toggle-button"><FontAwesomeIcon
+        <span v-on:click="stopPlaying" v-if="url" class="toggle-button"><FontAwesomeIcon
+          :icon="iconStop"/></span>
+        <span v-on:click="playPause" class="toggle-button" v-if="url"><FontAwesomeIcon
+          :icon="paused? iconPlay : iconPause"/></span>
+        <span v-on:click="showVideo = !showVideo" class="toggle-button" v-if="url"><FontAwesomeIcon
           :icon="showVideo? iconDown : iconUp"/></span>
       </div>
-    </div>
-
-    <div class="player" v-bind:class="{ hidden: !showVideo }">
-      <video ref="videoPlayer" controls></video>
     </div>
   </div>
 </template>
 
 <script>
   import FontAwesomeIcon from '@fortawesome/vue-fontawesome'
+
   import faDown from '@fortawesome/fontawesome-free-solid/faAngleDown'
   import faUp from '@fortawesome/fontawesome-free-solid/faAngleUp'
+  import faStop from '@fortawesome/fontawesome-free-solid/faStop'
+  import faPlay from '@fortawesome/fontawesome-free-solid/faPlay'
+  import faPause from '@fortawesome/fontawesome-free-solid/faPause'
+
   import { mapState } from 'vuex'
 
   export default {
@@ -32,11 +40,9 @@
         url: '',
         showVideo: false,
         firstSinceNewsource: false,
-        shouldAutoPlay: false
+        shouldAutoPlay: false,
+        paused: true
       }
-    },
-    mounted () {
-
     },
     computed: {
       player () {
@@ -48,10 +54,33 @@
       iconDown () {
         return faDown
       },
+      iconStop () {
+        return faStop
+      },
+      iconPlay () {
+        return faPlay
+      },
+      iconPause () {
+        return faPause
+      },
       ...mapState(['playing'])
     },
-    created () {
+    methods: {
+      stopPlaying: function () {
+        this.player.src = ''
+        this.url = ''
+        this.$store.dispatch('clearPlaying')
+        this.paused = true
+      },
+      playPause: function () {
+        if (this.player.paused) {
+          this.paused = false
+          return this.player.play()
+        }
 
+        this.paused = true
+        this.player.pause()
+      }
     },
     watch: {
       playing: function (newState, oldState) {
@@ -74,11 +103,13 @@
 
           if (!tracking[0]) {
             this.player.play()
+            this.pause = false
             return
           }
   
           this.player.currentTime = tracking[0].time
           this.player.play()
+          this.paused = false
         })
 
         this.player.addEventListener('timeupdate', () => {
@@ -142,7 +173,7 @@
 
       transition: top 0.2s, height 0.2s, width 0.2s
 
-    .hidden
+    .small
       height: 200px
       width: auto
       top: calc(100% - 269px)
@@ -157,6 +188,9 @@
       @media only screen and (max-height: 600px)
         height: 100px
         top: calc(100% - 169px)
+
+    .hidden
+      top: 100%
 
     .right
       float: right

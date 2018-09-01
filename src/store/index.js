@@ -75,6 +75,9 @@ export default new Vuex.Store({
     updateHost: function (state, host) {
       state.commit('updateHost', host)
     },
+    clearPlaying: function (state) {
+      state.commit('setPlaying', {})
+    },
     playEpisode: function (state, episode) {
       state.commit('setPlaying', {
         title: episode.episodeName,
