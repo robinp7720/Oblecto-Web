@@ -7,13 +7,14 @@
       <button @click="index('movies')">Re-index movies</button>
       <hr>
       <button>Full cleanup</button>
-      <button>Clean up files database</button>
-      <button>Cleanup episodes without linked files</button>
-      <button>Cleanup movies without linked files</button>
+      <button @click="clean('files')">Clean up files database</button>
+      <button @click="clean('episodes')">Cleanup episodes without linked files</button>
+      <button @click="clean('movies')">Cleanup movies without linked files</button>
+      <button @click="clean('tvshows')">Remove TV Shows without episodes</button>
       <hr>
       <button>Download new artwork</button>
       <button @click="DownloadTVShowArt">Download artwork for TV Shows and Episodes</button>
-      <button>Download artwork for Movies</button>
+      <button @click="DownloadMovieArt">Download artwork for Movies</button>
       </div>
 
     </tab>
@@ -48,6 +49,15 @@
           group: 'system',
           title: 'Library update requested successfully',
           text: 'A library index update has been started',
+          type: 'warning'
+        })
+      },
+      async clean (type) {
+        await this.axios.get('/settings/maintenance/clean/' + type)
+        this.$notify({
+          group: 'system',
+          title: 'Library cleansing requested successfully',
+          text: 'A library cleansing has been started',
           type: 'warning'
         })
       }
