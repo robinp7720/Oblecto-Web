@@ -5,7 +5,7 @@
            v-bind:style="{ backgroundImage: 'url(' + host + '/episode/' + episodeId + '/banner)' }">
         <a class="play" v-on:click="playEpisode"><i class="fa fa-play" aria-hidden="true"></i></a>
         <div :title="title" class="title" v-if="inside">{{ title }}</div>
-        <div class="progress" v-bind:style="{ width: watchProgress * 100 + '%' }"></div>
+        <div class="progress" v-bind:style="{ width: progress * 100 + '%' }"></div>
       </div>
       <div :title="title" class="title" v-if="!inside">{{ title }}</div>
       <div class="subtitle" v-if="subtitle && !inside">{{ subtitle }}</div>
@@ -18,6 +18,21 @@
 
   export default {
     name: 'episode',
+    data () {
+      return {
+        'progress': 0
+      }
+    },
+    created () {
+      this.progress = this.watchProgress
+    },
+    sockets: {
+      'client-episode-progress': function (message) {
+        if (message.episodeId === this.episodeId) {
+          this.progress = message.progress
+        }
+      }
+    },
     props: {
       'title': String,
       'episodeId': {
