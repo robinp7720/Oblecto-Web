@@ -27,7 +27,7 @@
     ]),
     methods: {
       openModal: function (event) {
-        this.$modal.show('modifyShow', {show: this.show})
+        this.$modal.show('actionShow', {show: this.show})
       },
       viewEpisodes: function (event) {
         this.$router.push({name: 'SeriesView', params: {seriesId: this.showId}})

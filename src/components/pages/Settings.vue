@@ -22,7 +22,9 @@
 
     </tab>
     <tab name="Users">
-
+      <div class="container">
+        <UserManager></UserManager>
+      </div>
     </tab>
     <tab name="APIs">
 
@@ -31,14 +33,29 @@
 </template>
 
 <script>
+  import UserManager from '@/components/settings/UserManager'
+
   export default {
     name: 'Settings',
+    components: {
+      UserManager: UserManager
+    },
     methods: {
       async DownloadTVShowArt () {
         await this.axios.get('/settings/maintenance/tvshows/download/art')
         this.$notify({
           group: 'system',
           title: 'A TV Show artwork update has been requested',
+          text: 'Missing artwork will be downloaded',
+          type: 'warning'
+        })
+      },
+
+      async DownloadMovieArt () {
+        await this.axios.get('/settings/maintenance/movies/download/art')
+        this.$notify({
+          group: 'system',
+          title: 'A movie artwork update has been requested',
           text: 'Missing artwork will be downloaded',
           type: 'warning'
         })

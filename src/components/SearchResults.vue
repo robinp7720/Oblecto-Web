@@ -1,11 +1,11 @@
 <template>
   <div class="results">
     <transition-group name="list">
-    <ShowList v-for="(show, index) in shows"
-              v-bind:key="index"
-              v-bind:title="index"
-              v-bind:shows="show"
-    ></ShowList>
+      <ShowList v-for="(show, index) in shows"
+                v-bind:key="index"
+                v-bind:title="index"
+                v-bind:shows="show"
+      ></ShowList>
     </transition-group>
   </div>
 </template>
@@ -20,8 +20,7 @@
     computed: mapState([
       'shows'
     ]),
-    methods: {
-    }
+    methods: {}
   }
 </script>
 
@@ -31,7 +30,9 @@
     transition: all 0.5s;
     height: 288px;
   }
-  .list-enter, .list-leave-to /* .list-leave-active below version 2.1.8 */ {
+
+  .list-enter, .list-leave-to /* .list-leave-active below version 2.1.8 */
+  {
     opacity: 0;
     height: 0;
   }
