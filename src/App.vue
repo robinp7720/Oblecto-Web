@@ -1,5 +1,6 @@
 <template>
   <div id="app">
+    <showDialogModal/>
     <showModifyModal/>
     <notifications group="system" />
 
@@ -26,6 +27,7 @@
   import playBar from '@/components/playBar'
 
   // Modals
+  import showDialogModal from '@/components/modals/showDialog'
   import showModifyModal from '@/components/modals/showModify'
 
   export default {
@@ -33,6 +35,7 @@
     components: {
       WatchPanel: WatchPanel,
       'nav-bar': NavBar,
+      showDialogModal,
       showModifyModal,
       playBar
     },
@@ -70,11 +73,6 @@
     background: -webkit-linear-gradient(top, #696060 0%, #55535b 36%, #28343b 100%) /* Chrome10-25,Safari5.1-6 */
     background: linear-gradient(top, #696060 0%, #55535b 36%, #28343b 100%) /* W3C, IE10+, FF16+, Chrome26+, Opera12+, Safari7+ */
     filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#b5bdc8', endColorstr='#28343b',GradientType=0 ) /* IE6-9 */
-    background-position: top
-    background-attachment: fixed
-    background-repeat: round
-    -webkit-background-size: cover
-    background-size: cover
 
 
   @media screen and (max-height: 800px)
