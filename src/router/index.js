@@ -1,6 +1,8 @@
 import Vue from 'vue'
 import Router from 'vue-router'
 
+import Store from '../store/index'
+
 import TVShows from '@/components/pages/TVShows'
 import SeriesView from '@/components/pages/SeriesView'
 import Login from '@/components/pages/Login'
@@ -60,8 +62,9 @@ const router = new Router({
 })
 
 router.beforeEach((to, from, next) => {
+  console.log(Store.state)
   if (to.matched.some(record => record.meta.requiresAuth)) {
-    axios.get(require('../config.json').server.host + '/auth/isAuthenticated')
+    axios.get(Store.state.host + '/auth/isAuthenticated')
       .then(response => {
         if (response.data[0] === false) {
           vueAuth.logout()
