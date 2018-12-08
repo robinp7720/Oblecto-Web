@@ -64,6 +64,9 @@ export default new Vuex.Store({
       dispatch('getEpisodes', {sort: 'firstAired', order: 'DESC'})
       dispatch('getEpisodes', {sort: 'createdAt', order: 'DESC'})
     },
+    logout: function (state) {
+      state.commit('saveWatching', [])
+    },
     updateWatching: function (state) {
       Vue.axios.get(`/watching`)
         .then(response => {
