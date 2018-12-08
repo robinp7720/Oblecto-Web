@@ -5,12 +5,17 @@
       <input type="text" id="username" v-model="credentials.username">
       <label for="password">Password</label>
       <input type="text" id="password" v-model="credentials.password">
+      <div class="bottom">
+        <span class="server-indicator">{{ host }} <a v-on:click="changeHost" class="nav-link">Change</a></span>
       <button type="submit" @click="submit">Login</button>
+      </div>
     </div>
   </div>
 </template>
 
 <script>
+  import { mapState } from 'vuex'
+
   export default {
     name: 'Login',
     data () {
@@ -21,7 +26,13 @@
         }
       }
     },
+    computed: mapState([
+      'host'
+    ]),
     methods: {
+      async changeHost () {
+        this.$store.dispatch('updateHost', prompt('New host?'))
+      },
       async submit () {
         let credentials = {
           username: this.credentials.username,
@@ -109,4 +120,10 @@
         border: none
         margin-top: 20px
         float: right
+
+  .server-indicator
+    float: left
+    padding: 10px  0
+    border: none
+    margin-top: 20px
 </style>
