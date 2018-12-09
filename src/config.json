@@ -1,5 +1,0 @@
-{
-  "server": {
-    "host": "http://prometheus:8080"
-  }
-}

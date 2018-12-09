@@ -17,7 +17,11 @@ Vue.use(Notifications)
 
 Vue.use(VueAxios, axios)
 
-store.dispatch('updateHost', require('./config').server.host)
+if (OBLECTO_HOST) {
+  store.dispatch('updateHost', OBLECTO_HOST)
+} else {
+  store.dispatch('updateHost', window.location.protocol + '//' + window.location.hostname + ':8080')
+}
 
 // Initiate Vue authenticate
 Vue.use(VueAuthenticate)
