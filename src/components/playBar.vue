@@ -157,9 +157,9 @@
 
       z-index: 1000
 
-      background: -moz-linear-gradient(top, lighten(#3c3737, 15) 0%, lighten(#3c3737, 12) 100%)
-      background: -webkit-linear-gradient(top, lighten(#3c3737, 15) 0%, lighten(#3c3737, 12) 100%)
-      background: linear-gradient(top, lighten(#3c3737, 15) 0%, lighten(#3c3737, 12) 100%)
+      background: -moz-linear-gradient(to bottom, lighten(#3c3737, 15) 0%, lighten(#3c3737, 12) 100%)
+      background: -webkit-linear-gradient(to bottom, lighten(#3c3737, 15) 0%, lighten(#3c3737, 12) 100%)
+      background: linear-gradient(to bottom, lighten(#3c3737, 15) 0%, lighten(#3c3737, 12) 100%)
       box-shadow: 0px 0px 5px 2px rgba(darken(darken(#696060,17) + #000000, 6), 0.75)
 
     .player
