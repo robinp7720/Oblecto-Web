@@ -20,7 +20,8 @@ module.exports = merge(baseWebpackConfig, {
   plugins: [
     new webpack.DefinePlugin({
       'process.env': config.dev.env,
-      'OBLECTO_HOST': JSON.stringify(false)
+      'OBLECTO_HOST': JSON.stringify(false),
+      'BASE_PATH': JSON.stringify('/')
     }),
     // https://github.com/glenjamin/webpack-hot-middleware#installation--usage
     new webpack.HotModuleReplacementPlugin(),

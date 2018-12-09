@@ -2,6 +2,7 @@
   <div id="app">
     <showDialogModal/>
     <showModifyModal/>
+    <user-add-modal/>
     <notifications group="system" />
 
     <nav-bar
@@ -49,11 +50,10 @@
 
 <style lang="sass">
   #app
-    background: #b5bdc8 /* Old browsers */
+    background: #696060 /* Old browsers */
     background: -moz-linear-gradient(top, #696060 0%, #55535b 36%, #28343b 100%) /* FF3.6-15 */
     background: -webkit-linear-gradient(top, #696060 0%, #55535b 36%, #28343b 100%) /* Chrome10-25,Safari5.1-6 */
     background: linear-gradient(top, #696060 0%, #55535b 36%, #28343b 100%) /* W3C, IE10+, FF16+, Chrome26+, Opera12+, Safari7+ */
-    filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#b5bdc8', endColorstr='#28343b',GradientType=0 ) /* IE6-9 */
     background-position: top
     background-attachment: fixed
     background-repeat: round
@@ -68,11 +68,10 @@
     color: #eee
 
   .v--modal
-    background: #b5bdc8 /* Old browsers */
+    background: #696060 /* Old browsers */
     background: -moz-linear-gradient(top, #696060 0%, #55535b 36%, #28343b 100%) /* FF3.6-15 */
     background: -webkit-linear-gradient(top, #696060 0%, #55535b 36%, #28343b 100%) /* Chrome10-25,Safari5.1-6 */
     background: linear-gradient(top, #696060 0%, #55535b 36%, #28343b 100%) /* W3C, IE10+, FF16+, Chrome26+, Opera12+, Safari7+ */
-    filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#b5bdc8', endColorstr='#28343b',GradientType=0 ) /* IE6-9 */
 
 
   @media screen and (max-height: 800px)

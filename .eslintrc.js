@@ -25,6 +25,7 @@ module.exports = {
     'no-debugger': process.env.NODE_ENV === 'production' ? 2 : 0
   },
   "globals": {
-    "OBLECTO_HOST": false
+    "OBLECTO_HOST": false,
+    'BASE_PATH': false
   }
 }
