@@ -7,6 +7,7 @@
       <div class="progressbar" v-bind:style="{ width: progress * 100 + '%' }"></div>
       <span class="title">{{ playing.title }}</span>
       <div class="right">
+        <span v-on:click="playNext" v-if="progress > 0.9">Next Episode</span>
         <span v-on:click="stopPlaying" v-if="url" class="toggle-button"><FontAwesomeIcon
           :icon="iconStop"/></span>
         <span v-on:click="playPause" class="toggle-button" v-if="url"><FontAwesomeIcon
@@ -41,7 +42,8 @@
         showVideo: false,
         firstSinceNewsource: false,
         shouldAutoPlay: false,
-        paused: true
+        paused: true,
+        nextepisode: false
       }
     },
     computed: {
@@ -80,10 +82,13 @@
 
         this.paused = true
         this.player.pause()
+      },
+      playNext: function () {
+        this.$store.dispatch('playEpisode', this.nextepisode)
       }
     },
     watch: {
-      playing: function (newState, oldState) {
+      playing: async function (newState, oldState) {
         this.showVideo = true
         this.firstSinceNewsource = true
 
@@ -134,6 +139,8 @@
               break
           }
         })
+
+        this.nextepisode = (await this.axios.get(`/episode/${this.playing.entity.id}/next`)).data
       }
     }
   }
@@ -141,6 +148,10 @@
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style lang="sass">
+
+  video
+    width: 100%
+    height: 100%
 
   .playBar
     height: 100%
@@ -182,6 +193,10 @@
       overflow: hidden
       -webkit-box-shadow: 0px 0px 5px 0px rgba(0, 0, 0, 0.75)
       box-shadow: 0px 0px 5px 0px rgba(0, 0, 0, 0.75)
+
+      video
+        width: auto
+
       @media only screen and (max-width: 600px)
         height: 100px
         top: calc(100% - 169px)
@@ -197,10 +212,6 @@
 
     .toggle-button
       cursor: pointer
-
-  video
-    width: 100%
-    height: 100%
 
   .progressbar
     height: 5px
