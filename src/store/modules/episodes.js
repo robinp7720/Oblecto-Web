@@ -19,7 +19,6 @@ const actions = {
 
 const mutations = {
   [types.RECEIVE_EPISODES] (state, {episodes, sort}) {
-    console.log(episodes, sort)
     state[sort] = episodes
   }
 }

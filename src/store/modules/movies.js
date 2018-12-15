@@ -19,7 +19,6 @@ const actions = {
 
 const mutations = {
   [types.RECEIVE_MOVIES] (state, {movies, sort}) {
-    console.log(movies, sort)
     state[sort] = movies
   }
 }
