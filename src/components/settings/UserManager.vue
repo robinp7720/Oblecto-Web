@@ -18,7 +18,7 @@
       ></user-entry>
       </tbody>
     </table>
-  <a href="" class="button">Add users</a>
+  <a class="button" v-on:click="userAdd">Add user</a>
   </div>
 </template>
 
@@ -35,6 +35,11 @@
     },
     async created () {
       this.users = (await this.axios.get(`/users`)).data
+    },
+    methods: {
+      async userAdd () {
+        this.$modal.show('userAdd')
+      }
     }
   }
 </script>
@@ -56,5 +61,16 @@
       border: 0
 
       outline: 0
+
+  .button
+    background-color: rgba(0,0,0,0.5)
+    border: rgba(0,0,0,0.8) 1px solid
+    color: rgba(255,255,255,0.5)
+
+    padding: 10px
+    -webkit-border-radius: 3px
+    -moz-border-radius: 3px
+    border-radius: 3px
+    cursor: pointer
 
 </style>

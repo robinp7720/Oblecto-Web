@@ -1,14 +1,21 @@
 <template>
-  <modal name="modifyShow" @before-open="beforeOpen">
+  <modal name="userAdd" @before-open="beforeOpen" height="auto">
     <div class="container">
       <div class="heading">
       <h3>Add user</h3>
       </div>
       <div class="body">
-
+        <label for="name">Name:</label>
+        <input type="text" id="name" v-model="name">
+        <label for="username">Username:</label>
+        <input type="text" id="username" v-model="username">
+        <label for="email">Email:</label>
+          <input type="text" id="email" v-model="email">
+        <label for="password">Password:</label>
+          <input type="text" id="password" v-model="password">
       </div>
       <div class="footer">
-        <button class="success">Add user</button>
+        <button class="success" v-on:click="addUser">Add user</button>
       </div>
     </div>
   </modal>
@@ -16,33 +23,34 @@
 
 <script>
   export default {
-    name: 'show-modify',
+    name: 'userAdd',
     data () {
       return {
-        show: {}
+        name: '',
+        username: '',
+        email: '',
+        password: ''
       }
     },
     methods: {
       beforeOpen (event) {
-        this.show = event.params.show
       },
-      indexShow: function () {
-        this.axios.get('/series/' + this.show.id + '/index')
-          .then(response => {
-            this.$notify({
-              group: 'system',
-              title: 'Library update requested successfully for ' + this.show.seriesName,
-              text: 'A library index update has been started',
-              type: 'warning'
-            })
-          })
-          .catch(e => {})
+      async addUser () {
+        await this.axios.post('/user', {
+          name: this.name,
+          username: this.username,
+          email: this.email,
+          password: this.password
+        })
       }
     }
   }
 </script>
 
 <style scoped lang="sass">
+
+  .body
+    padding: 10px
 
   h3
     width: 100%
@@ -55,25 +63,32 @@
 
     box-shadow: 0px 0px 5px 2px rgba(darken(darken(#696060,17) + #000000,6), 0.75)
 
-  ul
-    list-style: none
-    padding: 0
-    margin: 0
-    li
-      a
-        display: inline-block
-        width: 100%
-        padding: 10px 20px
-        color: white
-        text-decoration: none
+  label
+    display: block
 
-        -webkit-transition: background-color 0.1s
-        -moz-transition: background-color 0.1s
-        -ms-transition: background-color 0.1s
-        -o-transition: background-color 0.1s
-        transition: background-color 0.1s
-      a:hover
-        background-color: rgba(0,0,0,0.1)
-        box-shadow: 0px 0px 2px 2px rgba(darken(darken(#696060,17) + #000000,6), 0.2)
+  input
+    margin-bottom: 10px
+
+  .footer
+    background-color: rgba(0,0,0,0.3)
+
+    box-shadow: 0px 0px 5px 2px rgba(darken(darken(#696060,17) + #000000,6), 0.75)
+    padding: 10px
+
+    overflow: hidden
+
+    button
+      float: right
+
+      background-color: rgba(0,0,0,0.5)
+      border: rgba(0,0,0,0.8) 1px solid
+      color: rgba(255,255,255,0.5)
+
+      padding: 10px
+      -webkit-border-radius: 3px
+      -moz-border-radius: 3px
+      border-radius: 3px
+      cursor: pointer
+
 
 </style>

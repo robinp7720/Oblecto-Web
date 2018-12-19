@@ -30,6 +30,7 @@
   // Modals
   import showDialogModal from '@/components/modals/showDialog'
   import showModifyModal from '@/components/modals/showModify'
+  import userAddModal from '@/components/modals/userAdd'
 
   export default {
     name: 'app',
@@ -38,6 +39,7 @@
       'nav-bar': NavBar,
       showDialogModal,
       showModifyModal,
+      userAddModal,
       playBar
     },
     created () {
