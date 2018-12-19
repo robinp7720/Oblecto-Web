@@ -16,8 +16,11 @@
           <a class="action-item"v-on:click="openModal" title="Options">
             <i class="fa fa-info" aria-hidden="true"></i>
           </a>
+          <a class="action-item"v-on:click="viewMovieInfo" title="Info">
+            <i class="fa fa-eye" aria-hidden="true"></i>
+          </a>
         </div>
-      </div>
+        </div>
       <div :title="title" class="title">{{ title }}</div>
       <div class="subtitle" v-if="subtitle">{{ subtitle }}</div>
     </li>
@@ -40,6 +43,9 @@
       },
       openModal: function (event) {
 
+      },
+      viewMovieInfo: function (event) {
+        this.$router.push({name: 'MovieInfo', params: {movieId: this.movieId}})
       }
     }
   }

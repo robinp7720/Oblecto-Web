@@ -5,6 +5,7 @@ import Store from '../store/index'
 
 import TVShows from '@/components/pages/TVShows'
 import SeriesView from '@/components/pages/SeriesView'
+import MovieInfo from '@/components/pages/MovieInfo'
 import Login from '@/components/pages/Login'
 import Movies from '@/components/pages/Movies'
 import Main from '@/components/pages/Main'
@@ -46,6 +47,12 @@ const router = new Router({
       path: '/series/:seriesId',
       name: 'SeriesView',
       component: SeriesView,
+      meta: { requiresAuth: true }
+    },
+    {
+      path: '/movie/:movieId',
+      name: 'MovieInfo',
+      component: MovieInfo,
       meta: { requiresAuth: true }
     },
     {
