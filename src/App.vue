@@ -4,6 +4,7 @@
     <ShowModifyModal/>
     <UserAddModal/>
     <MovieDialogModal/>
+    <EpisodeDialogModal/>
 
     <notifications group="system" />
 
@@ -34,6 +35,7 @@
   import ShowModifyModal from '@/components/modals/ShowModify'
   import UserAddModal from '@/components/modals/UserAdd'
   import MovieDialogModal from '@/components/modals/MovieDialog'
+  import EpisodeDialogModal from '@/components/modals/EpisodeDialog'
 
   export default {
     name: 'app',
@@ -44,6 +46,7 @@
       ShowModifyModal,
       UserAddModal,
       MovieDialogModal,
+      EpisodeDialogModal,
       playBar
     },
     created () {

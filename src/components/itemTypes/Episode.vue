@@ -6,6 +6,14 @@
         <a class="play" v-on:click="playEpisode"><i class="fa fa-play" aria-hidden="true"></i></a>
         <div :title="title" class="title" v-if="inside">{{ title }}</div>
         <div v-if="episode.trackEpisodes[0]" class="progress" v-bind:style="{ width: episode.trackEpisodes[0].progress * 100 + '%' }"></div>
+        <div class="actions">
+          <a class="action-item" v-on:click="openEpisodeDialog" title="Options">
+            <i class="fa fa-info" aria-hidden="true"></i>
+          </a>
+          <a class="action-item" v-on:click="viewEpisodeInfo" title="Info">
+            <i class="fa fa-eye" aria-hidden="true"></i>
+          </a>
+        </div>
       </div>
       <div :title="title" class="title" v-if="!inside">{{ title }}</div>
       <div class="subtitle" v-if="subtitle && !inside">{{ subtitle }}</div>
@@ -66,6 +74,12 @@
         event.preventDefault()
         // this.$router.push({name: 'PlayEpisode', params: {episodeId: this.episodeId}})
         this.$store.dispatch('playEpisode', this.episode)
+      },
+      openEpisodeDialog: function (event) {
+        this.$modal.show('EpisodeDialog', { episode: this.episode })
+      },
+      viewEpisodeInfo: function (event) {
+        this.$router.push({ name: 'EpisodeInfo', params: { episode: this.episodeId } })
       }
     }
   }
