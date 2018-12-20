@@ -12,15 +12,15 @@ const getters = {
 }
 
 const actions = {
-  async getTVShows ({commit, state}, {sort, order}) {
+  async getTVShows ({ commit, state }, { sort, order }) {
     let { data: shows } = await Vue.axios.get(`/shows/list/${sort}/${order}`)
 
-    commit(types.RECEIVE_SHOWS, {shows, sort})
+    commit(types.RECEIVE_SHOWS, { shows, sort })
   }
 }
 
 const mutations = {
-  [types.RECEIVE_SHOWS] (state, {shows, sort}) {
+  [types.RECEIVE_SHOWS] (state, { shows, sort }) {
     state[sort] = shows
   }
 }

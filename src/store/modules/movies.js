@@ -10,15 +10,15 @@ const getters = {
 }
 
 const actions = {
-  async getMovies ({commit, state}, {sort, order}) {
+  async getMovies ({ commit, state }, { sort, order }) {
     let { data: movies } = await Vue.axios.get(`/movies/list/${sort}/${order}`)
 
-    commit(types.RECEIVE_MOVIES, {movies, sort})
+    commit(types.RECEIVE_MOVIES, { movies, sort })
   }
 }
 
 const mutations = {
-  [types.RECEIVE_MOVIES] (state, {movies, sort}) {
+  [types.RECEIVE_MOVIES] (state, { movies, sort }) {
     state[sort] = movies
   }
 }
