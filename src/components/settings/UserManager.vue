@@ -26,7 +26,7 @@
   import userEntry from '@/components/settings/UserManagement/userEntry'
 
   export default {
-    name: 'user-manager',
+    name: 'UserManager',
     components: {userEntry},
     data () {
       return {
