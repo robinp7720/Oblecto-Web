@@ -120,7 +120,6 @@
         axios.get('/series/' + this.$route.params.seriesId + `/info`)
           .then(response => {
             this.showData = response.data
-            console.log(response)
           })
           .catch(e => {
             console.log(e)
@@ -134,7 +133,6 @@
               temp['Season ' + v.airedSeason].push(v)
             })
             this.series = temp
-            console.log(this.series)
           })
           .catch(e => {
             console.log(e)
