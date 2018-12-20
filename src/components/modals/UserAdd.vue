@@ -1,5 +1,5 @@
 <template>
-  <modal name="userAdd" @before-open="beforeOpen" height="auto">
+  <modal name="UserAdd" @before-open="beforeOpen" height="auto">
     <div class="container">
       <div class="heading">
       <h3>Add user</h3>
@@ -23,7 +23,7 @@
 
 <script>
   export default {
-    name: 'userAdd',
+    name: 'UserAdd',
     data () {
       return {
         name: '',

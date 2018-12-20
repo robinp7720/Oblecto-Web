@@ -2,7 +2,7 @@
   <div id="app">
     <ShowDialogModal/>
     <ShowModifyModal/>
-    <user-add-modal/>
+    <UserAddModal/>
     <MovieDialogModal/>
 
     <notifications group="system" />
@@ -32,7 +32,7 @@
   // Modals
   import ShowDialogModal from '@/components/modals/ShowDialog'
   import ShowModifyModal from '@/components/modals/ShowModify'
-  import userAddModal from '@/components/modals/userAdd'
+  import UserAddModal from '@/components/modals/UserAdd'
   import MovieDialogModal from '@/components/modals/MovieDialog'
 
   export default {
@@ -42,7 +42,7 @@
       'nav-bar': NavBar,
       ShowDialogModal,
       ShowModifyModal,
-      userAddModal,
+      UserAddModal,
       MovieDialogModal,
       playBar
     },

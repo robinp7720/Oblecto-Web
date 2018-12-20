@@ -38,7 +38,7 @@
     },
     methods: {
       async userAdd () {
-        this.$modal.show('userAdd')
+        this.$modal.show('UserAdd')
       }
     }
   }
