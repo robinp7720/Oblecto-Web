@@ -1,6 +1,6 @@
 <template>
   <div id="app">
-    <showDialogModal/>
+    <ShowDialogModal/>
     <showModifyModal/>
     <user-add-modal/>
     <movie-dialog-modal/>
@@ -30,7 +30,7 @@
   import playBar from '@/components/playBar'
 
   // Modals
-  import showDialogModal from '@/components/modals/showDialog'
+  import ShowDialogModal from '@/components/modals/ShowDialog'
   import showModifyModal from '@/components/modals/showModify'
   import userAddModal from '@/components/modals/userAdd'
   import movieDialogModal from '@/components/modals/movieDialog'
@@ -40,7 +40,7 @@
     components: {
       WatchPanel: WatchPanel,
       'nav-bar': NavBar,
-      showDialogModal,
+      ShowDialogModal,
       showModifyModal,
       userAddModal,
       movieDialogModal,

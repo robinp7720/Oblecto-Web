@@ -1,5 +1,5 @@
 <template>
-  <modal name="actionShow" @before-open="beforeOpen">
+  <modal name="ShowDialog" @before-open="beforeOpen">
     <div class="container">
       <h3>{{ show.seriesName }}</h3>
       <ul>
@@ -16,7 +16,7 @@
 
 <script>
   export default {
-    name: 'show-dialog',
+    name: 'ShowDialog',
     data () {
       return {
         show: {}
