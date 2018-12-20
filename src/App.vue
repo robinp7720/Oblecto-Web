@@ -3,7 +3,7 @@
     <ShowDialogModal/>
     <ShowModifyModal/>
     <user-add-modal/>
-    <movie-dialog-modal/>
+    <MovieDialogModal/>
 
     <notifications group="system" />
 
@@ -33,7 +33,7 @@
   import ShowDialogModal from '@/components/modals/ShowDialog'
   import ShowModifyModal from '@/components/modals/ShowModify'
   import userAddModal from '@/components/modals/userAdd'
-  import movieDialogModal from '@/components/modals/movieDialog'
+  import MovieDialogModal from '@/components/modals/MovieDialog'
 
   export default {
     name: 'app',
@@ -43,7 +43,7 @@
       ShowDialogModal,
       ShowModifyModal,
       userAddModal,
-      movieDialogModal,
+      MovieDialogModal,
       playBar
     },
     created () {

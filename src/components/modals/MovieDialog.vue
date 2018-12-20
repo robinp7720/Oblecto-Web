@@ -1,5 +1,5 @@
 <template>
-  <modal name="movieDialog" @before-open="beforeOpen">
+  <modal name="MovieDialog" @before-open="beforeOpen">
       <h3>{{ movie.movieName }}</h3>
       <tabs :options="{ useUrlFragment: false }">
         <tab name="Data">
@@ -19,7 +19,7 @@
 
 <script>
   export default {
-    name: 'movieDialog',
+    name: 'MovieDialog',
     data () {
       return {
         movie: {}

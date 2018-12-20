@@ -42,7 +42,7 @@
         this.$store.dispatch('playMovie', this.movie)
       },
       openModal: function (event) {
-        this.$modal.show('movieDialog', {movie: this.movie})
+        this.$modal.show('MovieDialog', {movie: this.movie})
       },
       viewMovieInfo: function (event) {
         this.$router.push({name: 'MovieInfo', params: {movieId: this.movieId}})
