@@ -3,6 +3,8 @@
     <showDialogModal/>
     <showModifyModal/>
     <user-add-modal/>
+    <movie-dialog-modal/>
+
     <notifications group="system" />
 
     <nav-bar
@@ -31,6 +33,7 @@
   import showDialogModal from '@/components/modals/showDialog'
   import showModifyModal from '@/components/modals/showModify'
   import userAddModal from '@/components/modals/userAdd'
+  import movieDialogModal from '@/components/modals/movieDialog'
 
   export default {
     name: 'app',
@@ -40,6 +43,7 @@
       showDialogModal,
       showModifyModal,
       userAddModal,
+      movieDialogModal,
       playBar
     },
     created () {
