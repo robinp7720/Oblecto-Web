@@ -3,7 +3,7 @@
     <div class="show-poster" v-bind:style="{ backgroundImage: 'url(' + host + '/series/' + showId + '/poster)' }">
       <a class="play" v-on:click="viewEpisodes"><i class="fa fa-eye" aria-hidden="true"></i></a>
       <div class="actions">
-        <a class="action-item"v-on:click="openModal" title="Options">
+        <a class="action-item" v-on:click="openModal" title="Options">
           <i class="fa fa-info" aria-hidden="true"></i>
         </a>
       </div>

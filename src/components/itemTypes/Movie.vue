@@ -13,10 +13,10 @@
       <div class="movie-poster" v-bind:style="{ backgroundImage: 'url(' + host + '/movie/' + movieId + '/poster)' }">
         <a class="play" v-on:click="playMovie"><i class="fa fa-play" aria-hidden="true"></i></a>
         <div class="actions">
-          <a class="action-item"v-on:click="openModal" title="Options">
+          <a class="action-item" v-on:click="openModal" title="Options">
             <i class="fa fa-info" aria-hidden="true"></i>
           </a>
-          <a class="action-item"v-on:click="viewMovieInfo" title="Info">
+          <a class="action-item" v-on:click="viewMovieInfo" title="Info">
             <i class="fa fa-eye" aria-hidden="true"></i>
           </a>
         </div>
