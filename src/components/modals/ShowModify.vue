@@ -1,5 +1,5 @@
 <template>
-  <modal name="modifyShow" @before-open="beforeOpen" height="auto">
+  <modal name="ShowModify" @before-open="beforeOpen" height="auto">
     <div class="container">
       <h3>{{ show.seriesName }}</h3>
       <div class="wrapper">
@@ -17,7 +17,7 @@
   import { mapState } from 'vuex'
 
   export default {
-    name: 'show-modify',
+    name: 'ShowModify',
     data () {
       return {
         show: {}

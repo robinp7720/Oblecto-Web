@@ -27,8 +27,8 @@
         this.show = event.params.show
       },
       modifyShow: function () {
-        this.$modal.show('modifyShow', {show: this.show})
-        this.$modal.hide('actionShow')
+        this.$modal.show('ShowModify', {show: this.show})
+        this.$modal.hide('ShowDialog')
       },
       indexShow: function () {
         this.axios.get('/series/' + this.show.id + '/index')
