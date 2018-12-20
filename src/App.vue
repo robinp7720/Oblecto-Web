@@ -7,7 +7,7 @@
 
     <notifications group="system" />
 
-    <nav-bar
+    <NavBar
       v-if="$router.history.current.name !== 'PlayEpisode' &&
       $router.history.current.name !== 'login' &&
       $router.history.current.name !== 'PlayMovie'"/>
@@ -39,7 +39,7 @@
     name: 'app',
     components: {
       WatchPanel: WatchPanel,
-      'nav-bar': NavBar,
+      NavBar,
       ShowDialogModal,
       ShowModifyModal,
       UserAddModal,
