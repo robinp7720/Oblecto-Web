@@ -17,7 +17,7 @@
   import { mapState } from 'vuex'
 
   export default {
-    name: 'show',
+    name: 'Show',
     props: ['title', 'subtitle', 'showId', 'show'],
     data () {
       return {}

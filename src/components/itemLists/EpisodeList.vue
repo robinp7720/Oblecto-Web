@@ -30,7 +30,7 @@
   import Velocity from 'velocity-animate'
 
   export default {
-    name: 'episodes-list',
+    name: 'EpisodeList',
     components: {Episode: Episode},
     props: {'episodes': Array, 'title': String},
     methods: {

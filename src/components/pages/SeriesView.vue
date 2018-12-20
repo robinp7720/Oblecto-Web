@@ -53,7 +53,7 @@
   import Velocity from 'velocity-animate'
 
   export default {
-    name: 'seriesView',
+    name: 'SeriesView',
     components: {
       Show: Show,
       WatchPanel: WatchPanel,

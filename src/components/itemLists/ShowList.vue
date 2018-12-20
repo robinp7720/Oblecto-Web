@@ -28,7 +28,7 @@
   import Velocity from 'velocity-animate'
 
   export default {
-    name: 'show-list',
+    name: 'ShowList',
     components: {Show: Show},
     props: {
       'shows': {

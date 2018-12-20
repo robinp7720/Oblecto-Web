@@ -17,7 +17,7 @@
   import { mapState } from 'vuex'
 
   export default {
-    name: 'episode',
+    name: 'Episode',
     created () {
       this.progress = this.watchProgress
     },

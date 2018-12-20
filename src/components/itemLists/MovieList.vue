@@ -28,7 +28,7 @@
   import Velocity from 'velocity-animate'
 
   export default {
-    name: 'movie-list',
+    name: 'MovieList',
     components: {Movie: Movie},
     props: {'movies': Array, 'title': String},
     methods: {
