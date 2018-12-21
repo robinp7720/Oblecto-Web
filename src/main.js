@@ -20,7 +20,8 @@ Vue.use(VueAxios, axios)
 if (OBLECTO_HOST) {
   store.dispatch('updateHost', OBLECTO_HOST)
 } else {
-  store.dispatch('updateHost', window.location.protocol + '//' + window.location.hostname + ':8080')
+  let port = window.location.port || '80'
+  store.dispatch('updateHost', window.location.protocol + '//' + window.location.hostname + ':' + port)
 }
 
 // Initiate Vue authenticate
