@@ -52,6 +52,9 @@
     created () {
 
     },
+    beforeCreate () {
+      this.$store.dispatch('updateAll')
+    },
     methods: {
     }
   }
