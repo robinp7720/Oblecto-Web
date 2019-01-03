@@ -5,8 +5,10 @@
       <router-link :to="{ name: 'TVShows'}" class="nav-link">TV Shows</router-link>
       <router-link :to="{ name: 'Movies'}" class="nav-link">Movies</router-link>
       <div class="nav-right">
-        <a v-on:click="logout" class="nav-link">Logout</a>
-        <router-link :to="{ name: 'Settings'}" class="nav-link">Settings</router-link>
+        <router-link :to="{ name: 'Settings'}" class="nav-link"><FontAwesomeIcon
+          :icon="iconSettings"/></router-link>
+        <a v-on:click="logout" class="nav-link"><FontAwesomeIcon
+          :icon="iconLogout"/></a>
         <div class="search">
           <form action="" class="search" id="search-form" v-on:submit.prevent="onSubmit">
             <input type="text" id="search-input" class="input-text" v-on:keyup.enter="search">
@@ -18,14 +20,30 @@
 </template>
 
 <script>
+  import FontAwesomeIcon from '@fortawesome/vue-fontawesome'
+
+  import faCog from '@fortawesome/fontawesome-free-solid/faCog'
+  import faLogout from '@fortawesome/fontawesome-free-solid/faSignOutAlt'
+
   export default {
     name: 'NavBar',
+    components: {
+      FontAwesomeIcon
+    },
+    computed: {
+      iconSettings () {
+        return faCog
+      },
+      iconLogout () {
+        return faLogout
+      }
+    },
     methods: {
       search: function (event) {
         event.preventDefault()
         console.log('Searching for ', event.target.value)
         this.$store.dispatch('search', event.target.value)
-        this.$router.push({name: 'Main'})
+        this.$router.push({ name: 'Main' })
         console.log(this.$router.history.current.name)
       },
       logout: function (event) {
@@ -34,7 +52,7 @@
 
         this.$store.dispatch('logout')
 
-        this.$router.push({name: 'login'})
+        this.$router.push({ name: 'login' })
       }
     }
   }
@@ -67,7 +85,8 @@
 
         border: none
         @media screen and (max-width: 800px)
-          width: 80px
+          display: none
+
 
     .brand
       font-weight: bold
