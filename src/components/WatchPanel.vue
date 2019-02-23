@@ -51,6 +51,10 @@
     box-shadow: 0px 0px 5px 2px rgba(darken(#55535b, 20), 0.75)
     z-index: 2
 
+    // The height of the panel if it is populated with shows.
+    // If the height isn't set the panel will collapse and the whole thing looks terrible
+    height: 356px
+
     @media screen and (max-height: 800px)
       position: static !important
       margin-top: 50px
