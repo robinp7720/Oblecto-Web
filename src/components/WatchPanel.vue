@@ -37,7 +37,9 @@
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style scoped lang="sass">
   .watching
-    position: fixed
+    margin-top: 50px
+    margin-bottom: 20px
+
     top: 50px
     width: 100%
     padding: 20px 0
@@ -55,10 +57,10 @@
     // If the height isn't set the panel will collapse and the whole thing looks terrible
     height: 356px
 
-    @media screen and (max-height: 800px)
-      position: static !important
-      margin-top: 50px
-      margin-bottom: 20px
+    @media screen and (min-height: 1200px)
+      position: fixed
+      margin: 0
+
 
 
 </style>

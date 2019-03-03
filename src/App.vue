@@ -86,7 +86,7 @@
     background: linear-gradient(to bottom, #696060 0%, #55535b 36%, #28343b 100%) /* W3C, IE10+, FF16+, Chrome26+, Opera12+, Safari7+ */
 
 
-  @media screen and (max-height: 800px)
+  @media screen and (max-height: 1200px)
     #app
       padding-top: 0
 
