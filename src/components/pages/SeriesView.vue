@@ -159,7 +159,7 @@
   border-radius: 3px
   margin: 0 10px
 
-  @media screen and (min-height: 800px)
+  @media screen and (min-width: 600px)
     margin: 0
     margin-right: 20px
 
@@ -175,7 +175,7 @@
   float: left
   overflow: hidden
   text-align: center
-  @media screen and (min-height: 800px)
+  @media screen and (min-width: 600px)
     width: 25%
     float: left
     overflow: hidden
@@ -191,7 +191,7 @@
   float: right
   padding-right: 0
   overflow: hidden
-  @media screen and (min-height: 800px)
+  @media screen and (min-width: 600px)
     width: 75%
     float: right
     padding: 0 20px
