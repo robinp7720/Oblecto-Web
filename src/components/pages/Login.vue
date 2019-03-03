@@ -31,7 +31,7 @@
     ]),
     methods: {
       async changeHost () {
-        this.$store.dispatch('updateHost', prompt('New host?'))
+        this.$store.dispatch('up dateHost', prompt('New host?'))
       },
       async submit () {
         let credentials = {
@@ -52,12 +52,12 @@
 
           // Authenticate the socket.io connection to the server
           // This allows the server to update the client in realtime
-          this.$socket.emit('authenticate', {token: response.data['access_token']})
+          this.$socket.emit('authenticate', { token: response.data['access_token'] })
 
           this.$store.dispatch('updateAll')
 
           // After the login proceduce is complete, send the user to the homepage
-          this.$router.push({name: 'Main'})
+          this.$router.push({ name: 'Main' })
         } catch (e) {
           // If an error has occurred during the login process, send an error message to the client
           this.$notify({

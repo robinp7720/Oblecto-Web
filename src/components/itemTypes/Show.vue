@@ -27,10 +27,10 @@
     ]),
     methods: {
       openModal: function (event) {
-        this.$modal.show('ShowDialog', {show: this.show})
+        this.$modal.show('ShowDialog', { show: this.show })
       },
       viewEpisodes: function (event) {
-        this.$router.push({name: 'SeriesView', params: {seriesId: this.showId}})
+        this.$router.push({ name: 'SeriesView', params: { seriesId: this.showId } })
       }
     }
   }

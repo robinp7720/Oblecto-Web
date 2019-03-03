@@ -29,7 +29,7 @@
 
   export default {
     name: 'ShowList',
-    components: {Show: Show},
+    components: { Show: Show },
     props: {
       'shows': {
         default: []

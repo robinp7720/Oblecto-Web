@@ -27,7 +27,7 @@
 
   export default {
     name: 'UserManager',
-    components: {userEntry},
+    components: { userEntry },
     data () {
       return {
         users: {}

@@ -16,7 +16,7 @@
 
   export default {
     name: 'search-results',
-    components: {ShowList: ShowList},
+    components: { ShowList: ShowList },
     computed: mapState([
       'shows'
     ]),

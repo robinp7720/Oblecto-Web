@@ -31,8 +31,8 @@
 
   export default {
     name: 'EpisodeList',
-    components: {Episode: Episode},
-    props: {'episodes': Array, 'title': String},
+    components: { Episode: Episode },
+    props: { 'episodes': Array, 'title': String },
     methods: {
       beforeEnter: function (el) {
         el.style.opacity = 0
@@ -43,8 +43,8 @@
         setTimeout(function () {
           Velocity(
             el,
-            {opacity: 1, width: '357px'},
-            {complete: done}
+            { opacity: 1, width: '357px' },
+            { complete: done }
           )
         }, delay)
       },
@@ -53,8 +53,8 @@
         setTimeout(function () {
           Velocity(
             el,
-            {opacity: 0, width: 0},
-            {complete: done}
+            { opacity: 0, width: 0 },
+            { complete: done }
           )
         }, delay)
       }

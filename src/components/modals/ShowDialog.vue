@@ -27,7 +27,7 @@
         this.show = event.params.show
       },
       modifyShow: function () {
-        this.$modal.show('ShowModify', {show: this.show})
+        this.$modal.show('ShowModify', { show: this.show })
         this.$modal.hide('ShowDialog')
       },
       indexShow: function () {
