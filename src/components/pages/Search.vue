@@ -1,11 +1,11 @@
 <template>
   <div class="container">
     <MovieList title="Movie Results"
-               v-bind:movies="searchResults.movies"/>
+               v-bind:movies="searchResults.movies" v-if="searchResults.movies.length > 0"/>
     <EpisodeList title="Episode Results"
-                 v-bind:episodes="searchResults.episodes"/>
+                 v-bind:episodes="searchResults.episodes" v-if="searchResults.episodes.length > 0"/>
     <ShowList title="TV Show Results"
-                 v-bind:shows="searchResults.shows"/>
+                 v-bind:shows="searchResults.shows" v-if="searchResults.shows.length > 0"/>
   </div>
 </template>
 
