@@ -14,6 +14,11 @@ export default new Vuex.Store({
     watching: [],
     playing: {
       title: ''
+    },
+    searchResults: {
+      episodes: [],
+      movies: [],
+      shows: []
     }
   },
   modules: {
@@ -22,8 +27,8 @@ export default new Vuex.Store({
     episodes
   },
   mutations: {
-    storeShows: function (state, search) {
-      Vue.set(state, 'shows', search)
+    search: function (state, results) {
+      Vue.set(state, 'searchResults', results)
     },
     saveWatching: function (state, watching) {
       Vue.set(state, 'watching', watching)
@@ -40,15 +45,6 @@ export default new Vuex.Store({
     }
   },
   actions: {
-    search: function (state, query) {
-      // Clear the list first
-      Vue.axios.get(`/search/` + query)
-        .then(response => {
-          // JSON responses are automatically parsed.
-          state.commit('storeShows', response.data)
-        })
-        .catch(e => {})
-    },
     updateAll: ({ dispatch }) => {
       // Update all movies in vuex storage
       dispatch('getMovies', { sort: 'createdAt', order: 'DESC' })
@@ -93,6 +89,18 @@ export default new Vuex.Store({
         title: movie.movieName,
         type: 'movie',
         entity: movie
+      })
+    },
+    search: async function (state, query) {
+      // Clear the list first
+      let { data: episodes } = await Vue.axios.get(`/episodes/search/` + query)
+      let { data: movies } = await Vue.axios.get(`/movies/search/` + query)
+      let { data: shows } = await Vue.axios.get(`/shows/search/` + query)
+
+      state.commit('search', {
+        movies,
+        episodes,
+        shows
       })
     }
   }

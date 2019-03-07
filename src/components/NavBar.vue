@@ -43,7 +43,7 @@
         event.preventDefault()
         console.log('Searching for ', event.target.value)
         this.$store.dispatch('search', event.target.value)
-        this.$router.push({ name: 'Main' })
+        this.$router.push({ name: 'Search' })
         console.log(this.$router.history.current.name)
       },
       logout: function (event) {

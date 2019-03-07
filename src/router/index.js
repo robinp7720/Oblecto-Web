@@ -8,6 +8,7 @@ import SeriesView from '@/components/pages/SeriesView'
 import MovieInfo from '@/components/pages/MovieInfo'
 import Login from '@/components/pages/Login'
 import Movies from '@/components/pages/Movies'
+import Search from '@/components/pages/Search'
 import Main from '@/components/pages/Main'
 import Settings from '@/components/pages/Settings'
 
@@ -53,6 +54,12 @@ const router = new Router({
       path: '/movie/:movieId',
       name: 'MovieInfo',
       component: MovieInfo,
+      meta: { requiresAuth: true }
+    },
+    {
+      path: '/search',
+      name: 'Search',
+      component: Search,
       meta: { requiresAuth: true }
     },
     {
