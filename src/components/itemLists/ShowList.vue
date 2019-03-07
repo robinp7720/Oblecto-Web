@@ -6,7 +6,7 @@
       <transition-group
         name="staggered-fade"
         tag="ul"
-        class="show-scroller"
+        class="scroller"
         v-bind:css="true"
         v-on:before-enter="beforeEnter"
         v-on:enter="enter"
@@ -75,9 +75,9 @@
 .shows
   overflow: visible
 
-.show-scroller
-  overflow-y: visible
-  overflow-x: scroll
+.scroller
+  overflow: hidden
+  overflow-x: visible
   white-space: nowrap
   padding: 0
   padding-top: 5px
