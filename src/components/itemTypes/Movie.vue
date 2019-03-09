@@ -38,6 +38,13 @@
     computed: mapState([
       'host'
     ]),
+    sockets: {
+      'client-movie-progress': function (message) {
+        if (message.movieId === this.movieId) {
+          this.movie.trackMovies[0] = message
+        }
+      }
+    },
     methods: {
       playMovie: function (event) {
         event.preventDefault()
