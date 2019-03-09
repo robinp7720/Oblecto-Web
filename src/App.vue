@@ -85,6 +85,8 @@
     background: -webkit-linear-gradient(to bottom, #696060 0%, #55535b 36%, #28343b 100%) /* Chrome10-25,Safari5.1-6 */
     background: linear-gradient(to bottom, #696060 0%, #55535b 36%, #28343b 100%) /* W3C, IE10+, FF16+, Chrome26+, Opera12+, Safari7+ */
 
+  .watching
+    overflow: hidden
 
   @media screen and (max-height: 1200px)
     #app
