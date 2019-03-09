@@ -5,7 +5,7 @@
            v-bind:style="{ backgroundImage: 'url(' + host + '/episode/' + episodeId + '/banner)' }">
         <a class="play" v-on:click="playEpisode"><i class="fa fa-play" aria-hidden="true"></i></a>
         <div :title="title" class="title" v-if="inside">{{ title }}</div>
-        <div v-if="episode.trackEpisodes[0]" class="progress" v-bind:style="{ width: episode.trackEpisodes[0].progress * 100 + '%' }"></div>
+        <div v-if="progress" class="progress" v-bind:style="{ width: progress * 100 + '%' }"></div>
         <div class="actions">
           <a class="action-item" v-on:click="openEpisodeDialog" title="Options">
             <i class="fa fa-info" aria-hidden="true"></i>
@@ -27,12 +27,20 @@
   export default {
     name: 'Episode',
     created () {
-      this.progress = this.watchProgress
+      if (this.episode.trackEpisodes[0]) {
+        this.progress = this.episode.trackEpisodes[0].progress
+      }
+    },
+    data () {
+      return {
+        progress: 0
+      }
     },
     sockets: {
       'client-episode-progress': function (message) {
         if (message.episodeId === this.episodeId) {
           this.episode.trackEpisodes[0] = message
+          this.progress = message.progress
         }
       }
     },
@@ -47,16 +55,6 @@
         required: false
       },
       'inside': {
-        type: Boolean,
-        required: false,
-        default: false
-      },
-      'watchProgress': {
-        type: Number,
-        required: false,
-        default: 0
-      },
-      'watched': {
         type: Boolean,
         required: false,
         default: false

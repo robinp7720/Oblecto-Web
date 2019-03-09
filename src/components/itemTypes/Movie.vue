@@ -4,7 +4,7 @@
       <div class="movie-poster" v-bind:style="{ backgroundImage: 'url(' + host + '/movie/' + movieId + '/banner)' }">
         <a class="play" v-on:click="playMovie"><i class="fa fa-play" aria-hidden="true"></i></a>
         <div :title="title" class="title" v-if="inside">{{ title }}</div>
-        <div v-if="movie.trackMovies[0]" class="progress" v-bind:style="{ width: movie.trackMovies[0].progress * 100 + '%' }"></div>
+        <div class="progress" v-bind:style="{ width: progress * 100 + '%' }"></div>
       </div>
       <div :title="title" class="title" v-if="!inside">{{ title }}</div>
       <div class="subtitle" v-if="subtitle && !inside">{{ subtitle }}</div>
@@ -21,7 +21,7 @@
             <i class="fa fa-eye" aria-hidden="true"></i>
           </a>
         </div>
-        <div v-if="movie.trackMovies[0]" class="progress" v-bind:style="{ width: movie.trackMovies[0].progress * 100 + '%' }"></div>
+        <div class="progress" v-bind:style="{ width: progress * 100 + '%' }"></div>
         </div>
       <div :title="title" class="title">{{ title }}</div>
       <div class="subtitle" v-if="subtitle">{{ subtitle }}</div>
@@ -38,10 +38,21 @@
     computed: mapState([
       'host'
     ]),
+    created () {
+      if (this.movie.trackMovies[0]) {
+        this.progress = this.movie.trackMovies[0].progress
+      }
+    },
+    data () {
+      return {
+        progress: 0
+      }
+    },
     sockets: {
       'client-movie-progress': function (message) {
         if (message.movieId === this.movieId) {
           this.movie.trackMovies[0] = message
+          this.progress = message.progress
         }
       }
     },
