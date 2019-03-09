@@ -78,6 +78,10 @@
     margin-bottom: 15px
     position: relative
 
+    overflow-x: auto
+
+    white-space: nowrap
+
     .tabs-component-tab
       display: inline-block
       a
