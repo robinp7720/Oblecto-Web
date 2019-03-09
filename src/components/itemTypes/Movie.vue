@@ -4,6 +4,7 @@
       <div class="movie-poster" v-bind:style="{ backgroundImage: 'url(' + host + '/movie/' + movieId + '/banner)' }">
         <a class="play" v-on:click="playMovie"><i class="fa fa-play" aria-hidden="true"></i></a>
         <div :title="title" class="title" v-if="inside">{{ title }}</div>
+        <div v-if="movie.trackMovies[0]" class="progress" v-bind:style="{ width: movie.trackMovies[0].progress * 100 + '%' }"></div>
       </div>
       <div :title="title" class="title" v-if="!inside">{{ title }}</div>
       <div class="subtitle" v-if="subtitle && !inside">{{ subtitle }}</div>
@@ -20,6 +21,7 @@
             <i class="fa fa-eye" aria-hidden="true"></i>
           </a>
         </div>
+        <div v-if="movie.trackMovies[0]" class="progress" v-bind:style="{ width: movie.trackMovies[0].progress * 100 + '%' }"></div>
         </div>
       <div :title="title" class="title">{{ title }}</div>
       <div class="subtitle" v-if="subtitle">{{ subtitle }}</div>
@@ -205,5 +207,13 @@
     left: 0;
     font-size: 1.4em;
     padding: 10px;
+  }
+
+  .progress {
+    height: 5px;
+    background-color: #ae6600;
+    position: absolute;
+    bottom: 0;
+    left: 0;
   }
 </style>
