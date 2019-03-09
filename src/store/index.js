@@ -11,7 +11,8 @@ export default new Vuex.Store({
   state: {
     host: null,
     shows: {},
-    watching: [],
+    watchingEpisodes: [],
+    watchingMovies: [],
     playing: {
       title: ''
     },
@@ -30,8 +31,11 @@ export default new Vuex.Store({
     search: function (state, results) {
       Vue.set(state, 'searchResults', results)
     },
-    saveWatching: function (state, watching) {
-      Vue.set(state, 'watching', watching)
+    saveWatchingEpisodes: function (state, watching) {
+      Vue.set(state, 'watchingEpisodes', watching)
+    },
+    saveWatchingMovies: function (state, watching) {
+      Vue.set(state, 'watchingMovies', watching)
     },
     setPlaying: function (state, watching) {
       Vue.set(state, 'playing', watching)
@@ -61,15 +65,14 @@ export default new Vuex.Store({
       dispatch('getEpisodes', { sort: 'createdAt', order: 'DESC' })
     },
     logout: function (state) {
-      state.commit('saveWatching', [])
+      state.commit('saveWatchingEpisodes', [])
     },
-    updateWatching: function (state) {
-      Vue.axios.get(`/watching`)
-        .then(response => {
-          // JSON responses are automatically parsed.
-          state.commit('saveWatching', response.data)
-        })
-        .catch(e => {})
+    updateWatching: async function (state) {
+      let { data: episodes } = await Vue.axios.get(`/episodes/watching`)
+      let { data: movies } = await Vue.axios.get(`/movies/watching`)
+
+      state.commit('saveWatchingEpisodes', episodes)
+      state.commit('saveWatchingMovies', movies)
     },
     updateHost: function (state, host) {
       state.commit('updateHost', host)
