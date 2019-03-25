@@ -71,7 +71,7 @@
       playEpisode: function (event) {
         event.preventDefault()
         // this.$router.push({name: 'PlayEpisode', params: {episodeId: this.episodeId}})
-        this.$store.dispatch('playEpisode', this.episode)
+        this.$store.dispatch('playEpisode', this.episode.id)
       },
       openEpisodeDialog: function (event) {
         this.$modal.show('EpisodeDialog', { episode: this.episode })

@@ -59,7 +59,7 @@
     methods: {
       playMovie: function (event) {
         event.preventDefault()
-        this.$store.dispatch('playMovie', this.movie)
+        this.$store.dispatch('playMovie', this.movie.id)
       },
       openModal: function (event) {
         this.$modal.show('MovieDialog', { movie: this.movie })

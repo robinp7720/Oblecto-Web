@@ -80,14 +80,18 @@ export default new Vuex.Store({
     clearPlaying: function (state) {
       state.commit('setPlaying', {})
     },
-    playEpisode: function (state, episode) {
+    playEpisode: async function (state, id) {
+      let { data: episode } = await Vue.axios.get(`/episode/${id}/info`)
+
       state.commit('setPlaying', {
         title: episode.episodeName,
         type: 'episode',
         entity: episode
       })
     },
-    playMovie: function (state, movie) {
+    playMovie: async function (state, id) {
+      let { data: movie } = await Vue.axios.get(`/movie/${id}/info`)
+
       state.commit('setPlaying', {
         title: movie.movieName,
         type: 'movie',
