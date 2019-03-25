@@ -2,9 +2,9 @@
   <transition name="slide-fade" appear>
     <div class="episode">
       <div class="episode-poster"
-           v-bind:style="{ backgroundImage: 'url(' + host + '/episode/' + episodeId + '/banner)' }">
+           v-bind:style="{ backgroundImage: 'url(' + host + '/episode/' + episode.id + '/banner)' }">
         <a class="play" v-on:click="playEpisode"><i class="fa fa-play" aria-hidden="true"></i></a>
-        <div :title="title" class="title" v-if="inside">{{ title }}</div>
+        <div :title="episode.episodeName" class="title" v-if="inside">{{ episode.episodeName }}</div>
         <div v-if="progress" class="progress" v-bind:style="{ width: progress * 100 + '%' }"></div>
         <div class="actions">
           <a class="action-item" v-on:click="openEpisodeDialog" title="Options">
@@ -15,7 +15,7 @@
           </a>
         </div>
       </div>
-      <div :title="title" class="title" v-if="!inside">{{ title }}</div>
+      <div :title="episode.episodeName" class="title" v-if="!inside">{{ episode.episodeName }}</div>
       <div class="subtitle" v-if="subtitle && !inside">{{ subtitle }}</div>
     </div>
   </transition>
@@ -38,18 +38,13 @@
     },
     sockets: {
       'client-episode-progress': function (message) {
-        if (message.episodeId === this.episodeId) {
+        if (message.episodeId === this.episode.id) {
           this.episode.trackEpisodes[0] = message
           this.progress = message.progress
         }
       }
     },
     props: {
-      'title': String,
-      'episodeId': {
-        type: Number,
-        required: true
-      },
       'subtitle': {
         type: String,
         required: false
@@ -77,7 +72,7 @@
         this.$modal.show('EpisodeDialog', { episode: this.episode })
       },
       viewEpisodeInfo: function (event) {
-        this.$router.push({ name: 'EpisodeInfo', params: { episode: this.episodeId } })
+        this.$router.push({ name: 'EpisodeInfo', params: { episode: this.episode.id } })
       }
     }
   }
