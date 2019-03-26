@@ -17,9 +17,12 @@
 </script>
 
 <style scoped lang="sass">
-td
-  padding: 5px
-  
-.id
-  text-align: right
+  tr:nth-child(even)
+    background-color: darken(#696060, 2)
+
+  td
+    padding: 10px
+
+  .id
+    text-align: right
 </style>

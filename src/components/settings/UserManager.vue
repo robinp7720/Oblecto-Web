@@ -49,13 +49,16 @@
     background: #696060
     box-shadow: 0px 0px 5px 2px rgba(darken(darken(#696060,17) + #000000,6), 0.75)
 
+    border-spacing: 0
+
     width: 100%
 
   thead
     background-color: #444042
+    box-shadow: 0px 0px 5px 2px rgba(darken(darken(#696060,17) + #000000,6), 0.75)
 
     th
-      padding: 5px
+      padding: 10px
 
       margin: 0
       border: 0
