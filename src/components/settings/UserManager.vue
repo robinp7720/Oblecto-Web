@@ -76,4 +76,13 @@
     border-radius: 3px
     cursor: pointer
 
+    display: block
+    width: 100%
+
+    max-width: 200px
+
+    margin: 5px 0
+
+    text-align: center
+
 </style>
