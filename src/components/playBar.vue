@@ -118,13 +118,13 @@
         })
 
         this.player.addEventListener('timeupdate', () => {
-          this.progress = this.player.currentTime / this.player.duration
+          this.progress = this.player.currentTime / this.playing.entity.files[0].duration
 
           switch (this.playing.type) {
             case 'episode':
               this.$socket.emit('playing', {
                 time: this.player.currentTime,
-                progress: this.player.currentTime / this.player.duration,
+                progress: this.player.currentTime / this.playing.entity.files[0].duration,
                 episodeId: this.playing.entity.id,
                 type: 'tv'
               })
@@ -132,7 +132,7 @@
             case 'movie':
               this.$socket.emit('playing', {
                 time: this.player.currentTime,
-                progress: this.player.currentTime / this.player.duration,
+                progress: this.player.currentTime / this.playing.entity.files[0].duration,
                 movieId: this.playing.entity.id,
                 type: 'movie'
               })
