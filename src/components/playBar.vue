@@ -95,10 +95,14 @@
         this.showControls = true
         this.firstSinceNewsource = true
         this.initialProgress = 0
+        let tracking = this.playing.entity.trackMovies || this.playing.entity.trackEpisodes
 
-        if (this.playing.entity.files[0].extension === 'mkv' & this.playing.entity.trackMovies[0] !== undefined) {
-          this.url = `${this.axios.defaults.baseURL}/stream/${newState.entity.files[0].id}/${this.playing.entity.trackMovies[0].time}`
-          this.initialProgress = this.playing.entity.trackMovies[0].time
+        if (this.playing.entity.files[0].extension === 'mkv') {
+          if (tracking[0] !== undefined) {
+            this.initialProgress = tracking[0].time
+          }
+
+          this.url = `${this.axios.defaults.baseURL}/stream/${newState.entity.files[0].id}/${this.initialProgress}`
           this.showControls = false
         } else {
           this.url = `${this.axios.defaults.baseURL}/stream/${newState.entity.files[0].id}`
@@ -107,15 +111,13 @@
         this.player.src = this.url
 
         this.player.addEventListener('loadedmetadata', () => {
-          let tracking = this.playing.entity.trackEpisodes || this.playing.entity.trackMovies
-
           if (!tracking[0]) {
             this.player.play()
             this.pause = false
             return
           }
   
-          this.player.currentTime = tracking[0].time
+          this.player.currentTime = tracking[0].time - this.initialProgress
           this.player.play()
           this.paused = false
         })
