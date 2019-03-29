@@ -1,7 +1,7 @@
 <template>
   <div class="playBar">
     <div class="player" v-bind:class="{ small: !showVideo, hidden: !url}">
-      <video ref="videoPlayer" controls></video>
+      <video ref="videoPlayer" :controls="showControls"></video>
     </div>
     <div class="bar">
       <div class="progressbar" v-bind:style="{ width: progress * 100 + '%' }"></div>
@@ -38,6 +38,8 @@
     data () {
       return {
         progress: 0,
+        initialProgress: 0,
+        showControls: true,
         url: '',
         showVideo: false,
         firstSinceNewsource: false,
@@ -90,15 +92,16 @@
     watch: {
       playing: async function (newState, oldState) {
         this.showVideo = true
+        this.showControls = true
         this.firstSinceNewsource = true
+        this.initialProgress = 0
 
-        switch (this.playing.type) {
-          case 'episode':
-            this.url = this.axios.defaults.baseURL + '/episode/' + newState.entity.id + '/play'
-            break
-          case 'movie':
-            this.url = this.axios.defaults.baseURL + '/movie/' + newState.entity.id + '/play'
-            break
+        if (this.playing.entity.files[0].extension === 'mkv' & this.playing.entity.trackMovies[0] !== undefined) {
+          this.url = `${this.axios.defaults.baseURL}/stream/${newState.entity.files[0].id}/${this.playing.entity.trackMovies[0].time}`
+          this.initialProgress = this.playing.entity.trackMovies[0].time
+          this.showControls = false
+        } else {
+          this.url = `${this.axios.defaults.baseURL}/stream/${newState.entity.files[0].id}`
         }
 
         this.player.src = this.url
@@ -118,21 +121,21 @@
         })
 
         this.player.addEventListener('timeupdate', () => {
-          this.progress = this.player.currentTime / this.playing.entity.files[0].duration
+          this.progress = (this.initialProgress + this.player.currentTime) / this.playing.entity.files[0].duration
 
           switch (this.playing.type) {
             case 'episode':
               this.$socket.emit('playing', {
-                time: this.player.currentTime,
-                progress: this.player.currentTime / this.playing.entity.files[0].duration,
+                time: this.initialProgress + this.player.currentTime,
+                progress: this.progress,
                 episodeId: this.playing.entity.id,
                 type: 'tv'
               })
               break
             case 'movie':
               this.$socket.emit('playing', {
-                time: this.player.currentTime,
-                progress: this.player.currentTime / this.playing.entity.files[0].duration,
+                time: this.initialProgress + this.player.currentTime,
+                progress: this.progress,
                 movieId: this.playing.entity.id,
                 type: 'movie'
               })
