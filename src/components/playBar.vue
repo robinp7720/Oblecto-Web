@@ -95,6 +95,11 @@
         this.showControls = true
         this.firstSinceNewsource = true
         this.initialProgress = 0
+
+        if (this.playing.entity === undefined) {
+          return
+        }
+
         let tracking = this.playing.entity.trackMovies || this.playing.entity.trackEpisodes
 
         if (this.playing.entity.files[0].extension === 'mkv') {
@@ -123,6 +128,10 @@
         })
 
         this.player.addEventListener('timeupdate', () => {
+          if (this.playing.entity === undefined) {
+            return
+          }
+
           this.progress = (this.initialProgress + this.player.currentTime) / this.playing.entity.files[0].duration
 
           switch (this.playing.type) {

@@ -4,30 +4,17 @@ A frontend for Oblecto, an open source media server, which can be found here: [h
 
 ## Build Setup
 
-First edit src/config.json with the correct host for the REST backend server
+If you are not running the Oblecto server locally, edit config/dev.env.json with the correct host for the backend server.
 
-``` bash
-# install dependencies
-npm install
+To start the frontend, run ```npm start```.
 
-# serve with hot reload at localhost:8080
-npm run dev
-
-# build for production with minification
-npm run build
-
-# build for production and view the bundle analyzer report
-npm run build --report
-
-# run unit tests
-npm run unit
-
-# run e2e tests
-npm run e2e
-
-# run all tests
-npm test
-```
 
 ## Images
-![Main view](https://raw.githubusercontent.com/robinp7720/Oblecto-Web/master/images/main.jpg)
+### TV Show Listings
+![Main view](https://raw.githubusercontent.com/robinp7720/Oblecto-Web/master/images/tvshows.jpg)
+### Episode and Show info
+![Main view](https://raw.githubusercontent.com/robinp7720/Oblecto-Web/master/images/tvshow.jpg)
+### Movie Listings
+![Main view](https://raw.githubusercontent.com/robinp7720/Oblecto-Web/master/images/movies.jpg)
+### Search View
+![Main view](https://raw.githubusercontent.com/robinp7720/Oblecto-Web/master/images/search.jpg)
