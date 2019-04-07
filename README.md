@@ -11,10 +11,10 @@ To start the frontend, run ```npm start```.
 
 ## Images
 ### TV Show Listings
-![Main view](https://raw.githubusercontent.com/robinp7720/Oblecto-Web/master/images/tvshows.jpg)
+![TV Shows Listings](https://raw.githubusercontent.com/robinp7720/Oblecto-Web/master/images/tvshows.jpg)
 ### Episode and Show info
-![Main view](https://raw.githubusercontent.com/robinp7720/Oblecto-Web/master/images/tvshow.jpg)
+![Show Info](https://raw.githubusercontent.com/robinp7720/Oblecto-Web/master/images/tvshow.jpg)
 ### Movie Listings
-![Main view](https://raw.githubusercontent.com/robinp7720/Oblecto-Web/master/images/movies.jpg)
+![Movie Listings](https://raw.githubusercontent.com/robinp7720/Oblecto-Web/master/images/movies.jpg)
 ### Search View
-![Main view](https://raw.githubusercontent.com/robinp7720/Oblecto-Web/master/images/search.jpg)
+![Search View](https://raw.githubusercontent.com/robinp7720/Oblecto-Web/master/images/search.jpg)
