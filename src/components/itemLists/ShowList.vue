@@ -1,7 +1,7 @@
 <template>
   <div class="shows">
     <div class="title" v-if="title">
-      <h3>{{ title }}</h3>
+      <h3 v-html="title"></h3>
     </div>
       <transition-group
         name="staggered-fade"
