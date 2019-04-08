@@ -96,13 +96,13 @@
     .is-active
       a
         color: #eee
-    .badge
-      display: inline-block
-      margin-left: 10px
-      background-color: rgba(0,0,0,0.5)
-      padding: 0 5px
-      -webkit-border-radius: 3px
-      -moz-border-radius: 3px
-      border-radius: 3px
-      color: #999
+  .badge
+    display: inline-block
+    margin-left: 10px
+    background-color: rgba(0,0,0,0.5)
+    padding: 0 5px
+    -webkit-border-radius: 3px
+    -moz-border-radius: 3px
+    border-radius: 3px
+    color: #999
 </style>
