@@ -1,10 +1,10 @@
 <template>
   <div class="container">
-    <MovieList title="Movie Results"
+    <MovieList v-bind:title="'Movie Results <span class=badge>' + searchResults.movies.length + '</span>' "
                v-bind:movies="searchResults.movies" v-if="searchResults.movies.length > 0"/>
-    <EpisodeList title="Episode Results"
+    <EpisodeList v-bind:title="'Episode Results <span class=badge>' + searchResults.episodes.length+ '</span>' "
                  v-bind:episodes="searchResults.episodes" v-if="searchResults.episodes.length > 0"/>
-    <ShowList title="TV Show Results"
+    <ShowList v-bind:title="'TV Show Results <span class=badge>' + searchResults.shows.length  + '</span>' "
                  v-bind:shows="searchResults.shows" v-if="searchResults.shows.length > 0"/>
   </div>
 </template>
@@ -30,6 +30,8 @@
 </script>
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
-<style scoped>
+<style lang="sass">
+
+
 
 </style>
