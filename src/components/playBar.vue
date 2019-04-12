@@ -86,7 +86,7 @@
         this.player.pause()
       },
       playNext: function () {
-        this.$store.dispatch('playEpisode', this.nextepisode)
+        this.$store.dispatch('playEpisode', this.nextepisode.id)
       }
     },
     watch: {
