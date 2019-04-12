@@ -7,7 +7,7 @@
       <div class="progressbar" v-bind:style="{ width: progress * 100 + '%' }"></div>
       <span class="title">{{ playing.title }}</span>
       <div class="right">
-        <span v-on:click="playNext" v-if="progress > 0.9">Next Episode</span>
+        <a v-on:click="playNext" v-if="progress > 0.9 & playing.type === 'episode'">Next Episode</a>
         <span v-on:click="stopPlaying" v-if="url" class="toggle-button"><FontAwesomeIcon
           :icon="iconStop"/></span>
         <span v-on:click="playPause" class="toggle-button" v-if="url"><FontAwesomeIcon
