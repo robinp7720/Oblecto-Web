@@ -1,9 +1,9 @@
 <template>
-  <div class="playBar">
+  <div class="playBar" v-on:mousemove="playbarTimeout = 0">
     <div class="player" v-bind:class="{ small: !showVideo, hidden: !url}">
       <video ref="videoPlayer" :controls="showControls"></video>
     </div>
-    <div class="bar">
+    <div class="bar" ref="bar" v-if="playbarTimeout < 20 || !showVideo">
       <div class="progressbar" v-bind:style="{ width: progress * 100 + '%' }"></div>
       <span class="title">{{ playing.title }}</span>
       <div class="right">
@@ -39,6 +39,7 @@
       return {
         progress: 0,
         initialProgress: 0,
+        playbarTimeout: 0,
         showControls: true,
         url: '',
         showVideo: false,
@@ -129,7 +130,14 @@
 
         this.player.addEventListener('timeupdate', () => {
           if (this.playing.entity === undefined) {
+            this.playbarTimeout = 0
+
             return
+          }
+
+          if (this.playbarTimeout < 20) {
+            this.playbarTimeout += 1
+            console.log(this.playbarTimeout)
           }
 
           this.progress = (this.initialProgress + this.player.currentTime) / this.playing.entity.files[0].duration
@@ -190,7 +198,7 @@
     .player
       position: fixed
       top: 0
-      height: calc(100% - 59px)
+      height: 100%
       width: 100%
 
       background: black
