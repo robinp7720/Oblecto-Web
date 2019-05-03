@@ -1,7 +1,7 @@
 <template>
-  <div class="playBar" v-on:mousemove="playbarTimeout = 0">
+  <div class="playBar" ref="playbar" v-on:mousemove="playbarTimeout = 0">
     <div class="player" v-bind:class="{ small: !showVideo, hidden: !url}">
-      <video ref="videoPlayer" :controls="showControls"></video>
+      <video ref="videoPlayer"></video>
     </div>
     <div class="bar" ref="bar" v-if="playbarTimeout < 20 || !showVideo">
       <div class="progressbar" v-bind:style="{ width: progress * 100 + '%' }"></div>
@@ -12,6 +12,8 @@
           :icon="iconStop"/></span>
         <span v-on:click="playPause" class="toggle-button" v-if="url"><FontAwesomeIcon
           :icon="paused? iconPlay : iconPause"/></span>
+        <span v-on:click="toggleFullScreen" class="toggle-button" v-if="url && fullscreenEnabled"><FontAwesomeIcon
+          :icon="isFullScreen? iconDeFullscreen: iconFullscreen"/></span>
         <span v-on:click="showVideo = !showVideo" class="toggle-button" v-if="url"><FontAwesomeIcon
           :icon="showVideo? iconDown : iconUp"/></span>
       </div>
@@ -27,6 +29,8 @@
   import faStop from '@fortawesome/fontawesome-free-solid/faStop'
   import faPlay from '@fortawesome/fontawesome-free-solid/faPlay'
   import faPause from '@fortawesome/fontawesome-free-solid/faPause'
+  import faFullscreen from '@fortawesome/fontawesome-free-solid/faExpandArrowsAlt'
+  import faDeFullscreen from '@fortawesome/fontawesome-free-solid/faCompress'
 
   import { mapState } from 'vuex'
 
@@ -38,6 +42,7 @@
     data () {
       return {
         progress: 0,
+        fullscreenEnabled: document.fullscreenEnabled,
         initialProgress: 0,
         playbarTimeout: 0,
         showControls: true,
@@ -46,12 +51,16 @@
         firstSinceNewsource: false,
         shouldAutoPlay: false,
         paused: true,
-        nextepisode: false
+        nextepisode: false,
+        isFullScreen: false
       }
     },
     computed: {
       player () {
         return this.$refs.videoPlayer
+      },
+      playbar () {
+        return this.$refs.playbar
       },
       iconUp () {
         return faUp
@@ -68,9 +77,27 @@
       iconPause () {
         return faPause
       },
+      iconFullscreen () {
+        return faFullscreen
+      },
+      iconDeFullscreen () {
+        return faDeFullscreen
+      },
       ...mapState(['playing'])
     },
     methods: {
+      toggleFullScreen: function () {
+        console.log(this.playbar)
+        if (
+          document.fullscreenEnabled &
+          !this.isFullScreen
+        ) {
+          this.playbar.requestFullscreen()
+          this.isFullScreen = true
+        } else {
+          this.isFullScreen = false
+        }
+      },
       stopPlaying: function () {
         this.player.src = ''
         this.url = ''
@@ -137,7 +164,6 @@
 
           if (this.playbarTimeout < 20) {
             this.playbarTimeout += 1
-            console.log(this.playbarTimeout)
           }
 
           this.progress = (this.initialProgress + this.player.currentTime) / this.playing.entity.files[0].duration
