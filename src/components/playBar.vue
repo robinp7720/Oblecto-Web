@@ -4,7 +4,9 @@
       <video ref="videoPlayer"></video>
     </div>
     <div class="bar" ref="bar" v-if="playbarTimeout < 20 || !showVideo">
-      <div class="progressbar" v-bind:style="{ width: progress * 100 + '%' }"></div>
+      <div class="progressbarContainer" v-on:click="seek">
+        <div class="progressbar" v-bind:style="{ width: progress * 100 + '%' }"></div>
+      </div>
       <span class="title">{{ playing.title }}</span>
       <div class="right">
         <a v-on:click="playNext" v-if="progress > 0.9 & playing.type === 'episode'">Next Episode</a>
@@ -45,7 +47,6 @@
         fullscreenEnabled: document.fullscreenEnabled,
         initialProgress: 0,
         playbarTimeout: 0,
-        showControls: true,
         url: '',
         showVideo: false,
         firstSinceNewsource: false,
@@ -86,6 +87,20 @@
       ...mapState(['playing'])
     },
     methods: {
+      updateURL: function () {
+        if (this.playing.entity.files[0].extension === 'mkv') {
+          this.url = `${this.axios.defaults.baseURL}/stream/${this.playing.entity.files[0].id}/${this.initialProgress}`
+        } else {
+          this.url = `${this.axios.defaults.baseURL}/stream/${this.playing.entity.files[0].id}`
+        }
+
+        return this.url
+      },
+      seek: function (event) {
+        this.initialProgress = this.playing.entity.files[0].duration * event.clientX / event.target.clientWidth
+        console.log(event)
+        this.player.src = this.updateURL()
+      },
       toggleFullScreen: function () {
         console.log(this.playbar)
         if (
@@ -134,14 +149,9 @@
           if (tracking[0] !== undefined) {
             this.initialProgress = tracking[0].time
           }
-
-          this.url = `${this.axios.defaults.baseURL}/stream/${newState.entity.files[0].id}/${this.initialProgress}`
-          this.showControls = false
-        } else {
-          this.url = `${this.axios.defaults.baseURL}/stream/${newState.entity.files[0].id}`
         }
 
-        this.player.src = this.url
+        this.player.src = this.updateURL()
 
         this.player.addEventListener('loadedmetadata', () => {
           if (!tracking[0]) {
@@ -261,12 +271,17 @@
     .toggle-button
       cursor: pointer
 
-  .progressbar
+
+  .progressbarContainer
     height: 5px
-    background-color: #ae6600
     position: absolute
     top: 0
     left: 0
+    width: 100%
+
+  .progressbar
+    height: 100%
+    background-color: #ae6600
 
 
 
