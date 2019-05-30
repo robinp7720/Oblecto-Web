@@ -1,23 +1,36 @@
 <template>
   <div class="playBar" ref="playbar" v-on:mousemove="playbarTimeout = 0">
-    <div class="player" v-bind:class="{ small: !showVideo, hidden: !url}">
+
+    <div class="player" v-bind:class="{ small: format === 2, hidden: !showVideo}">
       <video ref="videoPlayer"></video>
     </div>
-    <div class="bar" ref="bar" v-if="playbarTimeout < 20 || !showVideo">
+
+    <div class="bar" ref="bar" v-if="playbarTimeout < 20 || format === 2">
+
       <div class="progressbarContainer" v-on:click="seek">
         <div class="progressbar" v-bind:style="{ width: progress * 100 + '%' }"></div>
       </div>
+
       <span class="title">{{ playing.title }}</span>
+
       <div class="right">
         <a v-on:click="playNext" v-if="progress > 0.9 & playing.type === 'episode'">Next Episode</a>
-        <span v-on:click="stopPlaying" v-if="url" class="toggle-button"><FontAwesomeIcon
-          :icon="iconStop"/></span>
-        <span v-on:click="playPause" class="toggle-button" v-if="url"><FontAwesomeIcon
-          :icon="paused? iconPlay : iconPause"/></span>
-        <span v-on:click="toggleFullScreen" class="toggle-button" v-if="url && fullscreenEnabled"><FontAwesomeIcon
-          :icon="isFullScreen? iconDeFullscreen: iconFullscreen"/></span>
-        <span v-on:click="showVideo = !showVideo" class="toggle-button" v-if="url"><FontAwesomeIcon
-          :icon="showVideo? iconDown : iconUp"/></span>
+
+        <span v-on:click="stopPlaying" v-if="showVideo" class="toggle-button">
+          <FontAwesomeIcon :icon="iconStop"/>
+        </span>
+
+        <span v-on:click="playPause" class="toggle-button" v-if="showVideo">
+          <FontAwesomeIcon :icon="paused? iconPlay : iconPause"/>
+        </span>
+
+        <span v-on:click="toggleFullScreen" class="toggle-button" v-if="showVideo && fullscreenEnabled">
+          <FontAwesomeIcon :icon="format === 3? iconDeFullscreen: iconFullscreen"/>
+        </span>
+
+        <span v-on:click="format = (format % 2) + 1" class="toggle-button" v-if="showVideo && format !== 3">
+          <FontAwesomeIcon :icon="format === 1 ? iconDown : iconUp"/>
+        </span>
       </div>
     </div>
   </div>
@@ -43,17 +56,17 @@
     name: 'play-bar',
     data () {
       return {
+        paused: true,
         progress: 0,
+
+        format: 0, //  1 = large screen, 2 = Small View, 3 = Fullscreen
+
         fullscreenEnabled: document.fullscreenEnabled,
         initialProgress: 0,
         playbarTimeout: 0,
-        url: '',
         showVideo: false,
-        firstSinceNewsource: false,
-        shouldAutoPlay: false,
-        paused: true,
-        nextepisode: false,
-        isFullScreen: false
+        nextepisode: false
+
       }
     },
     computed: {
@@ -88,13 +101,11 @@
     },
     methods: {
       updateURL: function () {
-        if (this.playing.entity.files[0].extension === 'mkv') {
-          this.url = `${this.axios.defaults.baseURL}/stream/${this.playing.entity.files[0].id}/${this.initialProgress}`
+        if (this.playing.entity.files[0].extension !== 'mp4') {
+          this.player.src = `${this.axios.defaults.baseURL}/stream/${this.playing.entity.files[0].id}/${this.initialProgress}`
         } else {
-          this.url = `${this.axios.defaults.baseURL}/stream/${this.playing.entity.files[0].id}`
+          this.player.src = `${this.axios.defaults.baseURL}/stream/${this.playing.entity.files[0].id}`
         }
-
-        return this.url
       },
       seek: function (event) {
         // Calculate the offset in seconds from where the user clecked on the seekbar
@@ -108,26 +119,25 @@
 
         if (this.playing.entity.files[0].extension !== 'mp4') {
           this.initialProgress = position
-          this.player.src = this.updateURL()
+          this.updateURL()
         } else {
           this.player.currentTime = position
         }
       },
       toggleFullScreen: function () {
-        console.log(this.playbar)
         if (
           document.fullscreenEnabled &
-          !this.isFullScreen
+          this.format !== 3
         ) {
           this.playbar.requestFullscreen()
-          this.isFullScreen = true
+          this.format = 3
         } else {
-          this.isFullScreen = false
+          document.exitFullscreen()
+          this.format = 1
         }
       },
       stopPlaying: function () {
         this.player.src = ''
-        this.url = ''
         this.$store.dispatch('clearPlaying')
         this.paused = true
       },
@@ -146,72 +156,71 @@
     },
     watch: {
       playing: async function (newState, oldState) {
-        this.showVideo = true
-        this.showControls = true
-        this.firstSinceNewsource = true
         this.initialProgress = 0
 
         if (this.playing.entity === undefined) {
           return
         }
 
+        this.showVideo = true
+
         let tracking = this.playing.entity.trackMovies || this.playing.entity.trackEpisodes
 
-        if (this.playing.entity.files[0].extension === 'mkv') {
+        if (this.playing.entity.files[0].extension !== 'mp4') {
           if (tracking[0] !== undefined) {
             this.initialProgress = tracking[0].time
           }
         }
 
-        this.player.src = this.updateURL()
-
-        this.player.addEventListener('loadedmetadata', () => {
-          if (!tracking[0]) {
-            this.player.play()
-            this.pause = false
-            return
-          }
-  
-          this.player.currentTime = tracking[0].time - this.initialProgress
-          this.player.play()
-          this.paused = false
-        })
-
-        this.player.addEventListener('timeupdate', () => {
-          if (this.playing.entity === undefined) {
-            this.playbarTimeout = 0
-
-            return
-          }
-
-          if (this.playbarTimeout < 20) {
-            this.playbarTimeout += 1
-          }
-
-          this.progress = (this.initialProgress + this.player.currentTime) / this.playing.entity.files[0].duration
-
-          switch (this.playing.type) {
-            case 'episode':
-              this.$socket.emit('playing', {
-                time: this.initialProgress + this.player.currentTime,
-                progress: this.progress,
-                episodeId: this.playing.entity.id,
-                type: 'tv'
-              })
-              break
-            case 'movie':
-              this.$socket.emit('playing', {
-                time: this.initialProgress + this.player.currentTime,
-                progress: this.progress,
-                movieId: this.playing.entity.id,
-                type: 'movie'
-              })
-              break
-          }
-        })
+        this.updateURL()
 
         this.nextepisode = (await this.axios.get(`/episode/${this.playing.entity.id}/next`)).data
       }
+    },
+    mounted: function () {
+      this.player.addEventListener('loadedmetadata', () => {
+        let tracking = this.playing.entity.trackMovies || this.playing.entity.trackEpisodes
+
+        if (!tracking[0]) {
+          this.player.currentTime = tracking[0].time - this.initialProgress
+        }
+
+        this.player.play()
+        this.paused = false
+      })
+
+      this.player.addEventListener('timeupdate', () => {
+        if (this.playing.entity === undefined) {
+          this.playbarTimeout = 0
+
+          return
+        }
+
+        if (this.playbarTimeout < 20) {
+          this.playbarTimeout += 1
+        }
+
+        this.progress = (this.initialProgress + this.player.currentTime) / this.playing.entity.files[0].duration
+
+        switch (this.playing.type) {
+          case 'episode':
+            this.$socket.emit('playing', {
+              time: this.initialProgress + this.player.currentTime,
+              progress: this.progress,
+              episodeId: this.playing.entity.id,
+              type: 'tv'
+            })
+            break
+          case 'movie':
+            this.$socket.emit('playing', {
+              time: this.initialProgress + this.player.currentTime,
+              progress: this.progress,
+              movieId: this.playing.entity.id,
+              type: 'movie'
+            })
+            break
+        }
+      })
     }
   }
 </script>
