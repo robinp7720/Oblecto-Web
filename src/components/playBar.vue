@@ -109,7 +109,7 @@
       },
       seek: function (event) {
         // Calculate the offset in seconds from where the user clecked on the seekbar
-        let position = this.playing.entity.files[0].duration * event.clientX / event.target.clientWidth
+        let position = this.playing.entity.files[0].duration * event.clientX / document.documentElement.clientWidth
 
         // If the file isn't an mp4 file, the broweser most likely won't be able to seek it. Therefore
         // server-side seeking must be used
