@@ -138,7 +138,10 @@
       },
       stopPlaying: function () {
         this.player.src = ''
+
         this.$store.dispatch('clearPlaying')
+
+        this.showVideo = false
         this.paused = true
       },
       playPause: function () {
@@ -241,6 +244,7 @@
       position: fixed
       bottom: 0
       padding: 20px
+      padding-top: 25px
       width: 100%
 
       color: #eee
@@ -254,7 +258,7 @@
 
     .player
       position: fixed
-      top: 0
+      bottom: 0
       height: 100%
       width: 100%
 
@@ -266,7 +270,7 @@
     .small
       height: 200px
       width: auto
-      top: calc(100% - 269px)
+      bottom: 74px
       right: 10px
       border-radius: 3px
       overflow: hidden
@@ -294,15 +298,23 @@
 
 
   .progressbarContainer
-    height: 5px
+    height: 10px
     position: absolute
     top: 0
     left: 0
     width: 100%
 
+    background-color: rgba(0,0,0,0.25)
+
+    box-shadow: inset 0px 0px 5px 0px rgba(0,0,0,0.5)
+
+    cursor: pointer
+
   .progressbar
     height: 100%
     background-color: #ae6600
+
+    box-shadow: 0px 0px 5px 0px rgba(0, 0, 0, 0.75)
 
 
 
