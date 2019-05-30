@@ -59,7 +59,7 @@
         paused: true,
         progress: 0,
 
-        format: 0, //  1 = large screen, 2 = Small View, 3 = Fullscreen
+        format: 1, //  1 = large screen, 2 = Small View, 3 = Fullscreen
 
         fullscreenEnabled: document.fullscreenEnabled,
         initialProgress: 0,
@@ -181,7 +181,7 @@
       this.player.addEventListener('loadedmetadata', () => {
         let tracking = this.playing.entity.trackMovies || this.playing.entity.trackEpisodes
 
-        if (!tracking[0]) {
+        if (tracking[0]) {
           this.player.currentTime = tracking[0].time - this.initialProgress
         }
 
