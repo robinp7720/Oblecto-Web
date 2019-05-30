@@ -5,7 +5,7 @@
       <video ref="videoPlayer"></video>
     </div>
 
-    <div class="bar" ref="bar" v-if="playbarTimeout < 20 || format === 2">
+    <div class="bar" ref="bar" v-bind:class="{hiddenBar: !(playbarTimeout < 20 || format === 2)}">
 
       <div class="progressbarContainer" v-on:click="seek">
         <div class="progressbar" v-bind:style="{ width: progress * 100 + '%' }"></div>
@@ -243,6 +243,9 @@
     .bar
       position: fixed
       bottom: 0
+
+      transition: bottom 0.2s
+
       padding: 20px
       padding-top: 25px
       width: 100%
@@ -255,6 +258,9 @@
       background: -webkit-linear-gradient(to bottom, lighten(#3c3737, 15) 0%, lighten(#3c3737, 12) 100%)
       background: linear-gradient(to bottom, lighten(#3c3737, 15) 0%, lighten(#3c3737, 12) 100%)
       box-shadow: 0px 0px 5px 2px rgba(darken(darken(#696060,17) + #000000, 6), 0.75)
+
+    .hiddenBar
+      bottom: -64px
 
     .player
       position: fixed
@@ -295,7 +301,6 @@
 
     .toggle-button
       cursor: pointer
-
 
   .progressbarContainer
     height: 10px
