@@ -97,9 +97,21 @@
         return this.url
       },
       seek: function (event) {
-        this.initialProgress = this.playing.entity.files[0].duration * event.clientX / event.target.clientWidth
-        console.log(event)
-        this.player.src = this.updateURL()
+        // Calculate the offset in seconds from where the user clecked on the seekbar
+        let position = this.playing.entity.files[0].duration * event.clientX / event.target.clientWidth
+
+        // If the file isn't an mp4 file, the broweser most likely won't be able to seek it. Therefore
+        // server-side seeking must be used
+
+        /* TODO: Client should also ask the server if server side real time transcoding is enabled. If it's not, it
+            should tell the user that the file cannot be streamed if the client does not natively support it */
+
+        if (this.playing.entity.files[0].extension !== 'mp4') {
+          this.initialProgress = position
+          this.player.src = this.updateURL()
+        } else {
+          this.player.currentTime = position
+        }
       },
       toggleFullScreen: function () {
         console.log(this.playbar)
