@@ -129,7 +129,7 @@
 
         this.qualityPopUp = false
 
-        if (this.playing.entity.trackMovies) {
+        if (this.playing.entity.trackMovies !== undefined) {
           this.playing.entity.trackMovies[0].time = this.initialProgress + this.player.currentTime
         } else {
           this.playing.entity.trackEpisodes[0].time = this.initialProgress + this.player.currentTime
