@@ -129,9 +129,9 @@
 
         this.qualityPopUp = false
 
-        if (this.playing.entity.trackMovies !== undefined & this.playing.entity.trackMovies[0] !== undefined) {
+        if (this.playing.entity.trackMovies !== undefined && this.playing.entity.trackMovies[0] !== undefined) {
           this.playing.entity.trackMovies[0].time = this.initialProgress + this.player.currentTime
-        } else if (this.playing.entity.trackEpisodes !== undefined & this.playing.entity.trackEpisodes[0] !== undefined) {
+        } else if (this.playing.entity.trackEpisodes !== undefined && this.playing.entity.trackEpisodes[0] !== undefined) {
           this.playing.entity.trackEpisodes[0].time = this.initialProgress + this.player.currentTime
         }
 
