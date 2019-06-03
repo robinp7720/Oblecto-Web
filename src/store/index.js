@@ -51,9 +51,10 @@ export default new Vuex.Store({
   actions: {
     updateAll: ({ dispatch }) => {
       // Update all movies in vuex storage
-      dispatch('getMovies', { sort: 'createdAt', order: 'DESC' })
-      dispatch('getMovies', { sort: 'popularity', order: 'DESC' })
-      dispatch('getMovies', { sort: 'releaseDate', order: 'DESC' })
+      dispatch('movies/getMovies', { sort: 'createdAt', order: 'DESC' })
+      dispatch('movies/getMovies', { sort: 'popularity', order: 'DESC' })
+      dispatch('movies/getMovies', { sort: 'releaseDate', order: 'DESC' })
+      dispatch('movies/getMovieSets')
 
       // Update all tv shows in vuex storage
       dispatch('getTVShows', { sort: 'createdAt', order: 'DESC' })

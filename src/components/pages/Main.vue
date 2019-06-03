@@ -41,11 +41,11 @@
       EpisodeList: EpisodeList,
       MovieList: MovieList
     },
-    computed: mapState([
-      'movies',
-      'tvshows',
-      'episodes'
-    ]),
+    computed: mapState({
+      movies: state => state.movies.lists,
+      tvshows: state => state.tvshows,
+      episodes: state => state.episodes
+    }),
     created () {
     }
   }

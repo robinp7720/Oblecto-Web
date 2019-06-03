@@ -6,6 +6,12 @@
                v-bind:movies="movies.popularity"/>
     <MovieList title="Recently released movies"
                v-bind:movies="movies.releaseDate"/>
+
+    <MovieList v-for="(set, index) in sets"
+             v-bind:title="set.setName"
+             v-bind:key="set.id"
+             v-bind:movies="set.movies"
+    ></MovieList>
   </div>
 </template>
 
@@ -18,14 +24,13 @@
     components: {
       MovieList: MovieList
     },
-    computed: mapState([
-      'movies'
-    ]),
+    computed: mapState('movies', {
+      movies: state => state.lists,
+      sets: state => state.sets
+    }),
     data () {
       return {
-        recent: [],
-        popular: [],
-        releaseDate: []
+
       }
     },
     created: function () {
