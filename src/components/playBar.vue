@@ -129,9 +129,9 @@
 
         this.qualityPopUp = false
 
-        if (this.playing.entity.trackMovies !== undefined) {
+        if (this.playing.entity.trackMovies !== undefined & this.playing.entity.trackMovies[0] !== undefined) {
           this.playing.entity.trackMovies[0].time = this.initialProgress + this.player.currentTime
-        } else {
+        } else if (this.playing.entity.trackEpisodes !== undefined & this.playing.entity.trackEpisodes[0] !== undefined) {
           this.playing.entity.trackEpisodes[0].time = this.initialProgress + this.player.currentTime
         }
 
@@ -209,6 +209,7 @@
     watch: {
       playing: async function (newState, oldState) {
         this.initialProgress = 0
+        this.file = 0
 
         if (this.playing.entity === undefined) {
           return
