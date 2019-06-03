@@ -31,7 +31,7 @@
     ]),
     methods: {
       async changeHost () {
-        this.$store.dispatch('up dateHost', prompt('New host?'))
+        this.$store.dispatch('updateHost', prompt('New host?'))
       },
       async submit () {
         let credentials = {
