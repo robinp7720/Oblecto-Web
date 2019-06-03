@@ -1,6 +1,9 @@
 <template>
   <div class="container">
     <div class="form" @keyup.enter="submit">
+      <div class="logo">
+        <img v-bind:src="host + '/web/logo.png'" alt="">
+      </div>
       <label for="username">Username</label>
       <input type="text" id="username" v-model="credentials.username">
       <label for="password">Password</label>
@@ -126,4 +129,10 @@
     padding: 10px  0
     border: none
     margin-top: 20px
+
+  .logo
+    img
+      display: block
+      width: 50%
+      margin: 20px auto
 </style>
