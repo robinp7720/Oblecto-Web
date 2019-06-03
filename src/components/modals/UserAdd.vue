@@ -6,13 +6,13 @@
       </div>
       <div class="body">
         <label for="name">Name:</label>
-        <input type="text" id="name" v-model="name">
+        <input type="text" id="name" v-model="name" v-bind:class="{invalid: name === ''}">
         <label for="username">Username:</label>
-        <input type="text" id="username" v-model="username">
+        <input type="text" id="username" v-model="username" v-bind:class="{invalid: username === ''}">
         <label for="email">Email:</label>
-          <input type="text" id="email" v-model="email">
+          <input type="text" id="email" v-model="email" v-bind:class="{invalid: email === ''}">
         <label for="password">Password:</label>
-          <input type="text" id="password" v-model="password">
+          <input type="text" id="password" v-model="password" v-bind:class="{invalid: password === ''}">
       </div>
       <div class="footer">
         <button class="success" v-on:click="addUser">Add user</button>
@@ -36,12 +36,28 @@
       beforeOpen (event) {
       },
       async addUser () {
-        await this.axios.post('/user', {
-          name: this.name,
-          username: this.username,
-          email: this.email,
-          password: this.password
-        })
+        try {
+          await this.axios.post('/user', {
+            name: this.name,
+            username: this.username,
+            email: this.email,
+            password: this.password
+          })
+
+          this.$notify({
+            group: 'system',
+            title: 'User has been created successfully',
+            text: 'You can now login with the username: ' + this.name,
+            type: 'success'
+          })
+        } catch (e) {
+          this.$notify({
+            group: 'system',
+            title: 'User could not be created',
+            text: 'Maybe not all fields are filled?',
+            type: 'error'
+          })
+        }
       }
     }
   }
@@ -65,9 +81,17 @@
 
   label
     display: block
+    margin: 5px
+    margin-left: 0
 
   input
     margin-bottom: 10px
+    border-radius: 0
+    padding: 10px
+    width: 100%
+    border: 2px #a8cca1 solid
+  .invalid
+    border-color: #ff9f78
 
   .footer
     background-color: rgba(0,0,0,0.3)
