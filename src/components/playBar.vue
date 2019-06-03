@@ -16,6 +16,24 @@
       <div class="right">
         <a v-on:click="playNext" v-if="progress > 0.9 & playing.type === 'episode'">Next Episode</a>
 
+        <div class="quality-selector" v-if="qualityPopUp">
+          <ul>
+            <li
+              v-for="(file, index) in playing.entity.files"
+              v-bind:key="file.id"
+              v-on:click="changeFileId(index)"
+            >
+              {{ file.name }}
+            </li>
+          </ul>
+        </div>
+
+
+
+        <span v-on:click="qualityPopUp = !qualityPopUp" v-if="showVideo" class="toggle-button">
+          <FontAwesomeIcon :icon="iconCog"/>
+        </span>
+
         <span v-on:click="stopPlaying" v-if="showVideo" class="toggle-button">
           <FontAwesomeIcon :icon="iconStop"/>
         </span>
@@ -46,6 +64,7 @@
   import faPause from '@fortawesome/fontawesome-free-solid/faPause'
   import faFullscreen from '@fortawesome/fontawesome-free-solid/faExpandArrowsAlt'
   import faDeFullscreen from '@fortawesome/fontawesome-free-solid/faCompress'
+  import faCog from '@fortawesome/fontawesome-free-solid/faCog'
 
   import { mapState } from 'vuex'
 
@@ -65,8 +84,10 @@
         initialProgress: 0,
         playbarTimeout: 0,
         showVideo: false,
-        nextepisode: false
+        nextepisode: false,
+        qualityPopUp: false,
 
+        file: 0
       }
     },
     computed: {
@@ -97,19 +118,47 @@
       iconDeFullscreen () {
         return faDeFullscreen
       },
+      iconCog () {
+        return faCog
+      },
       ...mapState(['playing'])
     },
     methods: {
-      updateURL: function () {
-        if (this.playing.entity.files[0].extension !== 'mp4') {
-          this.player.src = `${this.axios.defaults.baseURL}/stream/${this.playing.entity.files[0].id}/${this.initialProgress}`
+      changeFileId: function (id) {
+        this.file = id
+
+        this.qualityPopUp = false
+
+        if (this.playing.entity.trackMovies) {
+          this.playing.entity.trackMovies[0].time = this.initialProgress + this.player.currentTime
         } else {
-          this.player.src = `${this.axios.defaults.baseURL}/stream/${this.playing.entity.files[0].id}`
+          this.playing.entity.trackEpisodes[0].time = this.initialProgress + this.player.currentTime
+        }
+
+        let tracking = this.playing.entity.trackMovies || this.playing.entity.trackEpisodes
+
+        this.initialProgress = 0
+
+        if (this.playing.entity.files[this.file].extension !== 'mp4') {
+          if (tracking[0] !== undefined) {
+            this.initialProgress = tracking[0].time
+          }
+        }
+
+        this.player.src = ''
+
+        this.updateURL()
+      },
+      updateURL: function () {
+        if (this.playing.entity.files[this.file].extension !== 'mp4') {
+          this.player.src = `${this.axios.defaults.baseURL}/stream/${this.playing.entity.files[this.file].id}/${this.initialProgress}`
+        } else {
+          this.player.src = `${this.axios.defaults.baseURL}/stream/${this.playing.entity.files[this.file].id}`
         }
       },
       seek: function (event) {
         // Calculate the offset in seconds from where the user clecked on the seekbar
-        let position = this.playing.entity.files[0].duration * event.clientX / document.documentElement.clientWidth
+        let position = this.playing.entity.files[this.file].duration * event.clientX / document.documentElement.clientWidth
 
         // If the file isn't an mp4 file, the broweser most likely won't be able to seek it. Therefore
         // server-side seeking must be used
@@ -117,7 +166,7 @@
         /* TODO: Client should also ask the server if server side real time transcoding is enabled. If it's not, it
             should tell the user that the file cannot be streamed if the client does not natively support it */
 
-        if (this.playing.entity.files[0].extension !== 'mp4') {
+        if (this.playing.entity.files[this.file].extension !== 'mp4') {
           this.initialProgress = position
           this.updateURL()
         } else {
@@ -169,7 +218,7 @@
 
         let tracking = this.playing.entity.trackMovies || this.playing.entity.trackEpisodes
 
-        if (this.playing.entity.files[0].extension !== 'mp4') {
+        if (this.playing.entity.files[this.file].extension !== 'mp4') {
           if (tracking[0] !== undefined) {
             this.initialProgress = tracking[0].time
           }
@@ -229,7 +278,7 @@
 </script>
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
-<style lang="sass">
+<style lang="sass" scoped>
 
   video
     width: 100%
@@ -320,6 +369,24 @@
     background-color: #ae6600
 
     box-shadow: 0px 0px 5px 0px rgba(0, 0, 0, 0.75)
+
+  .quality-selector
+    position: fixed
+    bottom: 50px
+    right: 10px
+    width: auto
+    background: #696060
+    box-shadow: 0px 0px 5px 0px rgba(0, 0, 0, 0.75)
+
+    ul
+      list-style: none
+      border-radius: 3px
+      li
+        padding: 20px
+        cursor: pointer
+      li:hover
+          background-color: rgba(0,0,0,0.5)
+
 
 
 
