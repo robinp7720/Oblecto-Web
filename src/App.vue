@@ -8,16 +8,13 @@
 
     <notifications group="system" />
 
-    <NavBar
-      v-if="$router.history.current.name !== 'PlayEpisode' &&
-      $router.history.current.name !== 'login' &&
-      $router.history.current.name !== 'PlayMovie'"/>
+    <NavBar v-if="$router.history.current.name !== 'login'"/>
 
-    <div class="watching" v-if="$router.history.current.name !== 'PlayEpisode' && $router.history.current.name !== 'login' && $router.history.current.name !== 'PlayMovie'">
+    <div class="watching" v-if="$router.history.current.name !== 'login'">
       <WatchPanel/>
     </div>
 
-    <playBar/>
+    <playBar v-if="$router.history.current.name !== 'login'"/>
 
     <transition name="fade" mode="out-in">
       <router-view/>
