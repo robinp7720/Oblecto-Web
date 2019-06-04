@@ -8,7 +8,7 @@
     <div class="bar" ref="bar" v-bind:class="{hiddenBar: !(playbarTimeout < 20 || format === 2)}">
 
       <div class="progressbarContainer" v-on:click="seek">
-        <div class="progressbar" v-bind:style="{ width: progress * 100 + '%' }"></div>
+        <div v-bind:class="{loading}" class="progressbar" v-bind:style="{ width: progress * 100 + '%' }"></div>
       </div>
 
       <span class="title">{{ playing.title }}</span>
@@ -78,6 +78,8 @@
         paused: true,
         progress: 0,
 
+        loading: false,
+
         format: 1, //  1 = large screen, 2 = Small View, 3 = Fullscreen
 
         fullscreenEnabled: document.fullscreenEnabled,
@@ -126,6 +128,7 @@
     methods: {
       changeFileId: function (id) {
         this.file = id
+        this.loading = true
 
         this.qualityPopUp = false
 
@@ -168,6 +171,7 @@
 
         if (this.playing.entity.files[this.file].extension !== 'mp4') {
           this.initialProgress = position
+          this.loading = true
           this.updateURL()
         } else {
           this.player.currentTime = position
@@ -192,6 +196,8 @@
 
         this.showVideo = false
         this.paused = true
+        this.loading = false
+        this.progress = 0
       },
       playPause: function () {
         if (this.player.paused) {
@@ -216,6 +222,8 @@
           return
         }
 
+        this.loading = true
+
         this.showVideo = true
 
         let tracking = this.playing.entity.trackMovies || this.playing.entity.trackEpisodes
@@ -232,6 +240,14 @@
       }
     },
     mounted: function () {
+      this.player.addEventListener('waiting', () => {
+        this.loading = true
+      })
+
+      this.player.addEventListener('playing', () => {
+        this.loading = false
+      })
+
       this.player.addEventListener('loadedmetadata', () => {
         let tracking = this.playing.entity.trackMovies || this.playing.entity.trackEpisodes
 
@@ -241,6 +257,7 @@
 
         this.player.play()
         this.paused = false
+        this.loading = false
       })
 
       this.player.addEventListener('timeupdate', () => {
@@ -280,7 +297,7 @@
 </script>
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
-<style lang="sass" scoped>
+<style lang="sass">
 
   video
     width: 100%
@@ -371,6 +388,21 @@
     background-color: #ae6600
 
     box-shadow: 0px 0px 5px 0px rgba(0, 0, 0, 0.75)
+
+
+  @keyframes loading
+    from
+      left: -10%
+    to
+      left: 100%
+
+  .loading
+    width: 10% !important
+    position: relative
+    animation-name: loading
+    animation-timing-function: linear
+    animation-iteration-count: infinite
+    animation-duration: 4s
 
   .quality-selector
     position: fixed
