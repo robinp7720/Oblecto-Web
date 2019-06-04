@@ -209,6 +209,7 @@
     watch: {
       playing: async function (newState, oldState) {
         this.initialProgress = 0
+        this.progress = 0
         this.file = 0
 
         if (this.playing.entity === undefined) {
