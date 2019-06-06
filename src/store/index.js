@@ -69,6 +69,8 @@ export default new Vuex.Store({
       await dispatch('episodes/getEpisodes', { sort: 'firstAired', order: 'DESC' })
       await dispatch('episodes/getEpisodes', { sort: 'createdAt', order: 'DESC' })
 
+      await dispatch('updateWatching')
+
       commit('initialLoaded', true)
     },
     logout: function (state) {

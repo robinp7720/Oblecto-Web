@@ -32,8 +32,7 @@
       'watchingMovies'
     ]),
     created () {
-      // let self = this
-      this.$store.dispatch('updateWatching')
+
     },
     methods: {
     }
