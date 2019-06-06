@@ -29,10 +29,10 @@
       ShowList: ShowList,
       EpisodeList: EpisodeList
     },
-    computed: mapState([
-      'tvshows',
-      'episodes'
-    ]),
+    computed: mapState({
+      tvshows: state => state.tvshows.lists,
+      episodes: state => state.episodes.lists
+    }),
     created () {
 
     }

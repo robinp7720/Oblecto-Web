@@ -43,8 +43,8 @@
     },
     computed: mapState({
       movies: state => state.movies.lists,
-      tvshows: state => state.tvshows,
-      episodes: state => state.episodes
+      tvshows: state => state.tvshows.lists,
+      episodes: state => state.episodes.lists
     }),
     created () {
     }

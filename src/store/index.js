@@ -57,16 +57,17 @@ export default new Vuex.Store({
       dispatch('movies/getMovieSets')
 
       // Update all tv shows in vuex storage
-      dispatch('getTVShows', { sort: 'createdAt', order: 'DESC' })
-      dispatch('getTVShows', { sort: 'siteRating', order: 'DESC' })
-      dispatch('getTVShows', { sort: 'siteRatingCount', order: 'DESC' })
+      dispatch('tvshows/getTVShows', { sort: 'createdAt', order: 'DESC' })
+      dispatch('tvshows/getTVShows', { sort: 'siteRating', order: 'DESC' })
+      dispatch('tvshows/getTVShows', { sort: 'siteRatingCount', order: 'DESC' })
 
       // Update all episodes in vuex storage
-      dispatch('getEpisodes', { sort: 'firstAired', order: 'DESC' })
-      dispatch('getEpisodes', { sort: 'createdAt', order: 'DESC' })
+      dispatch('episodes/getEpisodes', { sort: 'firstAired', order: 'DESC' })
+      dispatch('episodes/getEpisodes', { sort: 'createdAt', order: 'DESC' })
     },
     logout: function (state) {
       state.commit('saveWatchingEpisodes', [])
+      state.dispatch('clearPlaying')
     },
     updateWatching: async function (state) {
       let { data: episodes } = await Vue.axios.get(`/episodes/watching`)

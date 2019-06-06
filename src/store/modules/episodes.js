@@ -2,7 +2,7 @@ import * as types from '../mutation-types'
 import Vue from 'vue'
 
 const state = {
-
+  lists: {}
 }
 
 const getters = {
@@ -19,11 +19,12 @@ const actions = {
 
 const mutations = {
   [types.RECEIVE_EPISODES] (state, { episodes, sort }) {
-    state[sort] = episodes
+    state.lists[sort] = episodes
   }
 }
 
 export default {
+  namespaced: true,
   state,
   getters,
   actions,
