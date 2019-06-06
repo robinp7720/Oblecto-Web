@@ -10,6 +10,7 @@ import VueAuthenticate from 'vue-authenticate'
 import { Tabs, Tab } from 'vue-tabs-component'
 import VModal from 'vue-js-modal'
 import Notifications from 'vue-notification'
+import VueSocketio from 'vue-socket.io'
 
 Vue.use(VModal)
 
@@ -17,12 +18,11 @@ Vue.use(Notifications)
 
 Vue.use(VueAxios, axios)
 
-if (OBLECTO_HOST) {
-  store.dispatch('updateHost', OBLECTO_HOST)
-} else {
-  let port = window.location.port || '80'
-  store.dispatch('updateHost', window.location.protocol + '//' + window.location.hostname + ':' + port)
-}
+let host = OBLECTO_HOST ||
+  window.location.protocol + '//' + window.location.hostname + ':' + (window.location.port || '80')
+
+store.dispatch('updateHost', host)
+Vue.use(VueSocketio, host)
 
 // Initiate Vue authenticate
 Vue.use(VueAuthenticate)

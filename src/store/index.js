@@ -43,10 +43,6 @@ export default new Vuex.Store({
     },
     updateHost: function (state, host) {
       Vue.set(state, 'host', host)
-
-      // Update sockets and axios http urls
-      Vue.use(VueSocketio, host)
-      Vue.axios.defaults.baseURL = host
     },
     initialLoaded: function (state, initialLoaded) {
       Vue.set(state, 'initialLoaded', initialLoaded)
@@ -87,6 +83,10 @@ export default new Vuex.Store({
     },
     updateHost: function (state, host) {
       state.commit('updateHost', host)
+
+      // Update sockets and axios http urls
+      Vue.use(VueSocketio, host)
+      Vue.axios.defaults.baseURL = host
     },
     clearPlaying: function (state) {
       state.commit('setPlaying', {})
