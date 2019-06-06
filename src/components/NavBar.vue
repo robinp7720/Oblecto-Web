@@ -61,7 +61,6 @@
       search: function (event) {
         this.$store.dispatch('search', this.searchText)
         this.$router.push({ name: 'Search' })
-        console.log(this.$router.history.current.name)
       },
       logout: function (event) {
         this.$socket.disconnect()
