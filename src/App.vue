@@ -6,7 +6,7 @@
     <MovieDialogModal/>
     <EpisodeDialogModal/>
 
-    <notifications group="system" />
+    <notifications group="system" classes="system-notification" position="bottom center" />
 
     <NavBar v-if="$router.history.current.name !== 'login' && loaded"/>
 
@@ -71,6 +71,20 @@
 </script>
 
 <style lang="sass">
+  .system-notification
+    background-color: #272222
+    padding: 7px 10px
+    border: 1px solid lighten(#272222, 10)
+    margin-bottom: 4px
+
+    .notification-title
+      font:
+        size: 0.8em
+
+    .notification-content
+      font:
+        size: 0.9em
+
   #app
     background: #696060 /* Old browsers */
     background: -moz-linear-gradient(to bottom, #696060 0%, #55535b 36%, #28343b 100%) /* FF3.6-15 */
