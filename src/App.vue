@@ -8,24 +8,33 @@
 
     <notifications group="system" />
 
-    <NavBar v-if="$router.history.current.name !== 'login'"/>
+    <NavBar v-if="$router.history.current.name !== 'login' && loaded"/>
 
-    <div class="watching" v-if="$router.history.current.name !== 'login'">
+    <div class="watching" v-if="$router.history.current.name !== 'login' && loaded">
       <WatchPanel/>
     </div>
 
-    <playBar v-if="$router.history.current.name !== 'login'"/>
+    <playBar v-if="$router.history.current.name !== 'login' && loaded"/>
 
-    <transition name="fade" mode="out-in">
-      <router-view/>
+
+    <transition name="long-fade" mode="out">
+      <LoadingPage v-if="$router.history.current.name !== 'login' && !loaded"></LoadingPage>
     </transition>
+
+    <transition name="fade" mode="out-in" v-if="$router.history.current.name === 'login' || loaded">
+      <router-view />
+    </transition>
+
   </div>
 </template>
 
 <script>
+  import { mapState } from 'vuex'
+
   import NavBar from '@/components/NavBar'
   import WatchPanel from '@/components/WatchPanel'
   import playBar from '@/components/playBar'
+  import LoadingPage from '@/components/LoadingPage'
 
   // Modals
   import ShowDialogModal from '@/components/modals/ShowDialog'
@@ -44,8 +53,12 @@
       UserAddModal,
       MovieDialogModal,
       EpisodeDialogModal,
-      playBar
+      playBar,
+      LoadingPage
     },
+    computed: mapState({
+      loaded: state => state.initialLoaded
+    }),
     created () {
 
     },
@@ -96,7 +109,12 @@
   .fade-enter-active, .fade-leave-active
     transition: opacity .2s ease
 
+  .long-fade-enter-active, .long-fade-leave-active
+    transition: opacity .7s ease
+
   .fade-enter, .fade-leave-active
+    opacity: 0
+  .long-fade-enter, .long-fade-leave-active
     opacity: 0
 
   .child-view

@@ -10,6 +10,7 @@ Vue.use(Vuex)
 export default new Vuex.Store({
   state: {
     host: null,
+    initialLoaded: false,
     shows: {},
     watchingEpisodes: [],
     watchingMovies: [],
@@ -46,28 +47,34 @@ export default new Vuex.Store({
       // Update sockets and axios http urls
       Vue.use(VueSocketio, host)
       Vue.axios.defaults.baseURL = host
+    },
+    initialLoaded: function (state, initialLoaded) {
+      Vue.set(state, 'initialLoaded', initialLoaded)
     }
   },
   actions: {
-    updateAll: ({ dispatch }) => {
+    updateAll: async ({ commit, dispatch }) => {
       // Update all movies in vuex storage
-      dispatch('movies/getMovies', { sort: 'createdAt', order: 'DESC' })
-      dispatch('movies/getMovies', { sort: 'popularity', order: 'DESC' })
-      dispatch('movies/getMovies', { sort: 'releaseDate', order: 'DESC' })
-      dispatch('movies/getMovieSets')
+      await dispatch('movies/getMovies', { sort: 'createdAt', order: 'DESC' })
+      await dispatch('movies/getMovies', { sort: 'popularity', order: 'DESC' })
+      await dispatch('movies/getMovies', { sort: 'releaseDate', order: 'DESC' })
+      await dispatch('movies/getMovieSets')
 
       // Update all tv shows in vuex storage
-      dispatch('tvshows/getTVShows', { sort: 'createdAt', order: 'DESC' })
-      dispatch('tvshows/getTVShows', { sort: 'siteRating', order: 'DESC' })
-      dispatch('tvshows/getTVShows', { sort: 'siteRatingCount', order: 'DESC' })
+      await dispatch('tvshows/getTVShows', { sort: 'createdAt', order: 'DESC' })
+      await dispatch('tvshows/getTVShows', { sort: 'siteRating', order: 'DESC' })
+      await dispatch('tvshows/getTVShows', { sort: 'siteRatingCount', order: 'DESC' })
 
       // Update all episodes in vuex storage
-      dispatch('episodes/getEpisodes', { sort: 'firstAired', order: 'DESC' })
-      dispatch('episodes/getEpisodes', { sort: 'createdAt', order: 'DESC' })
+      await dispatch('episodes/getEpisodes', { sort: 'firstAired', order: 'DESC' })
+      await dispatch('episodes/getEpisodes', { sort: 'createdAt', order: 'DESC' })
+
+      commit('initialLoaded', true)
     },
     logout: function (state) {
       state.commit('saveWatchingEpisodes', [])
       state.dispatch('clearPlaying')
+      state.commit('initialLoaded', false)
     },
     updateWatching: async function (state) {
       let { data: episodes } = await Vue.axios.get(`/episodes/watching`)
