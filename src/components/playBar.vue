@@ -23,7 +23,7 @@
               v-bind:key="file.id"
               v-on:click="changeFileId(index)"
             >
-              {{ file.name }}
+              {{ file.name }} <span class="badge">{{ file.extension }}</span>
             </li>
           </ul>
         </div>
