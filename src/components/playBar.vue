@@ -195,6 +195,7 @@
         this.$store.dispatch('clearPlaying')
 
         this.showVideo = false
+        this.qualityPopUp = false
         this.paused = true
         this.loading = false
         this.progress = 0
