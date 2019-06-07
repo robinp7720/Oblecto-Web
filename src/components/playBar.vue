@@ -19,11 +19,12 @@
         <div class="quality-selector" v-if="qualityPopUp">
           <ul>
             <li
-              v-for="(file, index) in playing.entity.files"
-              v-bind:key="file.id"
+              v-for="(FileIterator, index) in playing.entity.files"
+              v-bind:key="FileIterator.id"
               v-on:click="changeFileId(index)"
+              v-bind:class="{selected: index === PlayingFileID}"
             >
-              {{ file.name }} <span class="badge">{{ file.extension }}</span>
+              {{ FileIterator.name }} <span class="badge">{{ FileIterator.extension }}</span>
             </li>
           </ul>
         </div>
@@ -89,7 +90,7 @@
         nextepisode: false,
         qualityPopUp: false,
 
-        file: 0
+        PlayingFileID: 0
       }
     },
     computed: {
@@ -127,7 +128,7 @@
     },
     methods: {
       changeFileId: function (id) {
-        this.file = id
+        this.PlayingFileID = id
         this.loading = true
 
         this.qualityPopUp = false
@@ -142,7 +143,7 @@
 
         this.initialProgress = 0
 
-        if (this.playing.entity.files[this.file].extension !== 'mp4') {
+        if (this.playing.entity.files[this.PlayingFileID].extension !== 'mp4') {
           if (tracking[0] !== undefined) {
             this.initialProgress = tracking[0].time
           }
@@ -153,15 +154,15 @@
         this.updateURL()
       },
       updateURL: function () {
-        if (this.playing.entity.files[this.file].extension !== 'mp4') {
-          this.player.src = `${this.axios.defaults.baseURL}/stream/${this.playing.entity.files[this.file].id}/${this.initialProgress}`
+        if (this.playing.entity.files[this.PlayingFileID].extension !== 'mp4') {
+          this.player.src = `${this.axios.defaults.baseURL}/stream/${this.playing.entity.files[this.PlayingFileID].id}/${this.initialProgress}`
         } else {
-          this.player.src = `${this.axios.defaults.baseURL}/stream/${this.playing.entity.files[this.file].id}`
+          this.player.src = `${this.axios.defaults.baseURL}/stream/${this.playing.entity.files[this.PlayingFileID].id}`
         }
       },
       seek: function (event) {
         // Calculate the offset in seconds from where the user clecked on the seekbar
-        let position = this.playing.entity.files[this.file].duration * event.clientX / document.documentElement.clientWidth
+        let position = this.playing.entity.files[this.PlayingFileID].duration * event.clientX / document.documentElement.clientWidth
 
         // If the file isn't an mp4 file, the broweser most likely won't be able to seek it. Therefore
         // server-side seeking must be used
@@ -169,7 +170,7 @@
         /* TODO: Client should also ask the server if server side real time transcoding is enabled. If it's not, it
             should tell the user that the file cannot be streamed if the client does not natively support it */
 
-        if (this.playing.entity.files[this.file].extension !== 'mp4') {
+        if (this.playing.entity.files[this.PlayingFileID].extension !== 'mp4') {
           this.initialProgress = position
           this.loading = true
           this.updateURL()
@@ -217,7 +218,7 @@
       playing: async function (newState, oldState) {
         this.initialProgress = 0
         this.progress = 0
-        this.file = 0
+        this.PlayingFileID = 0
 
         if (this.playing.entity === undefined) {
           return
@@ -229,7 +230,7 @@
 
         let tracking = this.playing.entity.trackMovies || this.playing.entity.trackEpisodes
 
-        if (this.playing.entity.files[this.file].extension !== 'mp4') {
+        if (this.playing.entity.files[this.PlayingFileID].extension !== 'mp4') {
           if (tracking[0] !== undefined) {
             this.initialProgress = tracking[0].time
           }
@@ -419,6 +420,8 @@
       li
         padding: 20px
         cursor: pointer
+      li.selected
+        background-color: rgba(0,0,0,0.3)
       li:hover
           background-color: rgba(0,0,0,0.5)
 
