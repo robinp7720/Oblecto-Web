@@ -273,7 +273,7 @@
           this.playbarTimeout += 1
         }
 
-        this.progress = (this.initialProgress + this.player.currentTime) / this.playing.entity.files[0].duration
+        this.progress = (this.initialProgress + this.player.currentTime) / this.playing.entity.files[this.PlayingFileID].duration
 
         switch (this.playing.type) {
           case 'episode':
