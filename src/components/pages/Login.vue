@@ -7,7 +7,7 @@
       <label for="username">Username</label>
       <input type="text" id="username" v-model="credentials.username">
       <label for="password">Password</label>
-      <input type="text" id="password" type="password" v-model="credentials.password">
+      <input id="password" type="password" v-model="credentials.password">
       <div class="bottom">
         <span class="server-indicator">{{ host }} <a v-on:click="changeHost" class="nav-link">Change</a></span>
       <button type="submit" @click="submit">Login</button>
