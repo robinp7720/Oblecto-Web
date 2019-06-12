@@ -59,8 +59,7 @@
     },
     methods: {
       search: function (event) {
-        this.$store.dispatch('search', this.searchText)
-        this.$router.push({ name: 'Search' })
+        this.$router.push({ name: 'Search', params: { search: this.searchText } })
       },
       logout: function (event) {
         this.$socket.disconnect()

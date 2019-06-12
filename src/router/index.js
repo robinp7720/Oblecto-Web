@@ -57,7 +57,7 @@ const router = new Router({
       meta: { requiresAuth: true }
     },
     {
-      path: '/search',
+      path: '/search/:search',
       name: 'Search',
       component: Search,
       meta: { requiresAuth: true }

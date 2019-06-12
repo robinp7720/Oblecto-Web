@@ -14,8 +14,6 @@
   import EpisodeList from '@/components/itemLists/EpisodeList'
   import ShowList from '@/components/itemLists/ShowList'
 
-  import { mapState } from 'vuex'
-
   export default {
     name: 'Search',
     components: {
@@ -23,9 +21,37 @@
       EpisodeList,
       ShowList
     },
-    computed: mapState([
-      'searchResults'
-    ])
+    data () {
+      return {
+        searchResults: {
+          episodes: [],
+          movies: [],
+          shows: []
+        }
+      }
+    },
+
+    methods: {
+      async search (query) {
+        let { data: episodes } = await this.axios.get(`/episodes/search/${query}`)
+        let { data: movies } = await this.axios.get(`/movies/search/${query}`)
+        let { data: shows } = await this.axios.get(`/shows/search/${query}`)
+
+        this.searchResults = {
+          episodes, movies, shows
+        }
+      }
+    },
+
+    watch: {
+      async '$route' (to, from) {
+        this.search(to.params.search)
+      }
+    },
+
+    async created () {
+      this.search(this.$route.params.search)
+    }
   }
 </script>
 
