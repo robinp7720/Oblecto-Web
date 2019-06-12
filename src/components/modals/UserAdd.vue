@@ -12,7 +12,7 @@
         <label for="email">Email:</label>
           <input type="text" id="email" v-model="email" v-bind:class="{invalid: email === ''}">
         <label for="password">Password:</label>
-          <input type="text" id="password" type="password" v-model="password" v-bind:class="{invalid: password === ''}">
+          <input id="password" type="password" v-model="password" v-bind:class="{invalid: password === ''}">
       </div>
       <div class="footer">
         <button class="success" v-on:click="addUser">Add user</button>
