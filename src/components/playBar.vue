@@ -190,8 +190,13 @@
             should tell the user that the file cannot be streamed if the client does not natively support it */
 
         if (this.playing.entity.files[this.PlayingFileID].extension !== 'mp4') {
+          if (position < this.initialProgress + this.player.currentTime) {
+            this.player.currentTime = position - this.initialProgress
+
+            return
+          }
+
           this.initialProgress = position
-          this.loading = true
           this.updateURL()
         } else {
           this.player.currentTime = position
