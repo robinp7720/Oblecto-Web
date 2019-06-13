@@ -14,6 +14,10 @@
       <span class="title">{{ playing.title }}</span>
 
       <div class="right">
+        <span class="time" v-if="showVideo">
+          {{ PlayTimeDisplayValue }}/{{ DurationDisplayValue }}
+        </span>
+
         <a v-on:click="playNext" v-if="progress > 0.9 & playing.type === 'episode'">Next Episode</a>
 
         <div class="quality-selector" v-if="qualityPopUp">
@@ -120,6 +124,21 @@
       },
       iconDeFullscreen () {
         return faDeFullscreen
+      },
+      PlayTimeDisplayValue () {
+        let hours = ('0' + Math.floor(this.progress * this.playing.entity.files[this.PlayingFileID].duration / (60 * 60))).substr(-2)
+        let mins = ('0' + Math.floor(this.progress * this.playing.entity.files[this.PlayingFileID].duration / 60) % 60).substr(-2)
+        let seconds = ('0' + Math.floor(this.progress * this.playing.entity.files[this.PlayingFileID].duration) % 60).substr(-2)
+
+        return `${hours}:${mins}:${seconds}`
+      },
+
+      DurationDisplayValue () {
+        let hours = ('0' + Math.floor(this.playing.entity.files[this.PlayingFileID].duration / (60 * 60))).substr(-2)
+        let mins = ('0' + Math.floor(this.playing.entity.files[this.PlayingFileID].duration / 60) % 60).substr(-2)
+        let seconds = ('0' + Math.floor(this.playing.entity.files[this.PlayingFileID].duration) % 60).substr(-2)
+
+        return `${hours}:${mins}:${seconds}`
       },
       iconCog () {
         return faCog
