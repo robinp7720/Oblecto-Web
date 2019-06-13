@@ -140,7 +140,7 @@
     text-align: right
 
   .nav-left
-    height: 100%
+    height: 50px
     vertical-align: center
     float: left
     .links
