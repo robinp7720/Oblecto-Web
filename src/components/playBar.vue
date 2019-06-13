@@ -272,7 +272,16 @@
       })
 
       this.player.addEventListener('playing', () => {
+        this.paused = false
         this.loading = false
+      })
+
+      this.player.addEventListener('pause', () => {
+        this.paused = true
+      })
+
+      this.player.addEventListener('play', () => {
+        this.paused = false
       })
 
       this.player.addEventListener('loadedmetadata', () => {
