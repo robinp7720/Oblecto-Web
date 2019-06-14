@@ -15,7 +15,7 @@
 
       <div class="right">
         <span class="time" v-if="showVideo">
-          {{ PlayTimeDisplayValue }}/{{ DurationDisplayValue }}
+          {{ PlayTimeDisplayValue }} / {{ DurationDisplayValue }}
         </span>
 
         <a v-on:click="playNext" v-if="progress > 0.9 & playing.type === 'episode'">Next Episode</a>
@@ -219,6 +219,7 @@
         this.player.src = ''
 
         this.$store.dispatch('clearPlaying')
+        this.$store.dispatch('updateWatching')
 
         this.showVideo = false
         this.qualityPopUp = false
@@ -282,6 +283,10 @@
 
       this.player.addEventListener('play', () => {
         this.paused = false
+      })
+
+      this.player.addEventListener('ended', () => {
+        this.$store.dispatch('updateWatching')
       })
 
       this.player.addEventListener('loadedmetadata', () => {
