@@ -14,6 +14,7 @@ export default new Vuex.Store({
     shows: {},
     watchingEpisodes: [],
     watchingMovies: [],
+    nextEpisodes: [],
     playing: {
       title: ''
     }
@@ -26,6 +27,9 @@ export default new Vuex.Store({
   mutations: {
     saveWatchingEpisodes: function (state, watching) {
       Vue.set(state, 'watchingEpisodes', watching)
+    },
+    saveNextEpisodes: function (state, next) {
+      Vue.set(state, 'nextEpisodes', next)
     },
     saveWatchingMovies: function (state, watching) {
       Vue.set(state, 'watchingMovies', watching)
@@ -69,9 +73,11 @@ export default new Vuex.Store({
     updateWatching: async function (state) {
       let { data: episodes } = await Vue.axios.get(`/episodes/watching`)
       let { data: movies } = await Vue.axios.get(`/movies/watching`)
+      let { data: nextEpisodes } = await Vue.axios.get(`/episodes/next`)
 
       state.commit('saveWatchingEpisodes', episodes)
       state.commit('saveWatchingMovies', movies)
+      state.commit('saveNextEpisodes', nextEpisodes)
     },
     updateHost: function (state, host) {
       state.commit('updateHost', host)

@@ -7,8 +7,8 @@
       <tab name="Tracked movies" v-bind:suffix="'<span class=badge>' + watchingMovies.length + '</span>'">
         <MovieList v-bind:movies="watchingMovies"></MovieList>
       </tab>
-      <tab name="next up" v-bind:suffix="'<span class=badge>' + watchingEpisodes.length + '</span>'">
-        <ShowList v-bind:shows="watchingEpisodes"></ShowList>
+      <tab name="next up" v-bind:suffix="'<span class=badge>' + nextEpisodes.length + '</span>'">
+        <EpisodeList v-bind:episodes="nextEpisodes"></EpisodeList>
       </tab>
     </tabs>
   </div>
@@ -29,7 +29,8 @@
     },
     computed: mapState([
       'watchingEpisodes',
-      'watchingMovies'
+      'watchingMovies',
+      'nextEpisodes'
     ]),
     created () {
 
