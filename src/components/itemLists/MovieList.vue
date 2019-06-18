@@ -69,8 +69,7 @@
     overflow: hidden
     overflow-x: visible
     white-space: nowrap
-    padding: 0
-    padding-top: 5px
+    padding: 5px 0
 
 
   .title, .title h3
