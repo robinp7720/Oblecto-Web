@@ -1,32 +1,19 @@
 <template>
   <div class="container">
-    <div class="show-info">
-      <div class="left">
-        <transition-group
-          name="staggered-fade"
-          tag="ul"
-          v-bind:css="false"
-          v-on:before-enter="beforeEnter"
-          v-on:enter="enter"
-          v-on:leave="leave"
-        >
-        <Show
-              v-bind:title="showData.seriesName"
-              v-bind:showId="showData.id"
-              v-bind:watching="showData.watching"
-              v-bind:key="showData.id"
-              v-bind:show="showData"
-        ></Show>
-        </transition-group>
-      </div>
-      <div class="right">
+    <div class="show">
+      <div class="info-container" v-if="Object.keys(series).length > 0">
         <div class="info">
-          <h2>{{ showData.seriesName }}</h2>
-          <span id="year">{{ showData.firstAired }}</span>
-          <p>
-            {{ showData.overview }}
-          </p>
-          <ul class="genres"><li class="genre" v-for="genre in showData.genre">{{ genre }}</li></ul>
+          <div class="banner">
+            <img v-bind:src="host + '/series/' + showData.id + '/poster'" alt="">
+          </div>
+          <div class="right">
+            <h2>{{ showData.seriesName }} <span class="year">First aired on {{ showData.firstAired }}</span></h2>
+            <p>
+              {{ showData.overview }}
+            </p>
+            <ul class="genres"><li class="genre" v-for="genre in showData.genre">{{ genre }}</li></ul>
+          </div>
+        </div>
         </div>
         <div class="episodes">
           <EpisodeList
@@ -39,8 +26,6 @@
           </EpisodeList>
 
         </div>
-
-      </div>
     </div>
   </div>
 </template>
@@ -49,8 +34,8 @@
   import Show from '@/components/itemTypes/Show'
   import WatchPanel from '@/components/WatchPanel'
   import EpisodeList from '@/components/itemLists/EpisodeList'
+  import { mapState } from 'vuex'
   import axios from 'axios'
-  import Velocity from 'velocity-animate'
 
   export default {
     name: 'SeriesView',
@@ -65,6 +50,9 @@
         'series': {}
       }
     },
+    computed: mapState([
+      'host'
+    ]),
     created () {
       axios.get('/series/' + this.$route.params.seriesId + `/info`)
         .then(response => {
@@ -88,30 +76,7 @@
         })
     },
     methods: {
-      beforeEnter: function (el) {
-        el.style.opacity = 0
-        el.style.height = 0
-      },
-      enter: function (el, done) {
-        var delay = el.dataset.index * 150
-        setTimeout(function () {
-          Velocity(
-            el,
-            { opacity: 1, width: '136px' },
-            { complete: done }
-          )
-        }, delay)
-      },
-      leave: function (el, done) {
-        var delay = el.dataset.index * 150
-        setTimeout(function () {
-          Velocity(
-            el,
-            { opacity: 0, width: 0 },
-            { complete: done }
-          )
-        }, delay)
-      }
+
     },
     watch: {
       '$route' (to, from) {
@@ -145,63 +110,53 @@
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style scoped lang="sass">
 
-.staggered-fade-move
-  transition: transform 1s
+.info-container
+  padding: 0 10px
 
 .info
-  margin-top: -5px
-  background-color: rgba(0,0,0,0.3)
-
-  padding: 20px 30px
-
-  -webkit-border-radius: 3px
-  -moz-border-radius: 3px
+  font-size: 1.1em
   border-radius: 3px
-  margin: 0 10px
-
-  @media screen and (min-width: 600px)
-    margin: 0
-    margin-right: 20px
-
-  //box-shadow: 0px 0px 5px 2px rgba(darken(#55535b, 20), 0.75)
-  h2
-    margin-top: 5px
-
-.show-info
+  background-color: rgba(0,0,0,0.5)
   overflow: hidden
+  box-shadow: 0px 2px 5px 2px rgba(darken(darken(#696060,17) + #000000,6), 0.75)
 
-.left
-  width: 100%
-  float: left
-  overflow: hidden
-  text-align: center
-  @media screen and (min-width: 600px)
-    width: 25%
+  .banner
+    height: 300px
     float: left
-    overflow: hidden
-    ul
-      position: fixed
-      right: 75%
-      min-height: 10px
+    margin-right: 20px
+    img
+      height: 100%
 
+  .right
+    padding: 20px
 
+    h2
+      padding: 0
+      font-size: 1.2em
+      margin: 0
+      margin-bottom: 10px
 
-.right
-  width: 100%
-  float: right
-  padding-right: 0
-  overflow: hidden
-  @media screen and (min-width: 600px)
-    width: 75%
-    float: right
-    padding: 0 20px
-    padding-right: 0
-    overflow: hidden
-p
-  max-width: 700px
-  font-weight: 300
-  line-height: 1.5em
-  font-family: Poppins, Ubuntu, Lato, sans-serif
+      .year
+        font-size: 0.8em
+
+    .year, .genres
+      color: rgba(250, 240, 240, 0.6)
+      margin-bottom: 10px
+      display: inline-block
+      padding: 0
+      font-weight: normal
+
+    p
+      color: rgba(250, 240, 240, 0.9)
+      margin: 0
+      padding: 0
+
+      max-width: 900px
+
+    .genres
+      float: right
+      margin-top: 20px
+
 .episodes
   width: 100%
 
