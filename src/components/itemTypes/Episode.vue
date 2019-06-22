@@ -171,13 +171,13 @@
   @media screen and (max-width: 700px) {
 
     .episode {
-      width: 250px;
+      width: 285.6px;
       margin: 0 5px;
     }
 
     .episode-poster {
-      height: 140px;
-      width: 250px
+      height: 160px;
+      width: 285.6px
     }
 
   }
