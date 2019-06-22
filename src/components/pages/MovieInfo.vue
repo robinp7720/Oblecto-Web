@@ -8,7 +8,8 @@
             <a class="play" v-on:click="playMovie"><i class="fa fa-play" aria-hidden="true"></i></a>
           </div>
           <div class="right">
-            <h2>{{ movieData.movieName }} <span class="year">First released on {{ movieData.releaseDate }}</span></h2>
+            <h2>{{ movieData.movieName }}</h2>
+            <span class="year">First released on {{ movieData.releaseDate }}</span>
             <p>
               {{ movieData.overview }}
             </p>
