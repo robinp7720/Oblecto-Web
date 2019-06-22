@@ -3,6 +3,8 @@
     <div class="episode">
       <div class="episode-poster"
            v-bind:style="{ backgroundImage: 'url(' + host + '/episode/' + episode.id + '/banner)' }">
+
+
         <a class="play" v-on:click="playEpisode"><i class="fa fa-play" aria-hidden="true"></i></a>
         <div :title="episode.episodeName" class="title" v-if="inside">{{ episode.episodeName }}</div>
         <div v-if="progress" class="progress" v-bind:style="{ width: progress * 100 + '%' }"></div>
@@ -31,9 +33,13 @@
         this.progress = this.episode.trackEpisodes[0].progress
       }
     },
+    mounted () {
+
+    },
     data () {
       return {
-        progress: 0
+        progress: 0,
+        loaded: false
       }
     },
     sockets: {
@@ -59,9 +65,11 @@
         default: false
       }
     },
-    computed: mapState([
-      'host'
-    ]),
+    computed: {
+      ...mapState([
+        'host'
+      ])
+    },
     methods: {
       playEpisode: function (event) {
         event.preventDefault()
@@ -80,6 +88,9 @@
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style scoped>
+  .load-detector {
+
+  }
   .slide-fade-enter-active {
     transition: all .5s;
   }
@@ -155,6 +166,20 @@
     display: flex;
     align-items: center;
     justify-content: center;
+  }
+
+  @media screen and (max-width: 700px) {
+
+    .episode {
+      width: 250px;
+      margin: 0 5px;
+    }
+
+    .episode-poster {
+      height: 140px;
+      width: 250px
+    }
+
   }
 
   .actions {

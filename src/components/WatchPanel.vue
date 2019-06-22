@@ -67,6 +67,8 @@
       position: fixed
       margin: 0
 
+    @media screen and (max-width: 700px)
+      height: 316px
 
 
 </style>

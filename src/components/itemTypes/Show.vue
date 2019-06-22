@@ -110,6 +110,20 @@
     justify-content: center;
   }
 
+  @media screen and (max-width: 700px) {
+
+    .show {
+      width: 108.8px;
+      margin: 0 5px;
+    }
+
+    .show-poster {
+      height: 160px;
+      width: 108.8px;
+    }
+
+  }
+
 
   .actions {
     position: absolute;

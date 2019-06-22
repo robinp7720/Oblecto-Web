@@ -160,6 +160,31 @@
     width: 136px;
   }
 
+  @media screen and (max-width: 700px) {
+
+    .movie-horizontal {
+      width: 285.6px;
+      margin: 0 5px;
+    }
+
+    .movie-vertical {
+      width: 108.8px;
+      margin: 0 5px;
+    }
+
+    .movie-horizontal .movie-poster {
+      height: 160px;
+      width: 285.6px;
+    }
+
+    .movie-vertical .movie-poster {
+      height: 160px;
+      width: 108.8px;
+    }
+
+  }
+
+
   .actions {
     position: absolute;
     bottom: -50px;

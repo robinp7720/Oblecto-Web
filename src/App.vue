@@ -103,6 +103,9 @@
 
     color: #eee
 
+    @media screen and (max-width: 700px)
+      padding-top: 375px
+
   .v--modal
     background: #696060 /* Old browsers */
     background: -moz-linear-gradient(to bottom, #696060 0%, #55535b 36%, #28343b 100%) /* FF3.6-15 */
