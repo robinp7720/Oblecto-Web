@@ -125,6 +125,9 @@
     float: left
     margin-right: 20px
     box-shadow: 0px 2px 5px 2px rgba(darken(darken(#696060,17) + #000000,6), 0.75)
+    @media screen and (max-width: 700px)
+      height: 200px
+
     img
       height: 100%
 
