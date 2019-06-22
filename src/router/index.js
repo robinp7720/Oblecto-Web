@@ -77,7 +77,6 @@ const router = new Router({
 })
 
 router.beforeEach((to, from, next) => {
-  console.log(Store.state)
   if (to.matched.some(record => record.meta.requiresAuth)) {
     axios.get(Store.state.host + '/auth/isAuthenticated')
       .then(response => {
