@@ -1,31 +1,19 @@
 <template>
   <div class="container">
-    <div class="movie-info">
-      <div class="left">
-        <transition-group
-          name="staggered-fade"
-          tag="ul"
-          v-bind:css="false"
-          v-on:before-enter="beforeEnter"
-          v-on:enter="enter"
-          v-on:leave="leave"
-        >
-        <Movie
-              v-bind:title="movieData.movieName"
-              v-bind:movieId="movieData.id"
-              v-bind:watching="movieData.watching"
-              v-bind:key="movieData.id"
-              v-bind:movie="movieData"
-        ></Movie>
-        </transition-group>
-      </div>
-      <div class="right">
+    <div class="movie">
+      <div class="info-container" v-if="movieData.id">
         <div class="info">
-          <h2>{{ movieData.movieName }}</h2>
-          <p>
-            {{ movieData.overview }}
-          </p>
-          <ul class="genres"><li class="genre" v-for="genre in movieData.genre">{{ genre }}</li></ul>
+          <div class="poster">
+            <img v-bind:src="host + '/movie/' + movieData.id + '/poster'" alt="">
+            <a class="play" v-on:click="playMovie"><i class="fa fa-play" aria-hidden="true"></i></a>
+          </div>
+          <div class="right">
+            <h2>{{ movieData.movieName }} <span class="year">First released on {{ movieData.releaseDate }}</span></h2>
+            <p>
+              {{ movieData.overview }}
+            </p>
+            <ul class="genres"><li class="genre" v-for="genre in movieData.genre">{{ genre }}</li></ul>
+          </div>
         </div>
       </div>
     </div>
@@ -36,8 +24,8 @@
   import Movie from '@/components/itemTypes/Movie'
   import WatchPanel from '@/components/WatchPanel'
   import EpisodeList from '@/components/itemLists/EpisodeList'
+  import { mapState } from 'vuex'
   import axios from 'axios'
-  import Velocity from 'velocity-animate'
 
   export default {
     name: 'MovieInfo',
@@ -51,117 +39,130 @@
         'movieData': {}
       }
     },
+    computed: mapState([
+      'host'
+    ]),
+    methods: {
+      playMovie: function (event) {
+        event.preventDefault()
+        this.$store.dispatch('playMovie', this.movieData.id)
+      },
+      openModal: function (event) {
+        this.$modal.show('MovieDialog', { movie: this.movieData })
+      }
+    },
     async created () {
       this.movieData = (await axios.get('/movie/' + this.$route.params.movieId + `/info`)).data
-      console.log(this.movieData)
-    },
-    methods: {
-      beforeEnter: function (el) {
-        el.style.opacity = 0
-        el.style.height = 0
-      },
-      enter: function (el, done) {
-        var delay = el.dataset.index * 150
-        setTimeout(function () {
-          Velocity(
-            el,
-            { opacity: 1, width: '136px' },
-            { complete: done }
-          )
-        }, delay)
-      },
-      leave: function (el, done) {
-        var delay = el.dataset.index * 150
-        setTimeout(function () {
-          Velocity(
-            el,
-            { opacity: 0, width: 0 },
-            { complete: done }
-          )
-        }, delay)
-      }
     },
     watch: {
       async '$route' (to, from) {
-        this.movieData = await axios.get('/movie/' + this.$route.params.movieId + `/info`).data
+        this.movieData = (await axios.get('/movie/' + this.$route.params.movieId + `/info`)).data
       }
     }
   }
 </script>
 
-<!-- Add "scoped" attribute to limit CSS to this component only -->
 <style scoped lang="sass">
 
-.staggered-fade-move
-  transition: transform 1s
+  .info-container
+    padding: 0 10px
 
-.info
-  margin-top: -5px
-  background-color: rgba(0,0,0,0.3)
+  .info
+    font-size: 1.1em
+    border-radius: 3px
+    background: #696060
+    overflow: hidden
+    box-shadow: 0px 2px 5px 2px rgba(darken(darken(#696060,17) + #000000,6), 0.75)
 
-  padding: 20px 30px
+    .poster
+      position: relative
 
-  -webkit-border-radius: 3px
-  -moz-border-radius: 3px
-  border-radius: 3px
-  margin: 0 10px
+      height: 300px
+      float: left
+      margin-right: 20px
+      box-shadow: 0px 2px 5px 2px rgba(darken(darken(#696060,17) + #000000,6), 0.75)
+      img
+        height: 100%
 
-  @media screen and (min-height: 800px)
+    .right
+      padding: 20px
+
+      h2
+        padding: 0
+        font-size: 1.2em
+        margin: 0
+        margin-bottom: 10px
+
+        .year
+          font-size: 0.8em
+
+      .year, .genres
+        color: rgba(250, 240, 240, 0.6)
+        margin-bottom: 10px
+        display: inline-block
+        padding: 0
+        font-weight: normal
+
+      p
+        color: rgba(250, 240, 240, 0.9)
+        margin: 0
+        padding: 0
+
+        max-width: 900px
+
+      .genres
+        float: right
+        margin-top: 20px
+
+  .episodes
+    width: 100%
+
+  .genres
+    list-style: none
+    li
+      display: inline-block
+      margin-right: 3px
+      font-style: italic
+
+    li:after
+      content: ","
+    li:last-child:after
+      content: ''
+
+
+  a
+    color: white
+    margin: 0 5px
+    cursor: pointer
+
+  .fa
+    margin-left: 10px
+
+  a.play
+    opacity: 0
+    display: block
+    font-size: 4em
     margin: 0
-    margin-right: 20px
+    width: 100px
+    height: 100px
 
-  //box-shadow: 0px 0px 5px 2px rgba(darken(#55535b, 20), 0.75)
-  h2
-    margin-top: 5px
+    position: absolute
+    top: 100px
+    left: calc(50% - 50px)
 
-.show-info
-  overflow: hidden
+    background-color: rgba(0,0,0,0.5)
+    border: 2px solid white
+    border-radius: 100%
+    text-align: center
+    line-height: 100px
+    transition: opacity 0.2s
 
-.left
-  width: 100%
-  float: left
-  overflow: hidden
-  text-align: center
-  @media screen and (min-height: 800px)
-    width: 25%
-    float: left
-    overflow: hidden
-    ul
-      position: fixed
-      right: 75%
-      min-height: 10px
+  .poster:hover a.play
+    opacity: 0.4
+
+  a.play:hover
+    opacity: 1 !important
 
 
-
-.right
-  width: 100%
-  float: right
-  padding-right: 0
-  overflow: hidden
-  @media screen and (min-height: 800px)
-    width: 75%
-    float: right
-    padding: 0 20px
-    padding-right: 0
-    overflow: hidden
-p
-  max-width: 700px
-  font-weight: 300
-  line-height: 1.5em
-  font-family: Poppins, Ubuntu, Lato, sans-serif
-.episodes
-  width: 100%
-
-.genres
-  list-style: none
-  li
-    display: inline-block
-    margin-right: 3px
-    font-style: italic
-
-  li:after
-    content: ","
-  li:last-child:after
-    content: ''
 
 </style>
