@@ -3,7 +3,7 @@
     <div class="show">
       <div class="info-container" v-if="Object.keys(series).length > 0">
         <div class="info">
-          <div class="banner">
+          <div class="poster">
             <img v-bind:src="host + '/series/' + showData.id + '/poster'" alt="">
           </div>
           <div class="right">
@@ -116,14 +116,15 @@
 .info
   font-size: 1.1em
   border-radius: 3px
-  background-color: rgba(0,0,0,0.5)
+  background: #696060
   overflow: hidden
   box-shadow: 0px 2px 5px 2px rgba(darken(darken(#696060,17) + #000000,6), 0.75)
 
-  .banner
+  .poster
     height: 300px
     float: left
     margin-right: 20px
+    box-shadow: 0px 2px 5px 2px rgba(darken(darken(#696060,17) + #000000,6), 0.75)
     img
       height: 100%
 
