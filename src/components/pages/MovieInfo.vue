@@ -66,13 +66,16 @@
 
   .info-container
     padding: 0 10px
+    padding-top: 50px
 
   .info
-    font-size: 1.1em
+    font-size: 1em
     border-radius: 3px
     background: #696060
-    overflow: hidden
     box-shadow: 0px 2px 5px 2px rgba(darken(darken(#696060,17) + #000000,6), 0.75)
+    padding-bottom: 40px
+
+    min-height: 270px
 
     .poster
       position: relative
@@ -81,8 +84,16 @@
       float: left
       margin-right: 20px
       box-shadow: 0px 2px 5px 2px rgba(darken(darken(#696060,17) + #000000,6), 0.75)
+      border-radius: 3px
+      overflow: hidden
+
+      margin-top: -50px
+      margin-left: 20px
+      margin-bottom: 20px
+
       @media screen and (max-width: 700px)
         height: 200px
+
       img
         height: 100%
 
@@ -93,15 +104,11 @@
         padding: 0
         font-size: 1.2em
         margin: 0
-        margin-bottom: 10px
-
-        .year
-          font-size: 0.8em
+        margin-bottom: 5px
 
       .year, .genres
         color: rgba(250, 240, 240, 0.6)
         margin-bottom: 10px
-        display: inline-block
         padding: 0
         font-weight: normal
 
@@ -109,15 +116,13 @@
         color: rgba(250, 240, 240, 0.9)
         margin: 0
         padding: 0
+        margin-top: 20px
 
         max-width: 900px
 
       .genres
         float: right
         margin-top: 20px
-
-  .episodes
-    width: 100%
 
   .genres
     list-style: none
@@ -130,7 +135,6 @@
       content: ","
     li:last-child:after
       content: ''
-
 
   a
     color: white
@@ -164,6 +168,7 @@
 
   a.play:hover
     opacity: 1 !important
+
 
 
 
