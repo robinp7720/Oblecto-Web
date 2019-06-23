@@ -1,7 +1,7 @@
 <template>
   <div class="container">
     <div class="movie">
-      <div class="info-container" v-if="movieData.id">
+      <div ref="infoContainer" class="info-container" v-if="movieData.id" v-bind:style="{ backgroundImage: 'linear-gradient(to bottom, rgba(255,255,255, 0) 20%, ' + endGradient + '), url(' + host + '/movie/' + movieData.id + '/fanart)' }">
         <div class="info">
           <div class="poster">
             <img v-bind:src="host + '/movie/' + movieData.id + '/poster'" alt="">
@@ -40,7 +40,8 @@
     data () {
       return {
         'movieData': {},
-        'sets': []
+        'sets': [],
+        'endGradient': ''
       }
     },
     computed: mapState([
@@ -57,10 +58,38 @@
       update: async function () {
         this.movieData = (await axios.get('/movie/' + this.$route.params.movieId + `/info`)).data
         this.sets = (await axios.get(`/movie/${this.$route.params.movieId}/sets`)).data
+      },
+      gradientColor: function () {
+        let wh = window.innerHeight
+        let st = (wh * 0.36)
+
+        console.log(wh, st)
+        console.log()
+
+        var w1 = (this.$refs.infoContainer.getBoundingClientRect().bottom - st) / (wh - st)
+        var w2 = 1 - w1
+        /* var rgb = [
+          Math.round(105 * w1 + 85 * w2),
+          Math.round(96 * w1 + 83 * w2),
+          Math.round(96 * w1 + 91 * w2)
+        ] */
+
+        var rgb = [
+          Math.round(85 * w2 + 40 * w1),
+          Math.round(83 * w2 + 52 * w1),
+          Math.round(91 * w2 + 59 * w1)
+        ]
+        return rgb
       }
     },
     async created () {
       await this.update()
+      let g = this.gradientColor()
+      this.endGradient = `rgb(${g[0]}, ${g[1]}, ${g[2]})`
+      window.addEventListener('resize', () => {
+        let g = this.gradientColor()
+        this.endGradient = `rgb(${g[0]}, ${g[1]}, ${g[2]})`
+      })
     },
     watch: {
       async '$route' (to, from) {
@@ -73,8 +102,17 @@
 <style scoped lang="sass">
 
   .info-container
-    padding: 0 10px
-    padding-top: 50px
+    margin-top: -20px
+
+    padding: 10px 10px
+    padding-top: 300px
+
+    background-size: cover
+    background-position: center 0
+
+    position: relative
+
+    z-index: 0
 
   .info
     font-size: 1em
