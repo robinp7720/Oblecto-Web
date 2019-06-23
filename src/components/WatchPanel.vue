@@ -49,14 +49,9 @@
     margin-bottom: 20px
     width: 100%
     padding: 20px 0
-    background-color: mix(darken(#696060, 11), darken(#55535b, 11))
-    background: -moz-linear-gradient(top, darken(#696060, 11) 0%, darken(#55535b, 11) 100%)
-    /* FF3.6-15 */
-    background: -webkit-linear-gradient(top, darken(#696060, 11) 0%, darken(#55535b, 11) 100%)
-    /* Chrome10-25,Safari5.1-6 */
-    background: linear-gradient(top, darken(#696060, 11) 0%, darken(#55535b, 11) 1000%)
-    /* W3C, IE10+, FF16+, Chrome26+, Opera12+, Safari7+ */
-    box-shadow: 0px 0px 5px 2px rgba(darken(#55535b, 20), 0.75)
+
+    background: #4c4545
+    box-shadow: 0 0 5px 2px rgba(35, 34, 38, 0.75)
     z-index: 2
 
     // The height of the panel if it is populated with shows.
