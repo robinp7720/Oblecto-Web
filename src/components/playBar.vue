@@ -369,7 +369,7 @@
       box-shadow: 0px 0px 5px 2px rgba(darken(darken(#696060,17) + #000000, 6), 0.75)
 
     .hiddenBar
-      bottom: -64px
+      bottom: -70px
 
     .player
       position: fixed
