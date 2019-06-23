@@ -1,7 +1,7 @@
 <template>
   <div class="container">
     <div class="movie">
-      <div ref="infoContainer" class="info-container" v-if="movieData.id" v-bind:style="{ backgroundImage: 'linear-gradient(to bottom, rgba(255,255,255, 0) 20%, ' + endGradient + '), url(' + host + '/movie/' + movieData.id + '/fanart)' }">
+      <div ref="infoContainer" class="info-container" v-if="movieData.id" v-bind:style="{ backgroundImage: 'linear-gradient(to bottom, rgba(255,255,255, 0) 40%, ' + endGradient + ' 80%), url(' + host + '/movie/' + movieData.id + '/fanart)' }">
         <div class="info">
           <div class="poster">
             <img v-bind:src="host + '/movie/' + movieData.id + '/poster'" alt="">
@@ -41,7 +41,8 @@
       return {
         'movieData': {},
         'sets': [],
-        'endGradient': ''
+        'endGradient': '',
+        'infoBottom': 0
       }
     },
     computed: mapState([
@@ -60,36 +61,55 @@
         this.sets = (await axios.get(`/movie/${this.$route.params.movieId}/sets`)).data
       },
       gradientColor: function () {
+        let infoBottom = this.$refs.infoContainer.getBoundingClientRect().bottom
+
         let wh = window.innerHeight
         let st = (wh * 0.36)
 
-        console.log(wh, st)
-        console.log()
+        var w1 = infoBottom / st
 
-        var w1 = (this.$refs.infoContainer.getBoundingClientRect().bottom - st) / (wh - st)
         var w2 = 1 - w1
-        /* var rgb = [
-          Math.round(105 * w1 + 85 * w2),
-          Math.round(96 * w1 + 83 * w2),
-          Math.round(96 * w1 + 91 * w2)
-        ] */
 
         var rgb = [
+          Math.round(105 * w2 + 85 * w1),
+          Math.round(96 * w2 + 83 * w1),
+          Math.round(96 * w2 + 91 * w1)
+        ]
+
+        if ((infoBottom - st) < 0) {
+          return rgb
+        }
+
+        w1 = ((infoBottom - st)) / (wh - st)
+        w2 = 1 - w1
+
+        console.log(w1, w2)
+
+        rgb = [
           Math.round(85 * w2 + 40 * w1),
           Math.round(83 * w2 + 52 * w1),
           Math.round(91 * w2 + 59 * w1)
         ]
         return rgb
+      },
+      updateGradient: function () {
+        let g = this.gradientColor()
+        this.endGradient = `rgb(${g[0]}, ${g[1]}, ${g[2]})`
       }
+    },
+    async mounted () {
+
     },
     async created () {
       await this.update()
       let g = this.gradientColor()
       this.endGradient = `rgb(${g[0]}, ${g[1]}, ${g[2]})`
-      window.addEventListener('resize', () => {
-        let g = this.gradientColor()
-        this.endGradient = `rgb(${g[0]}, ${g[1]}, ${g[2]})`
-      })
+      window.addEventListener('resize', this.updateGradient)
+      window.addEventListener('scroll', this.updateGradient)
+    },
+    async beforeDestroy () {
+      window.removeEventListener('resize', this.updateGradient)
+      window.removeEventListener('scroll', this.updateGradient)
     },
     watch: {
       async '$route' (to, from) {
@@ -105,7 +125,7 @@
     margin-top: -20px
 
     padding: 10px 10px
-    padding-top: 300px
+    padding-top: 400px
 
     background-size: cover
     background-position: center 0
