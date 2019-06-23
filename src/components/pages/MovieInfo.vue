@@ -17,27 +17,30 @@
           </div>
         </div>
       </div>
+
+      <MovieList v-for="(set, index) in sets"
+                 v-bind:title="set.setName"
+                 v-bind:key="set.id"
+                 v-bind:movies="set.movies"
+      ></MovieList>
     </div>
   </div>
 </template>
 
 <script>
-  import Movie from '@/components/itemTypes/Movie'
-  import WatchPanel from '@/components/WatchPanel'
-  import EpisodeList from '@/components/itemLists/EpisodeList'
+  import MovieList from '@/components/itemLists/MovieList'
   import { mapState } from 'vuex'
   import axios from 'axios'
 
   export default {
     name: 'MovieInfo',
     components: {
-      Movie,
-      WatchPanel: WatchPanel,
-      EpisodeList: EpisodeList
+      MovieList
     },
     data () {
       return {
-        'movieData': {}
+        'movieData': {},
+        'sets': []
       }
     },
     computed: mapState([
@@ -50,14 +53,18 @@
       },
       openModal: function (event) {
         this.$modal.show('MovieDialog', { movie: this.movieData })
+      },
+      update: async function () {
+        this.movieData = (await axios.get('/movie/' + this.$route.params.movieId + `/info`)).data
+        this.sets = (await axios.get(`/movie/${this.$route.params.movieId}/sets`)).data
       }
     },
     async created () {
-      this.movieData = (await axios.get('/movie/' + this.$route.params.movieId + `/info`)).data
+      await this.update()
     },
     watch: {
       async '$route' (to, from) {
-        this.movieData = (await axios.get('/movie/' + this.$route.params.movieId + `/info`)).data
+        await this.update()
       }
     }
   }
@@ -154,7 +161,7 @@
     height: 100px
 
     position: absolute
-    top: 100px
+    top: calc(50% - 50px)
     left: calc(50% - 50px)
 
     background-color: rgba(0,0,0,0.5)
