@@ -43,10 +43,10 @@
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style scoped lang="sass">
   .watching
-    margin-top: 50px
-    margin-bottom: 20px
-
+    position: relative
     top: 50px
+
+    margin-bottom: 20px
     width: 100%
     padding: 20px 0
     background-color: mix(darken(#696060, 11), darken(#55535b, 11))
