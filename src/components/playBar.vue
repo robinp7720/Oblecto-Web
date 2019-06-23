@@ -174,7 +174,7 @@
       },
       updateURL: function () {
         if (this.playing.entity.files[this.PlayingFileID].extension !== 'mp4') {
-          this.player.src = `${this.axios.defaults.baseURL}/stream/${this.playing.entity.files[this.PlayingFileID].id}/${this.initialProgress}`
+          this.player.src = `${this.axios.defaults.baseURL}/stream/${this.playing.entity.files[this.PlayingFileID].id}?offset=${this.initialProgress}`
         } else {
           this.player.src = `${this.axios.defaults.baseURL}/stream/${this.playing.entity.files[this.PlayingFileID].id}`
         }
