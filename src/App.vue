@@ -71,9 +71,9 @@
 
 <style lang="sass">
   .system-notification
-    background-color: #272222
+    background: #272222 !important
     padding: 7px 10px
-    border: 1px solid lighten(#272222, 10)
+    border: 1px solid #423a3a
     margin-bottom: 4px
 
     .notification-title
