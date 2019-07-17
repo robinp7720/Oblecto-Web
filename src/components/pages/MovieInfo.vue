@@ -18,6 +18,19 @@
         </div>
       </div>
 
+      <div class="file-list-container">
+        <ul class="file-list">
+          <li
+            v-for="(FileIterator, index) in movieData.files"
+            v-bind:key="FileIterator.id"
+            v-on:click="changeFileId(index)"
+            class="file-list-item"
+          >
+            {{ FileIterator.name }} <span class="badge">{{ FileIterator.extension }}</span>
+          </li>
+        </ul>
+      </div>
+
       <MovieList v-for="(set, index) in sets"
                  v-bind:title="set.setName"
                  v-bind:key="set.id"
@@ -118,6 +131,28 @@
 </script>
 
 <style scoped lang="sass">
+
+  .file-list-container
+    padding: 0 10px
+
+  .file-list
+    background: #696060
+    box-shadow: 0px 0px 2px 2px rgba(darken(darken(#696060,17) + #000000,6), 0.75)
+
+    border-spacing: 0
+
+    list-style: none
+
+    width: 100%
+
+    border-radius: 3px
+    overflow: hidden
+
+  .file-list-item
+    padding: 10px 30px
+
+  .file-list-item:nth-child(even)
+    background-color: darken(#696060, 2)
 
   .info-container
     margin-top: -20px
