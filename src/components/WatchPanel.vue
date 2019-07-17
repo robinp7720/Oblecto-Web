@@ -44,7 +44,7 @@
 <style scoped lang="sass">
   .watching
     position: relative
-    top: 50px
+    margin-top: 50px
 
     margin-bottom: 20px
     width: 100%
@@ -60,6 +60,7 @@
 
     @media screen and (min-height: 1200px)
       position: fixed
+      top: 50px
       margin: 0
 
     @media screen and (max-width: 700px)
