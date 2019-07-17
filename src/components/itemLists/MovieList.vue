@@ -3,6 +3,11 @@
     <div class="title" v-if="title">
       <h3 v-html="title"></h3>
     </div>
+    <div class="empty" v-if="movies.length == 0">
+      <span class="no-content">
+        No movies here
+      </span>
+    </div>
       <transition-group
         name="staggered-fade"
         tag="ul"
@@ -77,6 +82,22 @@
     font:
       family: roboto
       size: 20px
+
+
+  .empty
+    height: 259px // This is the height of the episodes scroll container if it is filled
+
+    display: flex
+    align-items: center
+    justify-content: center
+
+    @media screen and (max-width: 700px)
+      height: 209px
+
+
+    .no-content
+      font-size: 2em
+      color: rgba(250, 250, 250, 0.5)
 
 
 </style>
