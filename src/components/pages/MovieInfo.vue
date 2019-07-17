@@ -83,8 +83,6 @@
         w1 = ((infoBottom - st)) / (wh - st)
         w2 = 1 - w1
 
-        console.log(w1, w2)
-
         rgb = [
           Math.round(85 * w2 + 40 * w1),
           Math.round(83 * w2 + 52 * w1),
