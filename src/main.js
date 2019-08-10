@@ -32,20 +32,28 @@ Vue.component('tab', Tab)
 
 Vue.config.productionTip = false
 
+let connectionFailedCount = 0
+
 /* eslint-disable no-new */
 new Vue({
   el: '#app',
   store,
   sockets: {
     connect_error: function () {
-      this.$notify({
-        group: 'system',
-        title: 'Connection failed',
-        text: 'Failed to connect to the Oblecto web socket server. Is the server online?',
-        type: 'error'
-      })
+      connectionFailedCount++
+
+      if (connectionFailedCount === 1) {
+        this.$notify({
+          group: 'system',
+          title: 'Connection failed',
+          text: 'Failed to connect to the Oblecto web socket server. Is the server online?',
+          type: 'error'
+        })
+      }
     },
     connect: function () {
+      connectionFailedCount = 0
+
       this.$notify({
         group: 'system',
         title: 'Connection to Oblecto succeeded',
