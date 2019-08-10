@@ -172,11 +172,15 @@
 
         this.updateURL()
       },
-      updateURL: function () {
+      updateURL: async function () {
+        let token = (await this.axios.get(`/session/create/${this.playing.entity.files[this.PlayingFileID].id}`)).data.sessionId
+
+        console.log(token)
+
         if (this.playing.entity.files[this.PlayingFileID].extension !== 'mp4') {
-          this.player.src = `${this.axios.defaults.baseURL}/stream/${this.playing.entity.files[this.PlayingFileID].id}?offset=${this.initialProgress}`
+          this.player.src = `${this.axios.defaults.baseURL}/session/stream/${token}?offset=${this.initialProgress}`
         } else {
-          this.player.src = `${this.axios.defaults.baseURL}/stream/${this.playing.entity.files[this.PlayingFileID].id}`
+          this.player.src = `${this.axios.defaults.baseURL}/session/stream/${token}`
         }
       },
       seek: function (event) {

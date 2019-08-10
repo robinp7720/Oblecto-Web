@@ -1,35 +1,13 @@
 <template>
-  <tabs :options="{ useUrlFragment: true }">
-    <tab name="Maintenance">
-      <div class="container">
-      <button @click="index('all')">Full re-index</button>
-      <button @click="index('tvshows')">Re-index tvshows</button>
-      <button @click="index('movies')">Re-index movies</button>
-      <hr>
-      <button>Full cleanup</button>
-      <button @click="clean('files')">Clean up files database</button>
-      <button @click="clean('episodes')">Cleanup episodes without linked files</button>
-      <button @click="clean('movies')">Cleanup movies without linked files</button>
-      <button @click="clean('tvshows')">Remove TV Shows without episodes</button>
-      <hr>
-      <button>Download new artwork</button>
-      <button @click="DownloadTVShowArt">Download artwork for TV Shows and Episodes</button>
-      <button @click="DownloadMovieArt">Download artwork for Movies</button>
-      </div>
-
-    </tab>
-    <tab name="Libraries">
-
-    </tab>
-    <tab name="Users">
-      <div class="container">
-        <UserManager></UserManager>
-      </div>
-    </tab>
-    <tab name="APIs">
-
-    </tab>
-  </tabs>
+  <div class="settings">
+    <ul class="settings-nav">
+      <li class="settings-nav-item"><router-link :to="{ name: 'SettingsMaintenance'}" class="nav-link">Maintance</router-link></li>
+      <li class="settings-nav-item"><router-link :to="{ name: 'SettingsUsers'}" class="nav-link">Users</router-link></li>
+    </ul>
+    <div class="container">
+      <router-view></router-view>
+    </div>
+  </div>
 </template>
 
 <script>
@@ -86,28 +64,30 @@
 .container
   padding: 10px
 
-hr
-  border-color: rgba(0,0,0,0.5)
-  width: 100%
-  display: block
-  float: left
+.settings-nav
+  list-style: none
+  margin-top: 0
+  margin-bottom: 15px
+  position: relative
 
-button
-  background-color: rgba(0,0,0,0.5)
-  border: rgba(0,0,0,0.8) 1px solid
-  color: rgba(255,255,255,0.5)
+  overflow-x: auto
 
-  display: block
-  float: left
+  white-space: nowrap
 
-  padding: 10px
-  margin: 2px
+  .settings-nav-item
+    display: inline-block
+    a
+      color: #999
+      display: block
+      text-decoration: none
+      padding: 10px 20px
+      font-family: Roboto
+      font-size: 20px
+      text-transform: capitalize
+      font-weight: bold
 
-  -webkit-border-radius: 3px
-  -moz-border-radius: 3px
-  border-radius: 3px
-  cursor: pointer
+    a.router-link-active
+      color: #eee
 
-button:hover
-  background-color: rgba(0,0,0,0.9)
+
 </style>

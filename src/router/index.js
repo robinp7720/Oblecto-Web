@@ -10,7 +10,10 @@ import Login from '@/components/pages/Login'
 import Movies from '@/components/pages/Movies'
 import Search from '@/components/pages/Search'
 import Main from '@/components/pages/Main'
+
 import Settings from '@/components/pages/Settings'
+import Maintenance from '@/components/settings/Maintenance'
+import UserManager from '@/components/settings/UserManager'
 
 import { VueAuthenticate } from 'vue-authenticate'
 import VueAxios from 'vue-axios'
@@ -71,7 +74,24 @@ const router = new Router({
       path: '/settings',
       name: 'Settings',
       component: Settings,
-      meta: { requiresAuth: true }
+      meta: { requiresAuth: true },
+      children: [
+        {
+          name: 'SettingsHome',
+          path: '',
+          component: Maintenance
+        },
+        {
+          name: 'SettingsMaintenance',
+          path: 'maintenance',
+          component: Maintenance
+        },
+        {
+          name: 'SettingsUsers',
+          path: 'users',
+          component: UserManager
+        }
+      ]
     }
   ]
 })
