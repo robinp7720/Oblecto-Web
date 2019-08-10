@@ -18,7 +18,46 @@
 
 <script>
   export default {
-    name: 'Maintenance'
+    name: 'Maintenance',
+    methods: {
+      async DownloadTVShowArt () {
+        await this.axios.get('/settings/maintenance/tvshows/download/art')
+        this.$notify({
+          group: 'system',
+          title: 'A TV Show artwork update has been requested',
+          text: 'Missing artwork will be downloaded',
+          type: 'warning'
+        })
+      },
+
+      async DownloadMovieArt () {
+        await this.axios.get('/settings/maintenance/movies/download/art')
+        this.$notify({
+          group: 'system',
+          title: 'A movie artwork update has been requested',
+          text: 'Missing artwork will be downloaded',
+          type: 'warning'
+        })
+      },
+      async index (type) {
+        await this.axios.get('/settings/maintenance/index/' + type)
+        this.$notify({
+          group: 'system',
+          title: 'Library update requested successfully',
+          text: 'A library index update has been started',
+          type: 'warning'
+        })
+      },
+      async clean (type) {
+        await this.axios.get('/settings/maintenance/clean/' + type)
+        this.$notify({
+          group: 'system',
+          title: 'Library cleansing requested successfully',
+          text: 'A library cleansing has been started',
+          type: 'warning'
+        })
+      }
+    }
   }
 </script>
 
