@@ -250,6 +250,8 @@
         this.progress = 0
         this.PlayingFileID = 0
 
+        this.nextepisode = null
+
         if (this.playing.entity === undefined) {
           return
         }
@@ -268,7 +270,9 @@
 
         this.updateURL()
 
-        this.nextepisode = (await this.axios.get(`/episode/${this.playing.entity.id}/next`)).data
+        if (this.playing.type === 'episode') {
+          this.nextepisode = (await this.axios.get(`/episode/${this.playing.entity.id}/next`)).data
+        }
       }
     },
     mounted: function () {
