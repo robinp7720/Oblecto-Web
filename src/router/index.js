@@ -14,6 +14,7 @@ import Main from '@/components/pages/Main'
 import Settings from '@/components/pages/Settings'
 import Maintenance from '@/components/settings/Maintenance'
 import UserManager from '@/components/settings/UserManager'
+import Libraries from '@/components/settings/Libraries'
 
 import { VueAuthenticate } from 'vue-authenticate'
 import VueAxios from 'vue-axios'
@@ -90,6 +91,11 @@ const router = new Router({
           name: 'SettingsUsers',
           path: 'users',
           component: UserManager
+        },
+        {
+          name: 'SettingsLibraries',
+          path: 'libraries',
+          component: Libraries
         }
       ]
     }
