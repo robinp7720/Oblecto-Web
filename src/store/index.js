@@ -3,6 +3,8 @@ import Vuex from 'vuex'
 import movies from './modules/movies'
 import tvshows from './modules/tvshows'
 import episodes from './modules/episodes'
+import libraries from '@/store/modules/libraries'
+
 import VueSocketio from 'vue-socket.io'
 
 Vue.use(Vuex)
@@ -22,7 +24,8 @@ export default new Vuex.Store({
   modules: {
     movies,
     tvshows,
-    episodes
+    episodes,
+    libraries
   },
   mutations: {
     saveWatchingEpisodes: function (state, watching) {

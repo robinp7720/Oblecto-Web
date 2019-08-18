@@ -10,7 +10,7 @@
       </tr>
       </thead>
       <tbody>
-      <tr v-for="(library, index) in movieLibraries">
+      <tr v-for="(library, index) in movies">
         <td class="id">
           {{ index + 1 }}
         </td>
@@ -36,7 +36,7 @@
       </tr>
       </thead>
       <tbody>
-      <tr v-for="(library, index) in seriesLibraries">
+      <tr v-for="(library, index) in shows">
         <td class="id">
           {{ index + 1 }}
         </td>
@@ -56,6 +56,8 @@
 </template>
 
 <script>
+  import { mapActions, mapState } from 'vuex'
+
   import FontAwesomeIcon from '@fortawesome/vue-fontawesome'
   import faTrash from '@fortawesome/fontawesome-free-solid/faTrash'
 
@@ -65,6 +67,10 @@
       FontAwesomeIcon
     },
     computed: {
+      ...mapState('libraries', [
+        'shows',
+        'movies'
+      ]),
       deleteIcon () {
         return faTrash
       }
@@ -76,31 +82,14 @@
       }
     },
     async created () {
-      this.update()
+      this.updateAll()
     },
     methods: {
-      async update () {
-        this.movieLibraries = (await this.axios.get(`/sources/movies`)).data
-        this.seriesLibraries = (await this.axios.get(`/sources/tvshows`)).data
-      },
-      async deleteMovieLibrary (path) {
-        await this.axios.delete(`/sources/movies`, {
-          data: {
-            path
-          }
-        })
-
-        this.update()
-      },
-      async deleteSeriesLibrary (path) {
-        await this.axios.delete(`/sources/tvshows`, {
-          data: {
-            path
-          }
-        })
-
-        this.update()
-      },
+      ...mapActions('libraries', [
+        'updateAll',
+        'deleteMovieLibrary',
+        'deleteSeriesLibrary'
+      ]),
       async libraryAdd (libraryType) {
         this.$modal.show('LibraryAdd', {
           libraryType

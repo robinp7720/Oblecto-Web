@@ -16,6 +16,8 @@
 </template>
 
 <script>
+  import { mapActions } from 'vuex'
+
   export default {
     name: 'UserAdd',
     data () {
@@ -25,6 +27,11 @@
       }
     },
     methods: {
+      ...mapActions('libraries', [
+        'updateAll',
+        'deleteMovieLibrary',
+        'deleteSeriesLibrary'
+      ]),
       beforeOpen (event) {
         this.libraryType = event.params.libraryType
       },
@@ -40,6 +47,8 @@
             text: 'The library will be indexed on next update',
             type: 'success'
           })
+
+          this.updateAll()
         } catch (e) {
           this.$notify({
             group: 'system',
