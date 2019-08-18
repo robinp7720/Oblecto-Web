@@ -18,12 +18,14 @@
           {{ library.path }}
         </td>
         <td>
-
+          <a title="Delete library path" v-on:click="deleteMovieLibrary(library.path)">
+            <FontAwesomeIcon :icon="deleteIcon"/>
+          </a>
         </td>
       </tr>
       </tbody>
     </table>
-    <a class="button" v-on:click="libraryAdd('movie')">Add movie library</a>
+    <a class="button" v-on:click="libraryAdd('movies')">Add movie library</a>
     <h2>TV Shows</h2>
     <table>
       <thead>
@@ -42,18 +44,31 @@
           {{ library.path }}
         </td>
         <td>
-
+          <a title="Delete library path" v-on:click="deleteSeriesLibrary(library.path)">
+            <FontAwesomeIcon :icon="deleteIcon"/>
+          </a>
         </td>
       </tr>
       </tbody>
     </table>
-    <a class="button" v-on:click="libraryAdd('series')">Add TV show library</a>
+    <a class="button" v-on:click="libraryAdd('tvshows')">Add TV show library</a>
   </div>
 </template>
 
 <script>
+  import FontAwesomeIcon from '@fortawesome/vue-fontawesome'
+  import faTrash from '@fortawesome/fontawesome-free-solid/faTrash'
+
   export default {
     name: 'Libraries',
+    components: {
+      FontAwesomeIcon
+    },
+    computed: {
+      deleteIcon () {
+        return faTrash
+      }
+    },
     data () {
       return {
         movieLibraries: {},
@@ -61,12 +76,35 @@
       }
     },
     async created () {
-      this.movieLibraries = (await this.axios.get(`/sources/movies`)).data
-      this.seriesLibraries = (await this.axios.get(`/sources/tvshows`)).data
+      this.update()
     },
     methods: {
-      async libraryAdd (type) {
-        this.$modal.show('libraryAdd')
+      async update () {
+        this.movieLibraries = (await this.axios.get(`/sources/movies`)).data
+        this.seriesLibraries = (await this.axios.get(`/sources/tvshows`)).data
+      },
+      async deleteMovieLibrary (path) {
+        await this.axios.delete(`/sources/movies`, {
+          data: {
+            path
+          }
+        })
+
+        this.update()
+      },
+      async deleteSeriesLibrary (path) {
+        await this.axios.delete(`/sources/tvshows`, {
+          data: {
+            path
+          }
+        })
+
+        this.update()
+      },
+      async libraryAdd (libraryType) {
+        this.$modal.show('LibraryAdd', {
+          libraryType
+        })
       }
     }
   }
