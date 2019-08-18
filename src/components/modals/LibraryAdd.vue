@@ -34,6 +34,7 @@
       ]),
       beforeOpen (event) {
         this.libraryType = event.params.libraryType
+        this.path = ''
       },
       async addLibrary () {
         try {
