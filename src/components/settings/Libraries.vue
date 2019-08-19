@@ -17,7 +17,7 @@
         <td>
           {{ library.path }}
         </td>
-        <td>
+        <td class="actions">
           <a title="Delete library path" v-on:click="deleteMovieLibrary(library.path)">
             <FontAwesomeIcon :icon="deleteIcon"/>
           </a>
@@ -43,7 +43,7 @@
         <td>
           {{ library.path }}
         </td>
-        <td>
+        <td class="actions">
           <a title="Delete library path" v-on:click="deleteSeriesLibrary(library.path)">
             <FontAwesomeIcon :icon="deleteIcon"/>
           </a>
@@ -151,6 +151,10 @@
 
     .id
       text-align: right
+
+    .actions
+      text-align: center
+
 
     .button
       background-color: rgba(0,0,0,0.5)
