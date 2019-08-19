@@ -1,12 +1,12 @@
 <template>
-  <modal name="LibraryAdd" @before-open="beforeOpen" height="auto">
+  <modal name="LibraryAdd" @before-open="beforeOpen" @opened="opened" height="auto">
     <div class="container">
       <div class="heading">
       <h3>Add {{ libraryType }} library</h3>
       </div>
       <div class="body">
         <label for="name">Path:</label>
-        <input type="text" id="name" v-model="path" v-bind:class="{invalid: path === ''}">
+        <input type="text" id="name" v-model="path" v-on:keyup.enter="addLibrary" ref="pathInput" v-bind:class="{invalid: path === ''}">
       </div>
       <div class="footer">
         <button class="success" v-on:click="addLibrary">Add library</button>
@@ -35,6 +35,9 @@
       beforeOpen (event) {
         this.libraryType = event.params.libraryType
         this.path = ''
+      },
+      opened () {
+        this.$refs.pathInput.focus()
       },
       async addLibrary () {
         try {
