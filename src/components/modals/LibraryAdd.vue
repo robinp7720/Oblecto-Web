@@ -50,6 +50,9 @@
           })
 
           this.updateAll()
+
+          this.$modal.hide('LibraryAdd')
+          this.path = ''
         } catch (e) {
           this.$notify({
             group: 'system',
