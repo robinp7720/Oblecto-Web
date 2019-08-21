@@ -5,6 +5,7 @@
     <UserAddModal/>
     <MovieDialogModal/>
     <EpisodeDialogModal/>
+    <LibraryAdd/>
 
     <notifications group="system" classes="system-notification" position="bottom center" />
 
@@ -41,6 +42,7 @@
   import UserAddModal from '@/components/modals/UserAdd'
   import MovieDialogModal from '@/components/modals/MovieDialog'
   import EpisodeDialogModal from '@/components/modals/EpisodeDialog'
+  import LibraryAdd from '@/components/modals/LibraryAdd'
 
   export default {
     name: 'app',
@@ -52,6 +54,7 @@
       UserAddModal,
       MovieDialogModal,
       EpisodeDialogModal,
+      LibraryAdd,
       playBar,
       LoadingPage
     },
