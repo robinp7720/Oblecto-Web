@@ -1,5 +1,5 @@
 <template>
-  <div class="playBar" ref="playbar" v-on:mousemove="playbarTimeout = 0">
+  <div class="playBar" ref="playbar" v-on:mousemove="playbarTimeout = 0" v-on:keydown.space="playPause">
 
     <div class="player" v-bind:class="{ small: format === 2, hidden: !showVideo}">
       <video ref="videoPlayer"></video>
