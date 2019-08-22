@@ -11,14 +11,13 @@
         <div v-bind:class="{loading}" class="progressbar" v-bind:style="{ width: progress * 100 + '%' }"></div>
       </div>
 
+      <span class="seriesid" v-if="playing.type === 'episode'">{{ playing.entity.tvshow.seriesName }} S{{ playing.entity.airedSeason }}E{{ playing.entity.airedEpisodeNumber }}: </span>
       <span class="title">{{ playing.title }}</span>
 
       <div class="right">
         <span class="time" v-if="showVideo">
           {{ PlayTimeDisplayValue }} / {{ DurationDisplayValue }}
         </span>
-
-        <a v-on:click="playNext" v-if="progress > 0.9 & playing.type === 'episode'">Next Episode</a>
 
         <div class="quality-selector" v-if="qualityPopUp">
           <ul>
@@ -54,6 +53,8 @@
         <span v-on:click="format = (format % 2) + 1" class="toggle-button" v-if="showVideo && format !== 3">
           <FontAwesomeIcon :icon="format === 1 ? iconDown : iconUp"/>
         </span>
+
+        <a v-on:click="playNext" v-if="progress > 0.9 & playing.type === 'episode'" class="nextepisode">Next Episode</a>
       </div>
     </div>
   </div>
@@ -371,10 +372,27 @@
 
       z-index: 1000
 
-      background: -moz-linear-gradient(to bottom, lighten(#3c3737, 15) 0%, lighten(#3c3737, 12) 100%)
-      background: -webkit-linear-gradient(to bottom, lighten(#3c3737, 15) 0%, lighten(#3c3737, 12) 100%)
-      background: linear-gradient(to bottom, lighten(#3c3737, 15) 0%, lighten(#3c3737, 12) 100%)
-      box-shadow: 0px 0px 5px 2px rgba(darken(darken(#696060,17) + #000000, 6), 0.75)
+      background: linear-gradient(to bottom, #645c5c 0%, #5c5454 100%)
+      box-shadow: 0 0 5px 2px rgba(44, 40, 40, 0.75)
+
+      .seriesid
+        color: rgba(255, 255, 255, 0.6)
+
+      .nextepisode
+        cursor: pointer
+
+        background-color: rgba(44, 40, 40, 0.6)
+        box-shadow: 0 0 1px 2px rgba(44, 40, 40, 0.6)
+
+        transition: background-color 0.1s, box-shadow 0.1s
+
+        padding: 5px 10px
+        margin-left: 10px
+        border-radius: 3px
+
+      .nextepisode:hover
+        background-color: rgba(44, 40, 40, 0.9)
+        box-shadow: 0 0 1px 2px rgba(44, 40, 40, 0.9)
 
     .hiddenBar
       bottom: -70px
@@ -397,8 +415,7 @@
       right: 10px
       border-radius: 3px
       overflow: hidden
-      -webkit-box-shadow: 0px 0px 5px 0px rgba(0, 0, 0, 0.75)
-      box-shadow: 0px 0px 5px 0px rgba(0, 0, 0, 0.75)
+      box-shadow: 0 0 5px 0 rgba(0, 0, 0, 0.75)
 
       video
         width: auto
@@ -406,6 +423,7 @@
       @media only screen and (max-width: 600px)
         height: 100px
         top: calc(100% - 169px)
+
       @media only screen and (max-height: 600px)
         height: 100px
         top: calc(100% - 169px)
@@ -428,7 +446,7 @@
 
     background-color: rgba(0,0,0,0.25)
 
-    box-shadow: inset 0px 0px 5px 0px rgba(0,0,0,0.5)
+    box-shadow: inset 0 0 5px 0 rgba(44, 40, 40, 0.75)
 
     cursor: pointer
 
@@ -436,7 +454,7 @@
     height: 100%
     background-color: #ae6600
 
-    box-shadow: 0px 0px 5px 0px rgba(0, 0, 0, 0.75)
+    box-shadow: 0 0 5px 2px rgba(44, 40, 40, 0.75)
 
 
   @keyframes loading
@@ -459,7 +477,7 @@
     right: 10px
     width: auto
     background: #696060
-    box-shadow: 0px 0px 5px 0px rgba(0, 0, 0, 0.75)
+    box-shadow: 0 0 5px 2px rgba(44, 40, 40, 0.75)
 
     ul
       list-style: none
