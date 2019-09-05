@@ -74,6 +74,12 @@
 
   import { mapState } from 'vuex'
 
+  let SCREEN_FORMAT = {
+    'LARGE': 1,
+    'SMALL': 2,
+    'FULLSCREEN': 3
+  }
+
   export default {
     components: {
       FontAwesomeIcon
@@ -88,7 +94,8 @@
 
         format: 1, //  1 = large screen, 2 = Small View, 3 = Fullscreen
 
-        fullscreenEnabled: document.fullscreenEnabled,
+        fullscreenEnabled: document.fullscreenEnabled, // Does the client support putting content in a fullscreen state?
+
         initialProgress: 0,
         playbarTimeout: 0,
         showVideo: false,
@@ -210,13 +217,10 @@
       },
       toggleFullScreen: function () {
         if (
-          document.fullscreenEnabled &
           this.format !== 3
         ) {
-          this.playbar.requestFullscreen()
           this.format = 3
         } else {
-          document.exitFullscreen()
           this.format = 1
         }
       },
@@ -231,6 +235,8 @@
         this.paused = true
         this.loading = false
         this.progress = 0
+
+        this.format = SCREEN_FORMAT.LARGE
       },
       playPause: function () {
         if (this.player.paused) {
@@ -246,10 +252,36 @@
       }
     },
     watch: {
+      format: async function (newState, oldState) {
+        //  1 = large screen, 2 = Small View, 3 = Fullscreen
+
+        switch (newState) {
+          case SCREEN_FORMAT.FULLSCREEN:
+            this.playbar.requestFullscreen()
+
+            break
+
+          case SCREEN_FORMAT.LARGE:
+            if (document.fullscreenEnabled) {
+              document.exitFullscreen()
+            }
+
+            break
+
+          case SCREEN_FORMAT.SMALL:
+            if (document.fullscreenEnabled) {
+              document.exitFullscreen()
+            }
+
+            break
+        }
+      },
       playing: async function (newState, oldState) {
         this.initialProgress = 0
         this.progress = 0
         this.PlayingFileID = 0
+
+        this.format = SCREEN_FORMAT.LARGE
 
         this.nextepisode = null
 
