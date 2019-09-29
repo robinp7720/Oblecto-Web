@@ -333,7 +333,7 @@
       this.player.addEventListener('loadedmetadata', () => {
         let tracking = this.playing.entity.trackMovies || this.playing.entity.trackEpisodes
 
-        if (tracking[0]) {
+        if (tracking[0] && tracking[0].progress < 0.9) {
           this.player.currentTime = tracking[0].time - this.initialProgress
         }
 
