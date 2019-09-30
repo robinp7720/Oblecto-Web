@@ -5,14 +5,19 @@
     <td>{{ user.username }}</td>
     <td>{{ user.email }}</td>
     <td>{{ user.group }}</td>
-    <td><a href="#" class="action">Change Password</a> <a href="#" class="action">Change Group</a></td>
+    <td><a  v-on:click="changePassword" class="action">Change Password</a> <a href="#" class="action">Change Group</a></td>
   </tr>
 </template>
 
 <script>
   export default {
     name: 'userEntry',
-    props: ['user']
+    props: ['user'],
+    methods: {
+      changePassword () {
+        this.$modal.show('PasswordChange', this.user)
+      }
+    }
   }
 </script>
 

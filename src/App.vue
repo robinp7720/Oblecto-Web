@@ -7,6 +7,7 @@
     <EpisodeDialogModal/>
     <LibraryAdd/>
     <NewMovieSet/>
+    <PasswordChange/>
 
     <notifications group="system" classes="system-notification" position="bottom center" />
 
@@ -45,6 +46,7 @@
   import EpisodeDialogModal from '@/components/modals/EpisodeDialog'
   import LibraryAdd from '@/components/modals/LibraryAdd'
   import NewMovieSet from '@/components/modals/NewMovieSet'
+  import PasswordChange from '@/components/modals/PasswordChange'
 
   export default {
     name: 'app',
@@ -52,6 +54,7 @@
       WatchPanel: WatchPanel,
       NavBar,
       ShowDialogModal,
+      PasswordChange,
       ShowModifyModal,
       UserAddModal,
       MovieDialogModal,
