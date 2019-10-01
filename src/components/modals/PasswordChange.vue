@@ -33,7 +33,7 @@
         this.name = event.params.name
         this.username = event.params.username
         this.email = event.params.email
-        this.password = event.params.email
+        this.password = ''
       },
       async setPassword () {
         if (this.userid === null) {
