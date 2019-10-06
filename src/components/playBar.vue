@@ -102,7 +102,9 @@
         nextepisode: false,
         qualityPopUp: false,
 
-        PlayingFileID: 0
+        PlayingFileID: 0,
+
+        shouldPreSeek: true
       }
     },
     computed: {
@@ -281,6 +283,10 @@
         this.progress = 0
         this.PlayingFileID = 0
 
+        // Reset whether or not the player should seek to the last position
+        // If the progress is above 90 percent, we should just start from the beginning
+        this.shouldPreSeek = true
+
         this.format = SCREEN_FORMAT.LARGE
 
         this.nextepisode = null
@@ -295,8 +301,15 @@
 
         let tracking = this.playing.entity.trackMovies || this.playing.entity.trackEpisodes
 
+        // If the progress is above 90 percent, we shouldn't seek to the last position since the user probably
+        // wants to start from the beginning.
+
+        if (tracking[0].progress > 0.9) {
+          this.shouldPreSeek = false
+        }
+
         if (this.playing.entity.files[this.PlayingFileID].extension !== 'mp4') {
-          if (tracking[0] !== undefined) {
+          if (tracking[0] !== undefined && this.shouldPreSeek) {
             this.initialProgress = tracking[0].time
           }
         }
@@ -333,7 +346,7 @@
       this.player.addEventListener('loadedmetadata', () => {
         let tracking = this.playing.entity.trackMovies || this.playing.entity.trackEpisodes
 
-        if (tracking[0] && tracking[0].progress < 0.9) {
+        if (tracking[0] && this.shouldPreSeek) {
           this.player.currentTime = tracking[0].time - this.initialProgress
         }
 
