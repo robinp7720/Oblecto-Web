@@ -1,7 +1,7 @@
 <template>
   <div class="playBar" ref="playbar" v-on:mousemove="playbarTimeout = 0" v-on:keydown.space="playPause">
 
-    <div class="player" v-bind:class="{ small: format === 2, hidden: !showVideo}">
+    <div class="player" v-bind:class="{ small: format === 2, hidden: (!showVideo || (format === 2 && browserSupportsPiP))}">
       <video ref="videoPlayer"></video>
     </div>
 
@@ -95,6 +95,7 @@
         format: 1, //  1 = large screen, 2 = Small View, 3 = Fullscreen
 
         fullscreenEnabled: document.fullscreenEnabled, // Does the client support putting content in a fullscreen state?
+        browserSupportsPiP: document.pictureInPictureEnabled,
 
         initialProgress: 0,
         playbarTimeout: 0,
@@ -259,6 +260,7 @@
 
         switch (newState) {
           case SCREEN_FORMAT.FULLSCREEN:
+            document.exitPictureInPicture()
             this.playbar.requestFullscreen()
 
             break
@@ -268,12 +270,16 @@
               document.exitFullscreen()
             }
 
+            document.exitPictureInPicture()
+
             break
 
           case SCREEN_FORMAT.SMALL:
             if (document.fullscreenEnabled) {
               document.exitFullscreen()
             }
+
+            this.player.requestPictureInPicture()
 
             break
         }
@@ -341,6 +347,17 @@
 
       this.player.addEventListener('ended', () => {
         this.$store.dispatch('updateWatching')
+      })
+
+      this.player.addEventListener('enterpictureinpicture', () => {
+        this.format = SCREEN_FORMAT.SMALL
+        this.browserSupportsPiP = true
+      })
+
+      this.player.addEventListener('leavepictureinpicture', () => {
+        if (this.format === SCREEN_FORMAT.SMALL) {
+          this.format = SCREEN_FORMAT.LARGE
+        }
       })
 
       this.player.addEventListener('loadedmetadata', () => {
