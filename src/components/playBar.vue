@@ -94,8 +94,8 @@
 
         format: 1, //  1 = large screen, 2 = Small View, 3 = Fullscreen
 
-        fullscreenEnabled: document.fullscreenEnabled, // Does the client support putting content in a fullscreen state?
-        browserSupportsPiP: document.pictureInPictureEnabled,
+        fullscreenEnabled: document.fullscreenEnabled || false, // Does the client support putting content in a fullscreen state?
+        browserSupportsPiP: document.pictureInPictureEnabled || false,
 
         initialProgress: 0,
         playbarTimeout: 0,
@@ -260,7 +260,10 @@
 
         switch (newState) {
           case SCREEN_FORMAT.FULLSCREEN:
-            document.exitPictureInPicture()
+            if (this.browserSupportsPiP) {
+              document.exitPictureInPicture()
+            }
+
             this.playbar.requestFullscreen()
 
             break
@@ -275,11 +278,13 @@
             break
 
           case SCREEN_FORMAT.SMALL:
-            if (document.fullscreenEnabled) {
+            if (this.fullscreenEnabled) {
               document.exitFullscreen()
             }
 
-            this.player.requestPictureInPicture()
+            if (this.browserSupportsPiP) {
+              this.player.requestPictureInPicture()
+            }
 
             break
         }
