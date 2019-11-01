@@ -156,6 +156,7 @@
 
     @media screen and (max-width: 700px)
       height: 200px
+      width: 133.333px
 
     img
       height: 100%
