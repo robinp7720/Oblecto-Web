@@ -171,8 +171,6 @@
 
         let tracking = this.playing.entity.trackMovies || this.playing.entity.trackEpisodes
 
-        this.initialProgress = 0
-
         if (this.playing.entity.files[this.PlayingFileID].extension !== 'mp4') {
           if (tracking[0] !== undefined) {
             this.initialProgress = tracking[0].time
@@ -185,8 +183,6 @@
       },
       updateURL: async function () {
         let token = (await this.axios.get(`/session/create/${this.playing.entity.files[this.PlayingFileID].id}`)).data.sessionId
-
-        console.log(token)
 
         if (this.playing.entity.files[this.PlayingFileID].extension !== 'mp4') {
           this.player.src = `${this.axios.defaults.baseURL}/session/stream/${token}?offset=${this.initialProgress}`
@@ -293,9 +289,6 @@
         this.initialProgress = 0
         this.progress = 0
         this.PlayingFileID = 0
-
-        // Reset whether or not the player should seek to the last position
-        // If the progress is above 90 percent, we should just start from the beginning
         this.shouldPreSeek = true
 
         this.format = SCREEN_FORMAT.LARGE
@@ -315,8 +308,8 @@
         // If the progress is above 90 percent, we shouldn't seek to the last position since the user probably
         // wants to start from the beginning.
 
-        if (tracking[0].progress > 0.9) {
-          this.shouldPreSeek = false
+        if (tracking[0]) {
+          this.shouldPreSeek = tracking[0].progress || 0 < 0.9
         }
 
         if (this.playing.entity.files[this.PlayingFileID].extension !== 'mp4') {
@@ -325,7 +318,7 @@
           }
         }
 
-        this.updateURL()
+        this.changeFileId(0)
 
         if (this.playing.type === 'episode') {
           this.nextepisode = (await this.axios.get(`/episode/${this.playing.entity.id}/next`)).data
