@@ -102,7 +102,7 @@
         }
       },
       getUrl: async function (fileId) {
-        let token = (await this.axios.get(`/session/create/${fileId}`)).data.sessionId
+        let token = (await this.axios.get(`/session/create/${fileId}?noremux=true`)).data.sessionId
 
         return `${this.axios.defaults.baseURL}/session/stream/${token}`
       },

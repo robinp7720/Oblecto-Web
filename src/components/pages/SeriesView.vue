@@ -68,6 +68,7 @@
             this.posterUrl = img.src
             this.posterLoaded = true
           }
+
           img.onerror = () => {
             this.posterLoaded = true
           }
