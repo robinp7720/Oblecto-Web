@@ -8,6 +8,7 @@
     <LibraryAdd/>
     <NewMovieSet/>
     <PasswordChange/>
+    <CopyText/>
 
     <notifications group="system" classes="system-notification" position="bottom center" />
 
@@ -47,6 +48,7 @@
   import LibraryAdd from '@/components/modals/LibraryAdd'
   import NewMovieSet from '@/components/modals/NewMovieSet'
   import PasswordChange from '@/components/modals/PasswordChange'
+  import CopyText from '@/components/modals/CopyText'
 
   export default {
     name: 'app',
@@ -59,6 +61,7 @@
       UserAddModal,
       MovieDialogModal,
       EpisodeDialogModal,
+      CopyText,
       NewMovieSet,
       LibraryAdd,
       playBar,
