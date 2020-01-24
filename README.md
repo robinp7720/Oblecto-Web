@@ -6,7 +6,7 @@ A frontend for Oblecto, an open source media server, which can be found here: [h
 
 If you are not running the Oblecto server locally, edit config/dev.env.json with the correct host for the backend server.
 
-To start the frontend, run ```npm start```.
+First run `npm install` to install all dependencies and then run `npm start` to start the frontend. 
 
 
 ## Images
