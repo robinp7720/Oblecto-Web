@@ -9,9 +9,10 @@
 
       <div class="progressbarContainer" v-on:click="seek">
         <div v-bind:class="{loading}" class="progressbar" v-bind:style="{ width: progress * 100 + '%' }"></div>
+        <div class="progressbarload" v-bind:style="{ width: (initialProgress + $refs.videoPlayer.buffered.end($refs.videoPlayer.buffered.length - 1)) / playing.entity.files[PlayingFileID].duration * 100 + '%' }" v-if="$refs.videoPlayer && $refs.videoPlayer.buffered.length > 0"></div>
       </div>
 
-      <span class="seriesid" v-if="playing.type === 'episode'">{{ playing.entity.tvshow.seriesName }} S{{ playing.entity.airedSeason }}E{{ playing.entity.airedEpisodeNumber }}: </span>
+      <span class="seriesid" v-if="playing.type === 'episode'" v-on:click="viewShow"> {{ playing.entity.tvshow.seriesName }} S{{ playing.entity.airedSeason }}E{{ playing.entity.airedEpisodeNumber }}: </span>
       <span class="title">{{ playing.title }}</span>
 
       <div class="right">
@@ -157,6 +158,12 @@
       ...mapState(['playing'])
     },
     methods: {
+      viewShow: function () {
+        if (this.playing.type === 'episode') {
+          this.$router.push({ name: 'SeriesView', params: { seriesId: this.playing.entity.tvshow.id } })
+          this.format = SCREEN_FORMAT.SMALL
+        }
+      },
       changeFileId: function (id) {
         this.PlayingFileID = id
         this.loading = true
@@ -235,7 +242,7 @@
         this.loading = false
         this.progress = 0
 
-        this.format = SCREEN_FORMAT.LARGE
+        this.format = SCREEN_FORMAT.SMALL
       },
       playPause: function () {
         if (this.player.paused) {
@@ -318,7 +325,7 @@
           }
         }
 
-        this.changeFileId(0)
+        this.updateURL()
 
         if (this.playing.type === 'episode') {
           this.nextepisode = (await this.axios.get(`/episode/${this.playing.entity.id}/next`)).data
@@ -510,11 +517,27 @@
 
     cursor: pointer
 
-  .progressbar
-    height: 100%
-    background-color: #ae6600
+    .progressbar
+      position: absolute
+      top: 0
+      left: 0
+      height: 100%
+      background-color: #ae6600
 
-    box-shadow: 0 0 5px 2px rgba(44, 40, 40, 0.75)
+      z-index: 4
+
+      box-shadow: 0 0 5px 2px rgba(44, 40, 40, 0.75)
+
+    .progressbarload
+      position: absolute
+      top: 0
+      left: 0
+      height: 100%
+      background-color: #ae6600
+
+      box-shadow: 0 0 5px 2px #421c00
+
+      opacity: 0.2
 
 
   @keyframes loading
