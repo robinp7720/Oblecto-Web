@@ -182,6 +182,8 @@
           if (tracking[0] !== undefined) {
             this.initialProgress = tracking[0].time
           }
+        } else {
+          this.initialProgress = 0
         }
 
         this.player.src = ''
@@ -296,7 +298,11 @@
         this.initialProgress = 0
         this.progress = 0
         this.PlayingFileID = 0
-        this.shouldPreSeek = true
+        this.shouldPreSeek = false
+        this.showVideo = false
+        this.qualityPopUp = false
+        this.paused = true
+        this.loading = false
 
         this.format = SCREEN_FORMAT.LARGE
 
@@ -316,7 +322,7 @@
         // wants to start from the beginning.
 
         if (tracking[0]) {
-          this.shouldPreSeek = tracking[0].progress || 0 < 0.9
+          this.shouldPreSeek = tracking[0].progress < 0.9
         }
 
         if (this.playing.entity.files[this.PlayingFileID].extension !== 'mp4') {
