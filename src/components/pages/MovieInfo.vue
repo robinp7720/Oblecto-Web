@@ -21,7 +21,7 @@
         </div>
       </div>
 
-      <div class="file-list-container">
+      <div class="file-list-container" v-if="movieData.files.length > 0">
         <ul class="file-list">
           <li
             v-for="(FileIterator, index) in movieData.files"
@@ -34,6 +34,11 @@
             </div>
           </li>
         </ul>
+      </div>
+      <div class="file-list-container">
+      <div class="error" v-if="movieData.files.length === 0">
+        <span class="msg">No files linked</span>
+      </div>
       </div>
 
       <MovieList v-for="(set, index) in sets"
@@ -145,13 +150,15 @@
       }
     },
     async mounted () {
+      this.updateGradient()
+    },
 
+    async updated () {
+      this.updateGradient()
     },
 
     async created () {
       await this.update()
-      let g = this.gradientColor()
-      this.endGradient = `rgb(${g[0]}, ${g[1]}, ${g[2]})`
       window.addEventListener('resize', this.updateGradient)
       window.addEventListener('scroll', this.updateGradient)
     },
@@ -307,6 +314,24 @@
 
   a.play:hover
     opacity: 1 !important
+
+  .error
+    background: #694040
+    box-shadow: 0px 0px 2px 2px rgba(darken(darken(#694040,17) + #000000,6), 0.75)
+
+    padding: 10px
+
+    border-spacing: 0
+
+    list-style: none
+
+    width: 100%
+
+    border-radius: 3px
+    overflow: hidden
+
+    text-align: center
+
 
 
 </style>
