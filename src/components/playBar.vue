@@ -1,11 +1,11 @@
 <template>
-  <div class="playBar" ref="playbar" v-on:mousemove="playbarTimeout = 0" v-on:keydown.space="playPause">
+  <div class="playBar" ref="playbar" v-on:mousemove="playbarTimeout = 0" v-on:keydown.space="playPause" v-bind:class="{hiddenBar: !(playbarTimeout < 20 || format === 2)}">
 
     <div class="player" v-bind:class="{ small: format === 2, hidden: (!showVideo || (format === 2 && browserSupportsPiP))}">
       <video ref="videoPlayer"></video>
     </div>
 
-    <div class="bar" ref="bar" v-bind:class="{hiddenBar: !(playbarTimeout < 20 || format === 2)}">
+    <div class="bar" ref="bar">
 
       <div class="progressbarContainer" v-on:click="seek">
         <div v-bind:class="{loading}" class="progressbar" v-bind:style="{ width: progress * 100 + '%' }"></div>
@@ -304,7 +304,7 @@
         this.paused = true
         this.loading = false
 
-        this.format = SCREEN_FORMAT.LARGE
+        // this.format = SCREEN_FORMAT.LARGE
 
         this.nextepisode = null
 
@@ -467,9 +467,6 @@
         background-color: rgba(44, 40, 40, 0.9)
         box-shadow: 0 0 1px 2px rgba(44, 40, 40, 0.9)
 
-    .hiddenBar
-      bottom: -70px
-
     .player
       position: fixed
       bottom: 0
@@ -581,5 +578,9 @@
 
 
 
+  .hiddenBar
+    cursor: none
+    .bar
+      bottom: -70px
 
 </style>
