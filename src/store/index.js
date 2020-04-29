@@ -19,7 +19,8 @@ export default new Vuex.Store({
     nextEpisodes: [],
     playing: {
       title: ''
-    }
+    },
+    autoplay: true
   },
   modules: {
     movies,
@@ -37,8 +38,8 @@ export default new Vuex.Store({
     saveWatchingMovies: function (state, watching) {
       Vue.set(state, 'watchingMovies', watching)
     },
-    setPlaying: function (state, watching) {
-      Vue.set(state, 'playing', watching)
+    setPlaying: function (state, playing) {
+      Vue.set(state, 'playing', playing)
     },
     updateHost: function (state, host) {
       Vue.set(state, 'host', host)

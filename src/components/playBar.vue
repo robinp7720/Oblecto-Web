@@ -1,7 +1,7 @@
 <template>
-  <div class="playBar" ref="playbar" v-on:mousemove="playbarTimeout = 0" v-on:keydown.space="playPause" v-bind:class="{hiddenBar: !(playbarTimeout < 20 || format === 2)}">
+  <div class="playBar" ref="playbar" v-on:mousemove="playbarTimeout = 0" v-on:keydown.space="playPause" v-bind:class="{hiddenBar: !(playbarTimeout < 20 || playSizeFormat === 2)}">
 
-    <div class="player" v-bind:class="{ small: format === 2, hidden: (!showVideo || (format === 2 && browserSupportsPiP))}">
+    <div class="player" v-bind:class="{ small: playSizeFormat === 2, hidden: (!showVideo || (playSizeFormat === 2 && browserSupportsPiP))}">
       <video ref="videoPlayer"></video>
     </div>
 
@@ -48,11 +48,11 @@
         </span>
 
         <span v-on:click="toggleFullScreen" class="toggle-button" v-if="showVideo && fullscreenEnabled">
-          <FontAwesomeIcon :icon="format === 3? iconDeFullscreen: iconFullscreen"/>
+          <FontAwesomeIcon :icon="playSizeFormat === 3? iconDeFullscreen: iconFullscreen"/>
         </span>
 
-        <span v-on:click="format = (format % 2) + 1" class="toggle-button" v-if="showVideo && format !== 3">
-          <FontAwesomeIcon :icon="format === 1 ? iconDown : iconUp"/>
+        <span v-on:click="playSizeFormat = (playSizeFormat % 2) + 1" class="toggle-button" v-if="showVideo && playSizeFormat !== 3">
+          <FontAwesomeIcon :icon="playSizeFormat === 1 ? iconDown : iconUp"/>
         </span>
 
         <a v-on:click="playNext" v-if="progress > 0.9 & playing.type === 'episode'" class="nextepisode">Next Episode</a>
@@ -81,6 +81,9 @@
     'FULLSCREEN': 3
   }
 
+  let AUTOPLAY_TIME_LEFT_THRESHOLD = 5
+  let IGNORE_RESTORE_PROGRESS_THRESHOLD = 0.9
+
   export default {
     components: {
       FontAwesomeIcon
@@ -93,8 +96,6 @@
 
         loading: false,
 
-        format: 1, //  1 = large screen, 2 = Small View, 3 = Fullscreen
-
         fullscreenEnabled: document.fullscreenEnabled || false, // Does the client support putting content in a fullscreen state?
         browserSupportsPiP: document.pictureInPictureEnabled || false,
 
@@ -103,6 +104,8 @@
         showVideo: false,
         nextepisode: false,
         qualityPopUp: false,
+
+        autoplaying: false,
 
         PlayingFileID: 0,
 
@@ -155,13 +158,13 @@
       iconCog () {
         return faCog
       },
-      ...mapState(['playing'])
+      ...mapState(['playing', 'autoplay', 'playSizeFormat'])
     },
     methods: {
       viewShow: function () {
         if (this.playing.type === 'episode') {
           this.$router.push({ name: 'SeriesView', params: { seriesId: this.playing.entity.tvshow.id } })
-          this.format = SCREEN_FORMAT.SMALL
+          this.playSizeFormat = SCREEN_FORMAT.SMALL
         }
       },
       changeFileId: function (id) {
@@ -225,11 +228,11 @@
       },
       toggleFullScreen: function () {
         if (
-          this.format !== 3
+          this.playSizeFormat !== SCREEN_FORMAT.FULLSCREEN
         ) {
-          this.format = 3
+          this.playSizeFormat = SCREEN_FORMAT.FULLSCREEN
         } else {
-          this.format = 1
+          this.playSizeFormat = SCREEN_FORMAT.LARGE
         }
       },
       stopPlaying: function () {
@@ -242,9 +245,10 @@
         this.qualityPopUp = false
         this.paused = true
         this.loading = false
+        this.autoplaying = false
         this.progress = 0
 
-        this.format = SCREEN_FORMAT.SMALL
+        this.playSizeFormat = SCREEN_FORMAT.SMALL
       },
       playPause: function () {
         if (this.player.paused) {
@@ -260,9 +264,7 @@
       }
     },
     watch: {
-      format: async function (newState, oldState) {
-        //  1 = large screen, 2 = Small View, 3 = Fullscreen
-
+      playSizeFormat: async function (newState, oldState) {
         switch (newState) {
           case SCREEN_FORMAT.FULLSCREEN:
             if (this.browserSupportsPiP) {
@@ -303,8 +305,9 @@
         this.qualityPopUp = false
         this.paused = true
         this.loading = false
+        this.autoplaying = false
 
-        // this.format = SCREEN_FORMAT.LARGE
+        this.playSizeFormat = SCREEN_FORMAT.LARGE
 
         this.nextepisode = null
 
@@ -322,7 +325,7 @@
         // wants to start from the beginning.
 
         if (tracking[0]) {
-          this.shouldPreSeek = tracking[0].progress < 0.9
+          this.shouldPreSeek = tracking[0].progress < IGNORE_RESTORE_PROGRESS_THRESHOLD
         }
 
         if (this.playing.entity.files[this.PlayingFileID].extension !== 'mp4') {
@@ -361,13 +364,13 @@
       })
 
       this.player.addEventListener('enterpictureinpicture', () => {
-        this.format = SCREEN_FORMAT.SMALL
+        this.playSizeFormat = SCREEN_FORMAT.SMALL
         this.browserSupportsPiP = true
       })
 
       this.player.addEventListener('leavepictureinpicture', () => {
-        if (this.format === SCREEN_FORMAT.SMALL) {
-          this.format = SCREEN_FORMAT.LARGE
+        if (this.playSizeFormat === SCREEN_FORMAT.SMALL) {
+          this.playSizeFormat = SCREEN_FORMAT.LARGE
         }
       })
 
@@ -395,6 +398,13 @@
         }
 
         this.progress = (this.initialProgress + this.player.currentTime) / this.playing.entity.files[this.PlayingFileID].duration
+
+        if (this.autoplay && !this.autoplaying) {
+          if (this.playing.entity.files[this.PlayingFileID].duration - (this.initialProgress + this.player.currentTime) <= AUTOPLAY_TIME_LEFT_THRESHOLD) {
+            this.autoplaying = true
+            this.playNext()
+          }
+        }
 
         switch (this.playing.type) {
           case 'episode':
