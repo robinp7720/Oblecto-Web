@@ -2,7 +2,7 @@
   <transition name="slide-fade" appear>
     <div class="episode">
       <div class="episode-poster"
-           v-bind:style="{ backgroundImage: 'url(' + host + '/episode/' + episode.id + '/banner)' }">
+           v-bind:style="{ backgroundImage: 'url(' + bannerUrl + ')' }">
 
 
         <a class="play" v-on:click="playEpisode"><i class="fa fa-play" aria-hidden="true"></i></a>
@@ -32,6 +32,18 @@
       if (this.episode.trackEpisodes[0]) {
         this.progress = this.episode.trackEpisodes[0].progress
       }
+
+      const img = new Image()
+      img.src = this.host + '/episode/' + this.episode.id + '/banner'
+
+      img.onload = () => {
+        this.bannerUrl = img.src
+        this.bannerLoaded = true
+      }
+
+      img.onerror = () => {
+        this.posterLoaded = true
+      }
     },
     mounted () {
 
@@ -39,7 +51,9 @@
     data () {
       return {
         progress: 0,
-        loaded: false
+        loaded: false,
+        bannerUrl: '',
+        bannerLoaded: false
       }
     },
     sockets: {
