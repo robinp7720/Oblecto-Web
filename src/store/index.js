@@ -74,13 +74,21 @@ export default new Vuex.Store({
       state.dispatch('clearPlaying')
       state.commit('initialLoaded', false)
     },
-    updateWatching: async function (state) {
+    updateWatching: async function ({ commit, dispatch }) {
       let { data: episodes } = await Vue.axios.get(`/episodes/watching`)
       let { data: movies } = await Vue.axios.get(`/movies/watching`)
-      let { data: nextEpisodes } = await Vue.axios.get(`/episodes/next`)
 
-      state.commit('saveWatchingEpisodes', episodes)
-      state.commit('saveWatchingMovies', movies)
+      try {
+        await dispatch('updateNext')
+      } catch (e) {
+        console.log(e)
+      }
+
+      commit('saveWatchingEpisodes', episodes)
+      commit('saveWatchingMovies', movies)
+    },
+    updateNext: async function (state) {
+      let { data: nextEpisodes } = await Vue.axios.get(`/episodes/next`)
       state.commit('saveNextEpisodes', nextEpisodes)
     },
     updateHost: function (state, host) {
