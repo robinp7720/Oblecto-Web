@@ -109,7 +109,10 @@
 
         PlayingFileID: 0,
 
-        shouldPreSeek: true
+        shouldPreSeek: true,
+        playSizeFormat: SCREEN_FORMAT.SMALL,
+
+        playbackSession: {}
       }
     },
     computed: {
@@ -158,7 +161,7 @@
       iconCog () {
         return faCog
       },
-      ...mapState(['playing', 'autoplay', 'playSizeFormat'])
+      ...mapState(['playing', 'autoplay'])
     },
     methods: {
       viewShow: function () {
@@ -181,7 +184,7 @@
 
         let tracking = this.playing.entity.trackMovies || this.playing.entity.trackEpisodes
 
-        if (this.playing.entity.files[this.PlayingFileID].extension !== 'mp4') {
+        if (this.playbackSession.seeking === 'server') {
           if (tracking[0] !== undefined) {
             this.initialProgress = tracking[0].time
           }
@@ -193,10 +196,15 @@
 
         this.updateURL()
       },
+      updateSession: async function () {
+        this.playbackSession = (await this.axios.get(`/session/create/${this.playing.entity.files[this.PlayingFileID].id}`)).data
+      },
       updateURL: async function () {
-        let token = (await this.axios.get(`/session/create/${this.playing.entity.files[this.PlayingFileID].id}`)).data.sessionId
+        await this.updateSession()
+        let token = this.playbackSession.sessionId
 
-        if (this.playing.entity.files[this.PlayingFileID].extension !== 'mp4') {
+        if (this.playbackSession.seeking === 'server') {
+          console.log('server side seeking')
           this.player.src = `${this.axios.defaults.baseURL}/session/stream/${token}?offset=${this.initialProgress}`
         } else {
           this.player.src = `${this.axios.defaults.baseURL}/session/stream/${token}`
@@ -212,7 +220,8 @@
         /* TODO: Client should also ask the server if server side real time transcoding is enabled. If it's not, it
             should tell the user that the file cannot be streamed if the client does not natively support it */
 
-        if (this.playing.entity.files[this.PlayingFileID].extension !== 'mp4') {
+        if (this.playbackSession.seeking === 'server') {
+          console.log('server side seeking')
           if (position < this.initialProgress + this.player.duration &&
             position - this.initialProgress > 0) {
             this.player.currentTime = position - this.initialProgress
@@ -297,6 +306,10 @@
         }
       },
       playing: async function (newState, oldState) {
+        if (!oldState.entity || oldState.entity.title === '') this.playSizeFormat = SCREEN_FORMAT.LARGE
+
+        console.log(newState, oldState)
+
         this.initialProgress = 0
         this.progress = 0
         this.PlayingFileID = 0
@@ -306,8 +319,6 @@
         this.paused = true
         this.loading = false
         this.autoplaying = false
-
-        this.playSizeFormat = SCREEN_FORMAT.LARGE
 
         this.nextepisode = null
 
@@ -324,11 +335,13 @@
         // If the progress is above 90 percent, we shouldn't seek to the last position since the user probably
         // wants to start from the beginning.
 
+        await this.updateSession()
+
         if (tracking[0]) {
           this.shouldPreSeek = tracking[0].progress < IGNORE_RESTORE_PROGRESS_THRESHOLD
         }
 
-        if (this.playing.entity.files[this.PlayingFileID].extension !== 'mp4') {
+        if (this.playbackSession.seeking === 'server') {
           if (tracking[0] !== undefined && this.shouldPreSeek) {
             this.initialProgress = tracking[0].time
           }
