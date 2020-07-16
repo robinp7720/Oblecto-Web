@@ -25,7 +25,7 @@
     name: 'Maintenance',
     methods: {
       async DownloadTVShowArt () {
-        await this.axios.get('/settings/maintenance/tvshows/download/art')
+        await this.axios.get('/settings/maintenance/series/download/art')
         this.$notify({
           group: 'system',
           title: 'A TV Show artwork update has been requested',
