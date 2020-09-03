@@ -1,3 +1,4 @@
+<script src="../main.js"></script>
 <template>
   <div class="playBar" ref="playbar" v-on:mousemove="playbarTimeout = 0" v-on:keydown.space="playPause" v-bind:class="{hiddenBar: !(playbarTimeout < 20 || playSizeFormat === 2)}">
 
@@ -307,8 +308,6 @@
       },
       playing: async function (newState, oldState) {
         if (!oldState.entity || oldState.entity.title === '') this.playSizeFormat = SCREEN_FORMAT.LARGE
-
-        console.log(newState, oldState)
 
         this.initialProgress = 0
         this.progress = 0

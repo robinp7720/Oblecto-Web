@@ -1,5 +1,5 @@
 import * as types from '../mutation-types'
-import Vue from 'vue'
+import oblectoClient from '@/oblectoClient'
 
 const state = {
   lists: {}
@@ -11,7 +11,7 @@ const getters = {
 
 const actions = {
   async getEpisodes ({ commit, state }, { sort, order }) {
-    let { data: episodes } = await Vue.axios.get(`/episodes/list/${sort}/${order}`)
+    let episodes = await oblectoClient.episodeLibrary.getList(sort, order, 100, 0)
 
     commit(types.RECEIVE_EPISODES, { episodes, sort })
   }

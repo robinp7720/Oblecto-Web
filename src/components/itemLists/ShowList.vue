@@ -1,3 +1,4 @@
+<script src="../../../config/prod.env.js"></script>
 <template>
   <div class="shows">
     <div class="title" v-if="title">
@@ -19,7 +20,7 @@
       >
     <Show v-for="(show, index) in shows"
           v-bind:title="show.seriesName"
-          v-bind:showId="show.id"
+          v-bind:tvshowId="show.id"
           v-bind:show="show"
           v-bind:watching="show.watching"
           v-bind:key="show.id"
@@ -76,7 +77,7 @@
 <style scoped lang="sass">
 .staggered-fade-move
   transition: transform 1s
-  
+
 .shows
   overflow: visible
 

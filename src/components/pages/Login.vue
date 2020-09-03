@@ -17,6 +17,7 @@
 </template>
 
 <script>
+  import oblectoClient from '@/oblectoClient'
   import { mapState } from 'vuex'
 
   export default {
@@ -37,31 +38,25 @@
         this.$store.dispatch('updateHost', prompt('New host?'))
       },
       async submit () {
-        let credentials = {
-          username: this.credentials.username,
-          password: this.credentials.password
-        }
-
-        if (this.$auth.isAuthenticated()) {
-          this.$socket.disconnect()
-          this.$auth.logout()
-        }
-
         try {
-          // Send the login credentials to the backend server
-          // If the credentials are incorrect, the client will not be issued an JWT token
-          // and the client will be redirected back to here
-          let response = await this.$auth.login(credentials)
+          await oblectoClient.authenticate(this.credentials.username, this.credentials.password)
+
+          console.log(oblectoClient.accessToken)
+          this.axios.defaults.headers.common = { 'Authorization': `bearer ${oblectoClient.accessToken}` }
 
           // Authenticate the socket.io connection to the server
           // This allows the server to update the client in realtime
-          this.$socket.emit('authenticate', { token: response.data['access_token'] })
+          this.$socket.emit('authenticate', { token: oblectoClient.accessToken })
 
-          this.$store.dispatch('updateAll')
+          await this.$store.dispatch('updateAll')
+
+          console.log('redirecting')
 
           // After the login proceduce is complete, send the user to the homepage
           this.$router.push({ name: 'Main' })
         } catch (e) {
+          console.log(e)
+
           // If an error has occurred during the login process, send an error message to the client
           this.$notify({
             group: 'system',
