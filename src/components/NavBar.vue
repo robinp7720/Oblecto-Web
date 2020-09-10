@@ -63,11 +63,8 @@
       },
       logout: function (event) {
         this.$socket.disconnect()
-        this.$auth.logout()
 
         this.$store.dispatch('logout')
-
-        this.$router.push({ name: 'login' })
       }
     }
   }

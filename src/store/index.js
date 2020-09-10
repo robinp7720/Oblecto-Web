@@ -6,6 +6,8 @@ import episodes from './modules/episodes'
 import libraries from '@/store/modules/libraries'
 
 import VueSocketio from 'vue-socket.io'
+import oblectoClient from '@/oblectoClient'
+import router from '@/router'
 
 Vue.use(Vuex)
 
@@ -81,6 +83,10 @@ export default new Vuex.Store({
       state.commit('saveWatchingEpisodes', [])
       state.dispatch('clearPlaying')
       state.commit('initialLoaded', false)
+
+      oblectoClient.accessToken = ''
+
+      router.push({ name: 'login' })
     },
     updateWatching: async function ({ commit, dispatch }) {
       let { data: episodes } = await Vue.axios.get(`/episodes/watching`)
