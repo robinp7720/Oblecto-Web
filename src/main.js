@@ -32,7 +32,7 @@ Vue.config.productionTip = false
 let connectionFailedCount = 0
 
 /* eslint-disable no-new */
-new Vue({
+export const instance = new Vue({
   el: '#app',
   store,
   sockets: {

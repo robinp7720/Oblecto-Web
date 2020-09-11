@@ -1,3 +1,4 @@
+<script src="../../store/index.js"></script>
 <template>
   <div class="episodes">
     <div class="title" v-if="title">
@@ -18,7 +19,7 @@
         v-on:leave="leave"
       >
         <Episode v-for="(episode, index) in episodes"
-                 v-bind:subtitle="'S' + episode.airedSeason + 'E' + episode.airedEpisodeNumber + ' - ' + episode.tvshow.seriesName"
+                 v-bind:subtitle="'S' + episode.airedSeason + 'E' + episode.airedEpisodeNumber + ' - ' + episode.Series.seriesName"
                  v-bind:key="episode.id"
                  v-bind:episode="episode"
         ></Episode>

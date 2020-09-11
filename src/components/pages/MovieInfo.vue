@@ -21,10 +21,10 @@
         </div>
       </div>
 
-      <div class="file-list-container" v-if="movieData.files.length > 0">
+      <div class="file-list-container" v-if="movieData.Files.length > 0">
         <ul class="file-list">
           <li
-            v-for="(FileIterator, index) in movieData.files"
+            v-for="(FileIterator, index) in movieData.Files"
             v-bind:key="FileIterator.id"
             class="file-list-item"
           >
@@ -36,7 +36,7 @@
         </ul>
       </div>
       <div class="file-list-container">
-      <div class="error" v-if="movieData.files.length === 0">
+      <div class="error" v-if="movieData.Files.length === 0">
         <span class="msg">No files linked</span>
       </div>
       </div>

@@ -4,7 +4,7 @@
       <div class="nav-left">
         <div class="brand"><router-link :to="{ name: 'Main'}" class="brand-link"><img v-bind:src="host + '/web/logo.png'" alt=""></router-link></div>
 <div class="links">
-  <router-link :to="{ name: 'TVShows'}" class="nav-link">TV Shows</router-link>
+  <router-link :to="{ name: 'Series'}" class="nav-link">Series</router-link>
   <router-link :to="{ name: 'Movies'}" class="nav-link">Movies</router-link>
 </div>
       </div>

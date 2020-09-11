@@ -34,6 +34,6 @@ module.exports = {
     // In our experience, they generally work as expected,
     // just be aware of this issue when enabling this option.
     cssSourceMap: false,
-    host: JSON.stringify('http://oblecto')
+    host: JSON.stringify('http://localhost:8080')
   }
 }

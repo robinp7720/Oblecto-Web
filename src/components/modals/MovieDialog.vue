@@ -7,7 +7,7 @@
         </tab>
         <tab name="Files">
           <ul>
-            <li v-for="(file, index) in movie.files"
+            <li v-for="(file, index) in movie.Files"
                         v-bind:key="file.id">
               <span>{{ file.path }}</span>
             </li>

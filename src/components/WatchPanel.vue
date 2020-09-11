@@ -15,15 +15,15 @@
 </template>
 
 <script>
-  import ShowList from '@/components/itemLists/ShowList'
   import EpisodeList from '@/components/itemLists/EpisodeList'
+  import SeriesList from '@/components/itemLists/SeriesList'
   import MovieList from '@/components/itemLists/MovieList'
   import { mapState } from 'vuex'
 
   export default {
     name: 'watchPanel',
     components: {
-      ShowList,
+      SeriesList,
       EpisodeList,
       MovieList
     },

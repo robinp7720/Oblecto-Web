@@ -33,12 +33,12 @@ var webpackConfig = merge(baseWebpackConfig, {
       'OBLECTO_HOST': JSON.stringify(false),
       'BASE_PATH': JSON.stringify('/web/')
     }),
-    new webpack.optimize.UglifyJsPlugin({
+    /*new webpack.optimize.UglifyJsPlugin({
       compress: {
         warnings: false
       },
       sourceMap: true
-    }),
+    }),*/
     // extract css into its own file
     new ExtractTextPlugin({
       filename: utils.assetsPath('css/[name].[contenthash].css')

@@ -42,13 +42,18 @@
           await oblectoClient.authenticate(this.credentials.username, this.credentials.password)
 
           console.log(oblectoClient.accessToken)
+
           this.axios.defaults.headers.common = { 'Authorization': `bearer ${oblectoClient.accessToken}` }
 
           // Authenticate the socket.io connection to the server
           // This allows the server to update the client in realtime
           this.$socket.emit('authenticate', { token: oblectoClient.accessToken })
 
-          await this.$store.dispatch('updateAll')
+          try {
+            await this.$store.dispatch('updateAll')
+          } catch (e) {
+            console.log(e)
+          }
 
           console.log('redirecting')
 

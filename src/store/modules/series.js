@@ -10,7 +10,7 @@ const getters = {
 }
 
 const actions = {
-  async getTVShows ({ commit, state }, { sort, order }) {
+  async getSeries ({ commit, state }, { sort, order }) {
     let shows = await oblectoClient.seriesLibrary.getList(sort, order, 100, 0)
 
     commit(types.RECEIVE_SHOWS, { shows, sort })

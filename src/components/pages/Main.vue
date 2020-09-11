@@ -3,8 +3,8 @@
     <EpisodeList title="Recently aired"
                  v-bind:episodes="episodes.firstAired"
     />
-    <ShowList title="Recently added shows"
-              v-bind:shows="tvshows.createdAt"
+    <SeriesList title="Recently added series"
+              v-bind:series="series.createdAt"
     />
     <EpisodeList title="Recently added episodes"
                  v-bind:episodes="episodes.createdAt"
@@ -12,14 +12,14 @@
     <MovieList title="Recently added movies"
                v-bind:movies="movies.createdAt"
     />
-    <ShowList title="Shows watched by others"
-              v-bind:shows="tvshows.siteRatingCount"
+    <SeriesList title="Shows watched by others"
+              v-bind:series="series.siteRatingCount"
     />
     <MovieList title="Popular movies"
                v-bind:movies="movies.popularity"
     />
-    <ShowList title="Best rated shows"
-              v-bind:shows="tvshows.siteRating"
+    <SeriesList title="Best rated series"
+              v-bind:series="series.siteRating"
     />
     <MovieList title="Recently released movies"
                v-bind:movies="movies.releaseDate"
@@ -30,20 +30,20 @@
 <script>
   import { mapState } from 'vuex'
 
-  import ShowList from '@/components/itemLists/ShowList'
+  import SeriesList from '@/components/itemLists/SeriesList'
   import EpisodeList from '@/components/itemLists/EpisodeList'
   import MovieList from '@/components/itemLists/MovieList'
 
   export default {
     name: 'Main',
     components: {
-      ShowList: ShowList,
+      SeriesList,
       EpisodeList: EpisodeList,
       MovieList: MovieList
     },
     computed: mapState({
       movies: state => state.movies.lists,
-      tvshows: state => state.tvshows.lists,
+      series: state => state.series.lists,
       episodes: state => state.episodes.lists
     }),
     created () {

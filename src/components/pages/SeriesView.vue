@@ -32,7 +32,6 @@
 </template>
 
 <script>
-  import Show from '@/components/itemTypes/Show'
   import WatchPanel from '@/components/WatchPanel'
   import EpisodeList from '@/components/itemLists/EpisodeList'
   import { mapState } from 'vuex'
@@ -41,9 +40,8 @@
   export default {
     name: 'SeriesView',
     components: {
-      Show: Show,
-      WatchPanel: WatchPanel,
-      EpisodeList: EpisodeList
+      WatchPanel,
+      EpisodeList
     },
     data () {
       return {

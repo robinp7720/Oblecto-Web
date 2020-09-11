@@ -10,10 +10,10 @@
 
       <div class="progressbarContainer" v-on:click="seek">
         <div v-bind:class="{loading}" class="progressbar" v-bind:style="{ width: progress * 100 + '%' }"></div>
-        <div class="progressbarload" v-bind:style="{ width: (initialProgress + $refs.videoPlayer.buffered.end($refs.videoPlayer.buffered.length - 1)) / playing.entity.files[PlayingFileID].duration * 100 + '%' }" v-if="$refs.videoPlayer && $refs.videoPlayer.buffered.length > 0"></div>
+        <div class="progressbarload" v-bind:style="{ width: (initialProgress + $refs.videoPlayer.buffered.end($refs.videoPlayer.buffered.length - 1)) / playing.entity.Files[PlayingFileID].duration * 100 + '%' }" v-if="$refs.videoPlayer && $refs.videoPlayer.buffered.length > 0"></div>
       </div>
 
-      <span class="seriesid" v-if="playing.type === 'episode'" v-on:click="viewShow"> {{ playing.entity.tvshow.seriesName }} S{{ playing.entity.airedSeason }}E{{ playing.entity.airedEpisodeNumber }}: </span>
+      <span class="seriesid" v-if="playing.type === 'episode'" v-on:click="viewShow"> {{ playing.entity.Series.seriesName }} S{{ playing.entity.airedSeason }}E{{ playing.entity.airedEpisodeNumber }}: </span>
       <span class="title">{{ playing.title }}</span>
 
       <div class="right">
@@ -24,7 +24,7 @@
         <div class="quality-selector" v-if="qualityPopUp">
           <ul>
             <li
-              v-for="(FileIterator, index) in playing.entity.files"
+              v-for="(FileIterator, index) in playing.entity.Files"
               v-bind:key="FileIterator.id"
               v-on:click="changeFileId(index)"
               v-bind:class="{selected: index === PlayingFileID}"
@@ -145,17 +145,17 @@
         return faDeFullscreen
       },
       PlayTimeDisplayValue () {
-        let hours = ('0' + Math.floor(this.progress * this.playing.entity.files[this.PlayingFileID].duration / (60 * 60))).substr(-2)
-        let mins = ('0' + Math.floor(this.progress * this.playing.entity.files[this.PlayingFileID].duration / 60) % 60).substr(-2)
-        let seconds = ('0' + Math.floor(this.progress * this.playing.entity.files[this.PlayingFileID].duration) % 60).substr(-2)
+        let hours = ('0' + Math.floor(this.progress * this.playing.entity.Files[this.PlayingFileID].duration / (60 * 60))).substr(-2)
+        let mins = ('0' + Math.floor(this.progress * this.playing.entity.Files[this.PlayingFileID].duration / 60) % 60).substr(-2)
+        let seconds = ('0' + Math.floor(this.progress * this.playing.entity.Files[this.PlayingFileID].duration) % 60).substr(-2)
 
         return `${hours}:${mins}:${seconds}`
       },
 
       DurationDisplayValue () {
-        let hours = ('0' + Math.floor(this.playing.entity.files[this.PlayingFileID].duration / (60 * 60))).substr(-2)
-        let mins = ('0' + Math.floor(this.playing.entity.files[this.PlayingFileID].duration / 60) % 60).substr(-2)
-        let seconds = ('0' + Math.floor(this.playing.entity.files[this.PlayingFileID].duration) % 60).substr(-2)
+        let hours = ('0' + Math.floor(this.playing.entity.Files[this.PlayingFileID].duration / (60 * 60))).substr(-2)
+        let mins = ('0' + Math.floor(this.playing.entity.Files[this.PlayingFileID].duration / 60) % 60).substr(-2)
+        let seconds = ('0' + Math.floor(this.playing.entity.Files[this.PlayingFileID].duration) % 60).substr(-2)
 
         return `${hours}:${mins}:${seconds}`
       },
@@ -167,7 +167,7 @@
     methods: {
       viewShow: function () {
         if (this.playing.type === 'episode') {
-          this.$router.push({ name: 'SeriesView', params: { seriesId: this.playing.entity.tvshow.id } })
+          this.$router.push({ name: 'SeriesView', params: { seriesId: this.playing.entity.Series.id } })
           this.playSizeFormat = SCREEN_FORMAT.SMALL
         }
       },
@@ -177,13 +177,13 @@
 
         this.qualityPopUp = false
 
-        if (this.playing.entity.trackMovies !== undefined && this.playing.entity.trackMovies[0] !== undefined) {
-          this.playing.entity.trackMovies[0].time = this.initialProgress + this.player.currentTime
-        } else if (this.playing.entity.trackEpisodes !== undefined && this.playing.entity.trackEpisodes[0] !== undefined) {
-          this.playing.entity.trackEpisodes[0].time = this.initialProgress + this.player.currentTime
+        if (this.playing.entity.TrackMovies !== undefined && this.playing.entity.TrackMovies[0] !== undefined) {
+          this.playing.entity.TrackMovies[0].time = this.initialProgress + this.player.currentTime
+        } else if (this.playing.entity.TrackEpisodes !== undefined && this.playing.entity.TrackEpisodes[0] !== undefined) {
+          this.playing.entity.TrackEpisodes[0].time = this.initialProgress + this.player.currentTime
         }
 
-        let tracking = this.playing.entity.trackMovies || this.playing.entity.trackEpisodes
+        let tracking = this.playing.entity.TrackMovies || this.playing.entity.TrackEpisodes
 
         if (this.playbackSession.seeking === 'server') {
           if (tracking[0] !== undefined) {
@@ -198,7 +198,7 @@
         this.updateURL()
       },
       updateSession: async function () {
-        this.playbackSession = (await this.axios.get(`/session/create/${this.playing.entity.files[this.PlayingFileID].id}`)).data
+        this.playbackSession = (await this.axios.get(`/session/create/${this.playing.entity.Files[this.PlayingFileID].id}`)).data
       },
       updateURL: async function () {
         await this.updateSession()
@@ -213,7 +213,7 @@
       },
       seek: function (event) {
         // Calculate the offset in seconds from where the user clecked on the seekbar
-        let position = this.playing.entity.files[this.PlayingFileID].duration * event.clientX / document.documentElement.clientWidth
+        let position = this.playing.entity.Files[this.PlayingFileID].duration * event.clientX / document.documentElement.clientWidth
 
         // If the file isn't an mp4 file, the broweser most likely won't be able to seek it. Therefore
         // server-side seeking must be used
@@ -329,7 +329,7 @@
 
         this.showVideo = true
 
-        let tracking = this.playing.entity.trackMovies || this.playing.entity.trackEpisodes
+        let tracking = this.playing.entity.TrackMovies || this.playing.entity.TrackEpisodes
 
         // If the progress is above 90 percent, we shouldn't seek to the last position since the user probably
         // wants to start from the beginning.
@@ -387,7 +387,7 @@
       })
 
       this.player.addEventListener('loadedmetadata', () => {
-        let tracking = this.playing.entity.trackMovies || this.playing.entity.trackEpisodes
+        let tracking = this.playing.entity.TrackMovies || this.playing.entity.TrackEpisodes
 
         if (tracking[0] && this.shouldPreSeek) {
           this.player.currentTime = tracking[0].time - this.initialProgress
@@ -409,10 +409,10 @@
           this.playbarTimeout += 1
         }
 
-        this.progress = (this.initialProgress + this.player.currentTime) / this.playing.entity.files[this.PlayingFileID].duration
+        this.progress = (this.initialProgress + this.player.currentTime) / this.playing.entity.Files[this.PlayingFileID].duration
 
         if (this.autoplay && !this.autoplaying) {
-          if (this.playing.entity.files[this.PlayingFileID].duration - (this.initialProgress + this.player.currentTime) <= AUTOPLAY_TIME_LEFT_THRESHOLD) {
+          if (this.playing.entity.Files[this.PlayingFileID].duration - (this.initialProgress + this.player.currentTime) <= AUTOPLAY_TIME_LEFT_THRESHOLD) {
             this.autoplaying = true
             this.playNext()
           }

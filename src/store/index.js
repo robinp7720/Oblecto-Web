@@ -1,7 +1,7 @@
 import Vue from 'vue'
 import Vuex from 'vuex'
 import movies from './modules/movies'
-import tvshows from './modules/tvshows'
+import series from './modules/series'
 import episodes from './modules/episodes'
 import libraries from '@/store/modules/libraries'
 
@@ -26,7 +26,7 @@ export default new Vuex.Store({
   },
   modules: {
     movies,
-    tvshows,
+    series,
     episodes,
     libraries
   },
@@ -61,9 +61,9 @@ export default new Vuex.Store({
       console.log('movies done')
 
       // Update all tv shows in vuex storage
-      await dispatch('tvshows/getTVShows', { sort: 'createdAt', order: 'DESC' })
-      await dispatch('tvshows/getTVShows', { sort: 'siteRating', order: 'DESC' })
-      await dispatch('tvshows/getTVShows', { sort: 'siteRatingCount', order: 'DESC' })
+      await dispatch('series/getSeries', { sort: 'createdAt', order: 'DESC' })
+      await dispatch('series/getSeries', { sort: 'siteRating', order: 'DESC' })
+      await dispatch('series/getSeries', { sort: 'siteRatingCount', order: 'DESC' })
 
       console.log('shows done')
 

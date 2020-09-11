@@ -1,10 +1,10 @@
 <script src="../../../config/prod.env.js"></script>
 <template>
-  <div class="shows">
+  <div class="series">
     <div class="title" v-if="title">
       <h3 v-html="title"></h3>
     </div>
-    <div class="empty" v-if="shows.length == 0">
+    <div class="empty" v-if="series.length == 0">
       <span class="no-content">
         No TV Shows here
       </span>
@@ -18,28 +18,26 @@
         v-on:enter="enter"
         v-on:leave="leave"
       >
-    <Show v-for="(show, index) in shows"
+    <Series v-for="(show, index) in series"
           v-bind:title="show.seriesName"
-          v-bind:tvshowId="show.id"
-          v-bind:show="show"
+          v-bind:seriesId="show.id"
+          v-bind:series="show"
           v-bind:watching="show.watching"
           v-bind:key="show.id"
-    ></Show>
+    ></Series>
       </transition-group>
   </div>
 </template>
 
 <script>
-  import Show from '@/components/itemTypes/Show'
+  import Series from '@/components/itemTypes/Series'
   import Velocity from 'velocity-animate'
 
   export default {
-    name: 'ShowList',
-    components: { Show: Show },
+    name: 'SeriesList',
+    components: { Series },
     props: {
-      'shows': {
-        default: []
-      },
+      'series': Array,
       'title': {
         default: ''
       }
@@ -78,7 +76,7 @@
 .staggered-fade-move
   transition: transform 1s
 
-.shows
+.series
   overflow: visible
 
 .scroller

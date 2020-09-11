@@ -29,8 +29,8 @@
   export default {
     name: 'Episode',
     created () {
-      if (this.episode.trackEpisodes[0]) {
-        this.progress = this.episode.trackEpisodes[0].progress
+      if (this.episode.TrackEpisodes[0]) {
+        this.progress = this.episode.TrackEpisodes[0].progress
       }
 
       const img = new Image()
@@ -59,7 +59,7 @@
     sockets: {
       'client-episode-progress': function (message) {
         if (message.episodeId === this.episode.id) {
-          this.episode.trackEpisodes[0] = message
+          this.episode.TrackEpisodes[0] = message
           this.progress = message.progress
         }
       }

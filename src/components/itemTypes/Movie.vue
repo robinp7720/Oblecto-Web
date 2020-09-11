@@ -39,8 +39,8 @@
       'host'
     ]),
     created () {
-      if (this.movie.trackMovies[0]) {
-        this.progress = this.movie.trackMovies[0].progress
+      if (this.movie.TrackMovies[0]) {
+        this.progress = this.movie.TrackMovies[0].progress
       }
     },
     data () {
@@ -51,7 +51,7 @@
     sockets: {
       'client-movie-progress': function (message) {
         if (message.movieId === this.movieId) {
-          this.movie.trackMovies[0] = message
+          this.movie.TrackMovies[0] = message
           this.progress = message.progress
         }
       }

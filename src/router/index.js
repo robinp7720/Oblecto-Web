@@ -1,7 +1,6 @@
 import Vue from 'vue'
 import Router from 'vue-router'
 
-import TVShows from '@/components/pages/TVShows'
 import SeriesView from '@/components/pages/SeriesView'
 import MovieInfo from '@/components/pages/MovieInfo'
 import Login from '@/components/pages/Login'
@@ -18,6 +17,7 @@ import Sets from '@/components/settings/Sets'
 import VueAxios from 'vue-axios'
 import axios from 'axios'
 import oblectoClient from '@/oblectoClient'
+import Series from '@/components/pages/Series'
 
 Vue.use(VueAxios, axios)
 
@@ -34,9 +34,9 @@ const router = new Router({
       meta: { requiresAuth: true }
     },
     {
-      path: '/tvshows',
-      name: 'TVShows',
-      component: TVShows,
+      path: '/series',
+      name: 'Series',
+      component: Series,
       meta: { requiresAuth: true }
     },
     {
