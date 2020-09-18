@@ -1,6 +1,5 @@
-<script src="../main.js"></script>
 <template>
-  <div class="playBar" ref="playbar" v-on:mousemove="playbarTimeout = 0" v-on:keydown.space="playPause" v-bind:class="{hiddenBar: !(playbarTimeout < 20 || playSizeFormat === 2)}">
+  <div class="playBar" ref="playbar" v-on:mousemove="playbarTimeout = 0" v-bind:class="{hiddenBar: !(playbarTimeout < 20 || playSizeFormat === 2)}" v-on:keydown.space="playPause" v-on:keydown="playPause">
 
     <div class="player" v-bind:class="{ small: playSizeFormat === 2, hidden: (!showVideo || (playSizeFormat === 2 && browserSupportsPiP))}">
       <video ref="videoPlayer"></video>
@@ -33,8 +32,6 @@
             </li>
           </ul>
         </div>
-
-
 
         <span v-on:click="qualityPopUp = !qualityPopUp" v-if="showVideo" class="toggle-button">
           <FontAwesomeIcon :icon="iconCog"/>
@@ -202,27 +199,22 @@
       },
       updateURL: async function () {
         await this.updateSession()
+        this.setURL()
+      },
+      setURL: function () {
         let token = this.playbackSession.sessionId
 
         if (this.playbackSession.seeking === 'server') {
-          console.log('server side seeking')
           this.player.src = `${this.axios.defaults.baseURL}/session/stream/${token}?offset=${this.initialProgress}`
         } else {
           this.player.src = `${this.axios.defaults.baseURL}/session/stream/${token}`
         }
       },
       seek: function (event) {
-        // Calculate the offset in seconds from where the user clecked on the seekbar
+        // Calculate the offset in seconds from where the user clicked on the seekbar
         let position = this.playing.entity.Files[this.PlayingFileID].duration * event.clientX / document.documentElement.clientWidth
 
-        // If the file isn't an mp4 file, the broweser most likely won't be able to seek it. Therefore
-        // server-side seeking must be used
-
-        /* TODO: Client should also ask the server if server side real time transcoding is enabled. If it's not, it
-            should tell the user that the file cannot be streamed if the client does not natively support it */
-
         if (this.playbackSession.seeking === 'server') {
-          console.log('server side seeking')
           if (position < this.initialProgress + this.player.duration &&
             position - this.initialProgress > 0) {
             this.player.currentTime = position - this.initialProgress
@@ -260,7 +252,9 @@
 
         this.playSizeFormat = SCREEN_FORMAT.SMALL
       },
-      playPause: function () {
+      playPause: function (event) {
+        event.preventDefault()
+
         if (this.player.paused) {
           this.paused = false
           return this.player.play()
@@ -346,7 +340,7 @@
           }
         }
 
-        this.updateURL()
+        this.setURL()
 
         if (this.playing.type === 'episode') {
           this.nextepisode = (await this.axios.get(`/episode/${this.playing.entity.id}/next`)).data
