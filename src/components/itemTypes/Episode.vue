@@ -48,6 +48,13 @@
     mounted () {
 
     },
+    watch: {
+      episode: async function (newState, oldState) {
+        if (this.episode.TrackEpisodes[0]) {
+          this.progress = this.episode.TrackEpisodes[0].progress
+        }
+      }
+    },
     data () {
       return {
         progress: 0,
