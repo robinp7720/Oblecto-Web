@@ -1,5 +1,5 @@
 <template>
-  <div class="playBar" ref="playbar" v-on:mousemove="playbarTimeout = 0" v-bind:class="{hiddenBar: !(playbarTimeout < 20 || playSizeFormat === 2)}" v-on:keydown.space="playPause" v-on:keydown="playPause">
+  <div class="playBar" ref="playbar" v-on:mousemove="playbarTimeout = 0" v-bind:class="{hiddenBar: !(playbarTimeout < 20 || playSizeFormat === 2)}">
 
     <div class="player" v-bind:class="{ small: playSizeFormat === 2, hidden: (!showVideo || (playSizeFormat === 2 && browserSupportsPiP))}">
       <video ref="videoPlayer"></video>
@@ -168,19 +168,14 @@
           this.playSizeFormat = SCREEN_FORMAT.SMALL
         }
       },
-      changeFileId: function (id) {
-        this.PlayingFileID = id
-        this.loading = true
-
-        this.qualityPopUp = false
-
-        if (this.playing.entity.TrackMovies !== undefined && this.playing.entity.TrackMovies[0] !== undefined) {
-          this.playing.entity.TrackMovies[0].time = this.initialProgress + this.player.currentTime
-        } else if (this.playing.entity.TrackEpisodes !== undefined && this.playing.entity.TrackEpisodes[0] !== undefined) {
-          this.playing.entity.TrackEpisodes[0].time = this.initialProgress + this.player.currentTime
-        }
+      changeFileId: async function (id) {
+        this.updateLocalTracker()
 
         let tracking = this.playing.entity.TrackMovies || this.playing.entity.TrackEpisodes
+
+        this.PlayingFileID = id
+
+        await this.updateSession()
 
         if (this.playbackSession.seeking === 'server') {
           if (tracking[0] !== undefined) {
@@ -188,11 +183,13 @@
           }
         } else {
           this.initialProgress = 0
+          this.shouldPreSeek = true
         }
 
-        this.player.src = ''
+        this.qualityPopUp = false
 
-        this.updateURL()
+        this.loading = true
+        this.setURL()
       },
       updateSession: async function () {
         this.playbackSession = (await this.axios.get(`/session/create/${this.playing.entity.Files[this.PlayingFileID].id}`)).data
@@ -215,8 +212,7 @@
         let position = this.playing.entity.Files[this.PlayingFileID].duration * event.clientX / document.documentElement.clientWidth
 
         if (this.playbackSession.seeking === 'server') {
-          if (position < this.initialProgress + this.player.duration &&
-            position - this.initialProgress > 0) {
+          if (position < this.initialProgress + this.player.duration && position - this.initialProgress > 0) {
             this.player.currentTime = position - this.initialProgress
 
             return
@@ -229,9 +225,7 @@
         }
       },
       toggleFullScreen: function () {
-        if (
-          this.playSizeFormat !== SCREEN_FORMAT.FULLSCREEN
-        ) {
+        if (this.playSizeFormat !== SCREEN_FORMAT.FULLSCREEN) {
           this.playSizeFormat = SCREEN_FORMAT.FULLSCREEN
         } else {
           this.playSizeFormat = SCREEN_FORMAT.LARGE
@@ -255,16 +249,25 @@
       playPause: function (event) {
         event.preventDefault()
 
-        if (this.player.paused) {
-          this.paused = false
-          return this.player.play()
-        }
-
-        this.paused = true
-        this.player.pause()
+        this.paused = !this.paused
       },
       playNext: function () {
         this.$store.dispatch('playEpisode', this.nextepisode.id)
+      },
+      updateLocalTracker: function () {
+        if (this.playing.type === 'movie') {
+          if (!this.playing.entity.TrackMovies) this.playing.entity.TrackMovies = []
+          if (!this.playing.entity.TrackMovies[0]) this.playing.entity.TrackMovies[0] = {}
+
+          this.playing.entity.TrackMovies[0].time = this.initialProgress + this.player.currentTime
+        }
+
+        if (this.playing.type === 'episode') {
+          if (!this.playing.entity.TrackEpisodes) this.playing.entity.TrackEpisodes = []
+          if (!this.playing.entity.TrackEpisodes[0]) this.playing.entity.TrackEpisodes[0] = {}
+
+          this.playing.entity.TrackEpisodes[0].time = this.initialProgress + this.player.currentTime
+        }
       }
     },
     watch: {
@@ -272,29 +275,31 @@
         switch (newState) {
           case SCREEN_FORMAT.FULLSCREEN:
             if (this.browserSupportsPiP) {
-              document.exitPictureInPicture()
+              await document.exitPictureInPicture()
             }
 
-            this.playbar.requestFullscreen()
+            await this.playbar.requestFullscreen()
 
             break
 
           case SCREEN_FORMAT.LARGE:
-            if (document.fullscreenEnabled) {
-              document.exitFullscreen()
+            if (document.fullscreenElement) {
+              await document.exitFullscreen()
             }
 
-            document.exitPictureInPicture()
+            if (this.browserSupportsPiP) {
+              await document.exitPictureInPicture()
+            }
 
             break
 
           case SCREEN_FORMAT.SMALL:
             if (this.fullscreenEnabled) {
-              document.exitFullscreen()
+              await document.exitFullscreen()
             }
 
             if (this.browserSupportsPiP) {
-              this.player.requestPictureInPicture()
+              await this.player.requestPictureInPicture()
             }
 
             break
@@ -345,9 +350,24 @@
         if (this.playing.type === 'episode') {
           this.nextepisode = (await this.axios.get(`/episode/${this.playing.entity.id}/next`)).data
         }
+      },
+      paused: async function (newState, oldState) {
+        if (newState) {
+          return this.player.pause()
+        }
+
+        this.player.play()
       }
     },
     mounted: function () {
+      window.addEventListener('keydown', (e) => {
+        e.preventDefault()
+
+        if (this.playSizeFormat === SCREEN_FORMAT.FULLSCREEN || this.playSizeFormat === SCREEN_FORMAT.LARGE) {
+          this.paused = !this.paused
+        }
+      })
+
       this.player.addEventListener('waiting', () => {
         this.loading = true
       })
@@ -387,12 +407,17 @@
           this.player.currentTime = tracking[0].time - this.initialProgress
         }
 
+        console.log('metadataloaded')
+
         this.player.play()
+
         this.paused = false
         this.loading = false
       })
 
       this.player.addEventListener('timeupdate', () => {
+        this.updateLocalTracker()
+
         if (this.playing.entity === undefined) {
           this.playbarTimeout = 0
 
@@ -415,7 +440,7 @@
         switch (this.playing.type) {
           case 'episode':
             this.$socket.emit('playing', {
-              time: this.initialProgress + this.player.currentTime,
+              time: this.playing.entity.TrackEpisodes[0].time = this.initialProgress + this.player.currentTime,
               progress: this.progress,
               episodeId: this.playing.entity.id,
               type: 'tv'
@@ -423,7 +448,7 @@
             break
           case 'movie':
             this.$socket.emit('playing', {
-              time: this.initialProgress + this.player.currentTime,
+              time: this.playing.entity.TrackMovies[0].time,
               progress: this.progress,
               movieId: this.playing.entity.id,
               type: 'movie'
