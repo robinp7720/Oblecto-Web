@@ -22,7 +22,8 @@ export default new Vuex.Store({
     playing: {
       title: ''
     },
-    autoplay: true
+    autoplay: true,
+    playbackRemote: 'local'
   },
   modules: {
     movies,
@@ -48,6 +49,9 @@ export default new Vuex.Store({
     },
     initialLoaded: function (state, initialLoaded) {
       Vue.set(state, 'initialLoaded', initialLoaded)
+    },
+    setPlaybackRemote: function (state, remote) {
+      Vue.set(state, 'playbackRemote', remote)
     }
   },
   actions: {
@@ -115,23 +119,51 @@ export default new Vuex.Store({
     clearPlaying: function (state) {
       state.commit('setPlaying', {})
     },
-    playEpisode: async function (state, id) {
+    playEpisodeLocal: async function ({ commit, dispatch }, id) {
+      await dispatch('clearPlaying')
+
       let { data: episode } = await Vue.axios.get(`/episode/${id}/info`)
 
-      state.commit('setPlaying', {
+      commit('setPlaying', {
         title: episode.episodeName,
         type: 'episode',
         entity: episode
       })
     },
-    playMovie: async function (state, id) {
+    playEpisode: async function ({ state, commit, dispatch }, id) {
+      if (state.playbackRemote !== 'local') {
+        await Vue.axios.post(`/client/${state.playbackRemote}/playback`, {
+          id,
+          clientId: state.playbackRemote,
+          type: 'episode'
+        })
+        return
+      }
+
+      await dispatch('playEpisodeLocal', id)
+    },
+    playMovieLocal: async function ({ commit, dispatch }, id) {
+      await dispatch('clearPlaying')
+
       let { data: movie } = await Vue.axios.get(`/movie/${id}/info`)
 
-      state.commit('setPlaying', {
+      commit('setPlaying', {
         title: movie.movieName,
         type: 'movie',
         entity: movie
       })
+    },
+    playMovie: async function ({ state, commit, dispatch }, id) {
+      if (state.playbackRemote !== 'local') {
+        await Vue.axios.post(`/client/${state.playbackRemote}/playback`, {
+          id,
+          clientId: state.playbackRemote,
+          type: 'movie'
+        })
+        return
+      }
+
+      await dispatch('playMovieLocal', id)
     }
   }
 })
