@@ -306,7 +306,7 @@
         }
       },
       playing: async function (newState, oldState) {
-        if (!oldState.entity || oldState.entity.title === '') this.playSizeFormat = SCREEN_FORMAT.LARGE
+        if (!oldState.entity || !oldState.entity.title) this.playSizeFormat = SCREEN_FORMAT.LARGE
 
         this.initialProgress = 0
         this.progress = 0
@@ -361,6 +361,10 @@
     },
     mounted: function () {
       window.addEventListener('keydown', (e) => {
+        if (e.code !== 'Space') { return }
+        if (this.playing === {}) { return }
+        if (this.playSizeFormat === SCREEN_FORMAT.SMALL) { return }
+
         e.preventDefault()
 
         if (this.playSizeFormat === SCREEN_FORMAT.FULLSCREEN || this.playSizeFormat === SCREEN_FORMAT.LARGE) {
