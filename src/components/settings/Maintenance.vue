@@ -17,6 +17,7 @@
     <button @click="update('episodes')">Update episode entries</button>
     <button @click="update('movies')">Update movie entries</button>
     <button @click="update('series')">Update series entries</button>
+    <button @click="update('files')">Update file entries</button>
   </div>
 </template>
 
