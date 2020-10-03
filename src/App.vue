@@ -9,6 +9,7 @@
     <NewMovieSet/>
     <PasswordChange/>
     <CopyText/>
+    <ChangeRemoteDialog />
 
     <notifications group="system" classes="system-notification" position="bottom center" />
 
@@ -49,10 +50,12 @@
   import NewMovieSet from '@/components/modals/NewMovieSet'
   import PasswordChange from '@/components/modals/PasswordChange'
   import CopyText from '@/components/modals/CopyText'
+  import ChangeRemoteDialog from '@/components/modals/ChangeRemoteDialog'
 
   export default {
     name: 'app',
     components: {
+      ChangeRemoteDialog,
       WatchPanel: WatchPanel,
       NavBar,
       ShowDialogModal,

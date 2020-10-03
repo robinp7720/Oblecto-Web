@@ -76,6 +76,15 @@ export const instance = new Vue({
       if (val.event === 'added') {
         this.$store.dispatch('updateAll')
       }
+    },
+    play: function (msg) {
+      if (msg.episodeId) {
+        store.dispatch('playEpisodeLocal', msg.episodeId)
+      }
+
+      if (msg.movieId) {
+        store.dispatch('playMovieLocal', msg.movieId)
+      }
     }
   },
   router,
