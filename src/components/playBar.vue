@@ -274,7 +274,7 @@
       playSizeFormat: async function (newState, oldState) {
         switch (newState) {
           case SCREEN_FORMAT.FULLSCREEN:
-            if (this.browserSupportsPiP) {
+            if (this.browserSupportsPiP && document.pictureInPictureElement) {
               await document.exitPictureInPicture()
             }
 
@@ -287,14 +287,14 @@
               await document.exitFullscreen()
             }
 
-            if (this.browserSupportsPiP) {
+            if (this.browserSupportsPiP && document.pictureInPictureElement) {
               await document.exitPictureInPicture()
             }
 
             break
 
           case SCREEN_FORMAT.SMALL:
-            if (this.fullscreenEnabled) {
+            if (document.fullscreenElement) {
               await document.exitFullscreen()
             }
 
