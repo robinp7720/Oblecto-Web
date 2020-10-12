@@ -13,6 +13,7 @@ import Maintenance from '@/components/settings/Maintenance'
 import UserManager from '@/components/settings/UserManager'
 import Libraries from '@/components/settings/Libraries'
 import Sets from '@/components/settings/Sets'
+import IndexerSettings from '@/components/settings/IndexerSettings'
 
 import VueAxios from 'vue-axios'
 import axios from 'axios'
@@ -70,7 +71,6 @@ const router = new Router({
     },
     {
       path: '/settings',
-      name: 'Settings',
       component: Settings,
       meta: { requiresAuth: true },
       children: [
@@ -98,6 +98,11 @@ const router = new Router({
           name: 'SettingsSets',
           path: 'sets',
           component: Sets
+        },
+        {
+          name: 'IndexerSettings',
+          path: 'indexer',
+          component: IndexerSettings
         }
       ]
     }
