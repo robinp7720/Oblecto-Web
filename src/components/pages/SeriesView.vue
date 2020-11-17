@@ -78,11 +78,22 @@
       // Retrieve episodes
       axios.get('/series/' + this.$route.params.seriesId + `/episodes`)
         .then(response => {
-          let temp = {}
+          let unsorted = []
           response.data.forEach(function (v, i) {
-            if (temp['Season ' + v.airedSeason] === undefined) temp['Season ' + v.airedSeason] = []
-            temp['Season ' + v.airedSeason].push(v)
+            if (!unsorted[v.airedSeason]) unsorted[v.airedSeason] = []
+            unsorted[v.airedSeason].push(v)
           })
+
+          console.log(unsorted)
+
+          let temp = {}
+          unsorted.forEach(function (v, i) {
+            v.sort((a, b) => {
+              return a.airedEpisodeNumber - b.airedEpisodeNumber
+            })
+            if (!temp['Season ' + i]) temp['Season ' + i] = v
+          })
+
           this.series = temp
         })
         .catch(e => {
