@@ -159,7 +159,7 @@
       iconCog () {
         return faCog
       },
-      ...mapState(['playing', 'autoplay'])
+      ...mapState(['playing', 'autoplay', 'host'])
     },
     methods: {
       viewShow: function () {
@@ -321,6 +321,8 @@
         this.nextepisode = null
 
         if (this.playing.entity === undefined) {
+          navigator.mediaSession.playbackState = 'none'
+
           return
         }
 
@@ -347,11 +349,33 @@
 
         this.setURL()
 
+        // Set the mediaSession environment
+        if ('mediaSession' in navigator) {
+          let imageURL = ''
+
+          if (this.playing.type === 'episode') {
+            imageURL = this.host + '/episode/' + this.playing.entity.id + '/banner'
+          }
+
+          // eslint-disable-next-line no-undef
+          navigator.mediaSession.metadata = new MediaMetadata({
+            title: this.playing.title,
+            album: this.playing.entity.Series.seriesName,
+            artwork: [
+              { src: imageURL }
+            ]
+          })
+
+          navigator.mediaSession.setActionHandler('nexttrack', this.playNext)
+          navigator.mediaSession.setActionHandler('stop', this.stopPlaying)
+        }
+
         if (this.playing.type === 'episode') {
           this.nextepisode = (await this.axios.get(`/episode/${this.playing.entity.id}/next`)).data
         }
       },
       paused: async function (newState, oldState) {
+        navigator.mediaSession.playbackState = newState ? 'paused' : 'playing'
         if (newState) {
           return this.player.pause()
         }
@@ -410,8 +434,6 @@
         if (tracking[0] && this.shouldPreSeek) {
           this.player.currentTime = tracking[0].time - this.initialProgress
         }
-
-        console.log('metadataloaded')
 
         this.player.play()
 

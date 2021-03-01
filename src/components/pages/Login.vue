@@ -41,8 +41,6 @@
         try {
           await oblectoClient.authenticate(this.credentials.username, this.credentials.password)
 
-          console.log(oblectoClient.accessToken)
-
           this.axios.defaults.headers.common = { 'Authorization': `bearer ${oblectoClient.accessToken}` }
 
           // Authenticate the socket.io connection to the server
@@ -55,9 +53,7 @@
             console.log(e)
           }
 
-          console.log('redirecting')
-
-          // After the login proceduce is complete, send the user to the homepage
+          // After the login procedure is complete, send the user to the homepage
           this.$router.push({ name: 'Main' })
         } catch (e) {
           console.log(e)

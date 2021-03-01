@@ -62,24 +62,16 @@ export default new Vuex.Store({
       await dispatch('movies/getMovies', { sort: 'releaseDate', order: 'DESC' })
       await dispatch('movies/getMovieSets')
 
-      console.log('movies done')
-
       // Update all tv shows in vuex storage
       await dispatch('series/getSeries', { sort: 'createdAt', order: 'DESC' })
       await dispatch('series/getSeries', { sort: 'siteRating', order: 'DESC' })
       await dispatch('series/getSeries', { sort: 'siteRatingCount', order: 'DESC' })
 
-      console.log('shows done')
-
       // Update all episodes in vuex storage
       await dispatch('episodes/getEpisodes', { sort: 'firstAired', order: 'DESC' })
       await dispatch('episodes/getEpisodes', { sort: 'createdAt', order: 'DESC' })
 
-      console.log('episodes done')
-
       await dispatch('updateWatching')
-
-      console.log('watch done')
 
       commit('initialLoaded', true)
     },
