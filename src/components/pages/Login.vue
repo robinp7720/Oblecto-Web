@@ -10,7 +10,7 @@
       <input id="password" type="password" v-model="credentials.password">
       <div class="bottom">
         <span class="server-indicator">{{ host }} <a v-on:click="changeHost" class="nav-link">Change</a></span>
-      <button type="submit" @click="submit">Login</button>
+        <button type="submit" @click="submit">Login</button>
       </div>
     </div>
   </div>
@@ -35,7 +35,7 @@
     ]),
     methods: {
       async changeHost () {
-        this.$store.dispatch('updateHost', prompt('New host?'))
+        await this.$store.dispatch('updateHost', prompt('New host?'))
       },
       async submit () {
         try {
@@ -62,7 +62,7 @@
           this.$notify({
             group: 'system',
             title: 'Error occurred',
-            text: 'An error occured during login',
+            text: 'An error occurred during login',
             type: 'error'
           })
         }

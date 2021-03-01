@@ -26,7 +26,6 @@
     <transition name="fade" mode="out-in" v-if="$router.history.current.name === 'login' || loaded">
       <router-view />
     </transition>
-
   </div>
 </template>
 
