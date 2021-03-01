@@ -33,7 +33,7 @@
   import { mapState } from 'vuex'
 
   export default {
-    name: 'Show',
+    name: 'Movie',
     props: ['title', 'movieId', 'subtitle', 'inside', 'horizontal', 'movie'],
     computed: mapState([
       'host'
