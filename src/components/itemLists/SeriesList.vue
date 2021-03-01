@@ -1,5 +1,5 @@
 <template>
-  <ListContainer :title="title">
+  <ListContainer :title="title" :badge="badge">
     <Series v-for="(show, index) in series"
             v-bind:title="show.seriesName"
             v-bind:seriesId="show.id"
@@ -16,12 +16,7 @@
   export default {
     name: 'SeriesList',
     components: { Series, ListContainer },
-    props: {
-      'series': Array,
-      'title': {
-        default: ''
-      }
-    }
+    props: { 'series': Array, 'title': String, 'badge': String }
   }
 </script>
 

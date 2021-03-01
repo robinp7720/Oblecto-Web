@@ -1,5 +1,5 @@
 <template>
-  <ListContainer :title="title">
+  <ListContainer :title="title" :badge="badge">
     <Movie v-for="(movie, index) in movies"
            v-bind:title="movie.movieName"
            v-bind:movieId="movie.id"
@@ -16,7 +16,7 @@
   export default {
     name: 'MovieList',
     components: { Movie, ListContainer },
-    props: { 'movies': Array, 'title': String }
+    props: { 'movies': Array, 'title': String, 'badge': String }
   }
 </script>
 

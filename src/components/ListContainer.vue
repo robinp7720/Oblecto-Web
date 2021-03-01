@@ -1,7 +1,7 @@
 <template>
   <div class="list-container">
     <div class="titlebar" v-if="title">
-      <h3 class="title">{{ title }}</h3>
+      <h3 class="title">{{ title }} <span class="badge" v-if="badge !== undefined">{{ badge }}</span></h3>
     </div>
     <div class="list-inner">
       <Scroller>
@@ -18,7 +18,7 @@ import Scroller from '@/components/Scroller'
 
 export default {
   name: 'ListContainer',
-  props: { 'title': String },
+  props: { 'title': String, 'badge': Number },
   components: { FontAwesomeIcon, Scroller }
 }
 </script>

@@ -1,11 +1,17 @@
 <template>
   <div class="container">
-    <MovieList v-bind:title="'Movie Results <span class=badge>' + searchResults.movies.length + '</span>' "
-               v-bind:movies="searchResults.movies" v-if="searchResults.movies.length > 0"/>
-    <EpisodeList v-bind:title="'Episode Results <span class=badge>' + searchResults.episodes.length+ '</span>' "
-                 v-bind:episodes="searchResults.episodes" v-if="searchResults.episodes.length > 0"/>
-    <SeriesList v-bind:title="'TV Show Results <span class=badge>' + searchResults.series.length  + '</span>' "
-                 v-bind:series="searchResults.series" v-if="searchResults.series.length > 0"/>
+    <MovieList title="Movie Results"
+               :badge="`${searchResults.movies.length}`"
+               :movies="searchResults.movies"
+               v-if="searchResults.movies.length > 0"/>
+    <EpisodeList title="Episode Results"
+                 :badge="`${searchResults.episodes.length}`"
+                 :episodes="searchResults.episodes"
+                 v-if="searchResults.episodes.length > 0"/>
+    <SeriesList title="TV Show Results"
+                :badge="`${searchResults.series.length}`"
+                :series="searchResults.series"
+                v-if="searchResults.series.length > 0"/>
   </div>
 </template>
 
