@@ -24,12 +24,11 @@ export default {
 </script>
 
 <style scoped lang="sass">
-.list-container
-  position: relative
-
 .titlebar
   overflow: hidden
-  padding: 20px 20px
+
+  padding: 30px 20px 15px
+
   .title
     padding: 0
     margin: 0

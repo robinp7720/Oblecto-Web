@@ -17,9 +17,7 @@
 
     <WatchPanel  v-if="$router.history.current.name !== 'login' && loaded"/>
 
-
     <playBar v-if="$router.history.current.name !== 'login' && loaded"/>
-
 
     <transition name="long-fade" mode="out">
       <LoadingPage v-if="$router.history.current.name !== 'login' && !loaded"></LoadingPage>

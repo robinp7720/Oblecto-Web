@@ -357,8 +357,6 @@
             imageURL = this.host + '/episode/' + this.playing.entity.id + '/banner'
           }
 
-          console.log(imageURL)
-
           // eslint-disable-next-line no-undef
           navigator.mediaSession.metadata = new MediaMetadata({
             title: this.playing.title,
@@ -378,7 +376,6 @@
       },
       paused: async function (newState, oldState) {
         navigator.mediaSession.playbackState = newState ? 'paused' : 'playing'
-        console.log('status', navigator.mediaSession.playbackState)
         if (newState) {
           return this.player.pause()
         }
@@ -437,8 +434,6 @@
         if (tracking[0] && this.shouldPreSeek) {
           this.player.currentTime = tracking[0].time - this.initialProgress
         }
-
-        console.log('metadataloaded')
 
         this.player.play()
 

@@ -55,57 +55,51 @@
       'host'
     ]),
     async created () {
-      await axios.get('/series/' + this.$route.params.seriesId + `/info`)
-        .then((res) => {
-          this.showData = res.data
-
-          const img = new Image()
-          img.src = this.host + '/series/' + this.showData.id + '/poster'
-
-          img.onload = () => {
-            this.posterUrl = img.src
-            this.posterLoaded = true
-          }
-
-          img.onerror = () => {
-            this.posterLoaded = true
-          }
-        })
-        .catch((e) => {
-          console.log(e)
-        })
-
-      // Retrieve episodes
-      axios.get('/series/' + this.$route.params.seriesId + `/episodes`)
-        .then(response => {
-          let unsorted = []
-          response.data.forEach(function (v, i) {
-            if (!unsorted[v.airedSeason]) unsorted[v.airedSeason] = []
-            unsorted[v.airedSeason].push(v)
-          })
-
-          console.log(unsorted)
-
-          let temp = {}
-          unsorted.forEach(function (v, i) {
-            v.sort((a, b) => {
-              return a.airedEpisodeNumber - b.airedEpisodeNumber
-            })
-            if (!temp['Season ' + i]) temp['Season ' + i] = v
-          })
-
-          this.series = temp
-        })
-        .catch(e => {
-          console.log(e)
-        })
+      this.loadInfo()
+      this.loadEpisodes()
     },
     methods: {
+      async loadInfo () {
+        let { data } = await axios.get('/series/' + this.$route.params.seriesId + `/info`)
 
+        this.showData = data
+
+        const img = new Image()
+        img.src = this.host + '/series/' + this.showData.id + '/poster'
+
+        img.onload = () => {
+          this.posterUrl = img.src
+          this.posterLoaded = true
+        }
+
+        img.onerror = () => {
+          this.posterLoaded = true
+        }
+      },
+      async loadEpisodes () {
+        let { data } = await axios.get('/series/' + this.$route.params.seriesId + `/episodes`)
+
+        let unsorted = []
+
+        data.forEach(function (v, i) {
+          if (!unsorted[v.airedSeason]) unsorted[v.airedSeason] = []
+          unsorted[v.airedSeason].push(v)
+        })
+
+        let temp = {}
+
+        unsorted.forEach(function (v, i) {
+          v.sort((a, b) => {
+            return a.airedEpisodeNumber - b.airedEpisodeNumber
+          })
+          if (!temp['Season ' + i]) temp['Season ' + i] = v
+        })
+
+        this.series = temp
+      }
     },
     watch: {
       '$route' (to, from) {
-        console.log(to, from)
         this.series = {}
         axios.get('/series/' + this.$route.params.seriesId + `/info`)
           .then(response => {
