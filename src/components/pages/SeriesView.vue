@@ -23,9 +23,7 @@
             v-bind:show="showData"
             v-bind:key="index"
             v-bind:title="index">
-
           </EpisodeList>
-
         </div>
     </div>
   </div>
@@ -100,27 +98,8 @@
     },
     watch: {
       '$route' (to, from) {
-        this.series = {}
-        axios.get('/series/' + this.$route.params.seriesId + `/info`)
-          .then(response => {
-            this.showData = response.data
-          })
-          .catch(e => {
-            console.log(e)
-          })
-        // Retrieve episodes
-        axios.get('/series/' + this.$route.params.seriesId + `/episodes`)
-          .then(response => {
-            let temp = {}
-            response.data.forEach(function (v, i) {
-              if (temp['Season ' + v.airedSeason] === undefined) temp['Season ' + v.airedSeason] = []
-              temp['Season ' + v.airedSeason].push(v)
-            })
-            this.series = temp
-          })
-          .catch(e => {
-            console.log(e)
-          })
+        this.loadInfo()
+        this.loadEpisodes()
       }
     }
   }
