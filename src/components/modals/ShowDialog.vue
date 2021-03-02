@@ -57,7 +57,7 @@
 
     background-color: rgba(0,0,0,0.3)
 
-    box-shadow: 0px 0px 5px 2px rgba(darken(darken(#696060,17) + #000000,6), 0.75)
+    box-shadow: 0 0 5px 2px rgba(darken(#696060, 20), 0.75)
 
   ul
     list-style: none
@@ -78,6 +78,6 @@
         transition: background-color 0.1s
       a:hover
         background-color: rgba(0,0,0,0.1)
-        box-shadow: 0px 0px 2px 2px rgba(darken(darken(#696060,17) + #000000,6), 0.2)
+        box-shadow: 0 0 2px 2px rgba(darken(#696060, 20), 0.2)
 
 </style>

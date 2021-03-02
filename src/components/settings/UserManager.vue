@@ -47,7 +47,7 @@
 <style scoped lang="sass">
   table
     background: #696060
-    box-shadow: 0px 0px 5px 2px rgba(darken(darken(#696060,17) + #000000,6), 0.75)
+    box-shadow: 0 0 5px 2px rgba(darken(#696060, 20), 0.75)
 
     border-spacing: 0
 
@@ -55,7 +55,7 @@
 
   thead
     background-color: #444042
-    box-shadow: 0px 0px 5px 2px rgba(darken(darken(#696060,17) + #000000,6), 0.75)
+    box-shadow: 0 0 5px 2px rgba(darken(#696060, 20), 0.75)
 
     th
       padding: 10px

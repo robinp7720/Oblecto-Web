@@ -48,7 +48,7 @@
   }
 
   .title {
-    font-family: Roboto;
+    font-family: Roboto, sans-serif;
     font-size: 13px;
 
     width: 136px;
@@ -62,7 +62,7 @@
   }
 
   .subtitle {
-    font-family: Roboto;
+    font-family: Roboto, sans-serif;
     font-size: 12px;
 
     width: 136px;
@@ -80,7 +80,7 @@
     -moz-box-sizing: border-box;
     box-sizing: border-box;
 
-    box-shadow: 0px 0px 5px 0px rgba(0, 0, 0, 0.75);
+    box-shadow: 0 0 5px 0 rgba(0, 0, 0, 0.75);
 
     background-color: rgba(0, 0, 0, 0.8);
     -webkit-background-size: cover;
@@ -147,7 +147,7 @@
   }
 
   .show-poster:hover {
-    box-shadow: 0px 0px 0px 2px rgba(174, 102, 0, 0.75);
+    box-shadow: 0 0 0 2px rgba(174, 102, 0, 0.75);
   }
 
   .show-poster:hover .actions {

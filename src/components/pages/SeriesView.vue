@@ -109,14 +109,13 @@
 <style scoped lang="sass">
 
 .info-container
-  padding: 0 10px
-  padding-top: 50px
+  padding: 50px 10px 0
 
 .info
   font-size: 1em
   border-radius: 3px
   background: #696060
-  box-shadow: 0px 2px 5px 2px rgba(darken(darken(#696060,17) + #000000,6), 0.75)
+  box-shadow: 0 2px 5px 2px rgba(darken(#696060, 20), 0.75)
   padding-bottom: 40px
 
   min-height: 270px
@@ -126,14 +125,11 @@
     width: 204px
 
     float: left
-    margin-right: 20px
-    box-shadow: 0px 2px 5px 2px rgba(darken(darken(#696060,17) + #000000,6), 0.75)
+    box-shadow: 0 2px 5px 2px rgba(darken(#696060, 20), 0.75)
     border-radius: 3px
     overflow: hidden
 
-    margin-top: -50px
-    margin-left: 20px
-    margin-bottom: 20px
+    margin: -50px 20px 20px
 
     background: black
 
@@ -150,8 +146,7 @@
     h2
       padding: 0
       font-size: 1.2em
-      margin: 0
-      margin-bottom: 5px
+      margin: 0 0 5px
 
     .year, .genres
       color: rgba(250, 240, 240, 0.6)
@@ -161,9 +156,8 @@
 
     p
       color: rgba(250, 240, 240, 0.9)
-      margin: 0
       padding: 0
-      margin-top: 20px
+      margin: 20px 0 0
 
       max-width: 900px
 

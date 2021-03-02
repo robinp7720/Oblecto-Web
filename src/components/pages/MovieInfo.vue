@@ -147,8 +147,7 @@ export default {
 .info-container
   margin-top: -20px
 
-  padding: 10px 10px
-  padding-top: 400px
+  padding: 400px 10px 10px
 
   background-size: cover
   background-position: center 0
@@ -161,7 +160,7 @@ export default {
   font-size: 1em
   border-radius: 3px
   background: #696060
-  box-shadow: 0px 2px 5px 2px rgba(darken(darken(#696060,17) + #000000, 6), 0.75)
+  box-shadow: 0 2px 5px 2px rgba(darken(#696060, 20), 0.75)
   padding-bottom: 40px
 
   min-height: 270px
@@ -171,14 +170,11 @@ export default {
 
     height: 300px
     float: left
-    margin-right: 20px
-    box-shadow: 0px 2px 5px 2px rgba(darken(darken(#696060,17) + #000000, 6), 0.75)
+    box-shadow: 0 2px 5px 2px rgba(darken(#696060, 20), 0.75)
     border-radius: 3px
     overflow: hidden
 
-    margin-top: -50px
-    margin-left: 20px
-    margin-bottom: 20px
+    margin: -50px 20px 20px
 
     @media screen and (max-width: 700px)
       height: 200px
@@ -192,8 +188,7 @@ export default {
     h2
       padding: 0
       font-size: 1.2em
-      margin: 0
-      margin-bottom: 5px
+      margin: 0 0 5px
 
     .year, .genres
       color: rgba(250, 240, 240, 0.6)
@@ -203,9 +198,8 @@ export default {
 
     p
       color: rgba(250, 240, 240, 0.9)
-      margin: 0
       padding: 0
-      margin-top: 20px
+      margin: 20px 0 0
 
       max-width: 900px
 
@@ -262,7 +256,7 @@ a.play:hover
 
 .error
   background: #694040
-  box-shadow: 0px 0px 2px 2px rgba(darken(darken(#694040,17) + #000000, 6), 0.75)
+  box-shadow: 0 0 2px 2px rgba(darken(#694040, 20), 0.75)
 
   padding: 10px
 

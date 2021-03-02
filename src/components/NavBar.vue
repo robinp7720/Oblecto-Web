@@ -101,8 +101,8 @@ export default {
 
   z-index: 3
 
-  background-color: darken(#696060,17) + #000000
-  box-shadow: 0px 0px 5px 2px rgba(darken(darken(#696060,17) + #000000, 6), 0.75)
+  background-color: darken(#696060, 20)
+  box-shadow: 0 0 5px 2px rgba(darken(#696060, 20), 0.75)
 
   .search
     @media screen and (max-width: 800px)

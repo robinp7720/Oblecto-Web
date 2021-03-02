@@ -101,7 +101,7 @@
   }
 
   .title {
-    font-family: Roboto;
+    font-family: Roboto, sans-serif;
     font-size: 13px;
 
     margin-top: 5px;
@@ -113,7 +113,7 @@
   }
 
   .subtitle {
-    font-family: Roboto;
+    font-family: Roboto, sans-serif;
     font-size: 12px;
 
     margin-top: 5px;
@@ -125,7 +125,7 @@
   }
 
   .movie-poster {
-    box-shadow: 0px 0px 5px 0px rgba(0, 0, 0, 0.75);
+    box-shadow: 0 0 5px 0 rgba(0, 0, 0, 0.75);
 
     background-color: rgba(0, 0, 0, 0.8);
     -webkit-background-size: cover;
@@ -206,7 +206,7 @@
   }
 
   .movie-poster:hover {
-    box-shadow: 0px 0px 0px 2px rgba(174, 102, 0, 0.75);
+    box-shadow: 0 0 0 2px rgba(174, 102, 0, 0.75);
     opacity: 1;
   }
 

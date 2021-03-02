@@ -19,10 +19,10 @@
 
   @-webkit-keyframes scale-width
     from
-      width: 0px
-      height: 0px
-      margin-top: 0px
-      margin-left: 0px
+      width: 0
+      height: 0
+      margin-top: 0
+      margin-left: 0
     to
       width: 128px
       height: 128px

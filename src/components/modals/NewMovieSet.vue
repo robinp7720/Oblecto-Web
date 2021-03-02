@@ -71,7 +71,7 @@
 
     background-color: rgba(0,0,0,0.3)
 
-    box-shadow: 0px 0px 5px 2px rgba(darken(darken(#696060,17) + #000000,6), 0.75)
+    box-shadow: 0 0 5px 2px rgba(darken(#696060, 20), 0.75)
 
   label
     display: block
@@ -90,7 +90,7 @@
   .footer
     background-color: rgba(0,0,0,0.3)
 
-    box-shadow: 0px 0px 5px 2px rgba(darken(darken(#696060,17) + #000000,6), 0.75)
+    box-shadow: 0 0 5px 2px rgba(darken(#696060, 20), 0.75)
     padding: 10px
 
     overflow: hidden
