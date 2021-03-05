@@ -8,6 +8,7 @@ import libraries from '@/store/modules/libraries'
 import VueSocketio from 'vue-socket.io'
 import oblectoClient from '@/oblectoClient'
 import router from '@/router'
+import { ScreenFormats } from '@/enums/ScreenFormats'
 
 Vue.use(Vuex)
 
@@ -23,6 +24,7 @@ export default new Vuex.Store({
       title: ''
     },
     autoplay: true,
+    playSizeFormat: ScreenFormats.SMALL,
     playbackRemote: 'local'
   },
   modules: {
@@ -52,6 +54,9 @@ export default new Vuex.Store({
     },
     setPlaybackRemote: function (state, remote) {
       Vue.set(state, 'playbackRemote', remote)
+    },
+    setPlaySizeFormat: function (state, size) {
+      Vue.set(state, 'playSizeFormat', size)
     }
   },
   actions: {
@@ -158,4 +163,5 @@ export default new Vuex.Store({
       await dispatch('playMovieLocal', id)
     }
   }
+
 })

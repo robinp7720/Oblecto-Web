@@ -49,7 +49,7 @@
           <FontAwesomeIcon :icon="playSizeFormat === 3? iconDeFullscreen: iconFullscreen"/>
         </span>
 
-        <span v-on:click="playSizeFormat = (playSizeFormat % 2) + 1" class="toggle-button" v-if="showVideo && playSizeFormat !== 3">
+        <span v-on:click="setPlaySizeFormat((playSizeFormat % 2) + 1)" class="toggle-button" v-if="showVideo && playSizeFormat !== 3">
           <FontAwesomeIcon :icon="playSizeFormat === 1 ? iconDown : iconUp"/>
         </span>
 
@@ -71,13 +71,9 @@
   import faDeFullscreen from '@fortawesome/fontawesome-free-solid/faCompress'
   import faCog from '@fortawesome/fontawesome-free-solid/faCog'
 
-  import { mapState } from 'vuex'
+  import { ScreenFormats } from '@/enums/ScreenFormats'
 
-  let SCREEN_FORMAT = {
-    'LARGE': 1,
-    'SMALL': 2,
-    'FULLSCREEN': 3
-  }
+  import { mapMutations, mapState } from 'vuex'
 
   let AUTOPLAY_TIME_LEFT_THRESHOLD = 5
   let IGNORE_RESTORE_PROGRESS_THRESHOLD = 0.9
@@ -108,7 +104,6 @@
         PlayingFileID: 0,
 
         shouldPreSeek: true,
-        playSizeFormat: SCREEN_FORMAT.SMALL,
 
         playbackSession: {}
       }
@@ -159,13 +154,14 @@
       iconCog () {
         return faCog
       },
-      ...mapState(['playing', 'autoplay', 'host'])
+      ...mapState(['playing', 'autoplay', 'host', 'playSizeFormat'])
     },
     methods: {
+      ...mapMutations(['setPlaySizeFormat']),
       viewShow: function () {
         if (this.playing.type === 'episode') {
           this.$router.push({ name: 'SeriesView', params: { seriesId: this.playing.entity.Series.id } })
-          this.playSizeFormat = SCREEN_FORMAT.SMALL
+          this.setPlaySizeFormat(ScreenFormats.SMALL)
         }
       },
       changeFileId: async function (id) {
@@ -225,10 +221,10 @@
         }
       },
       toggleFullScreen: function () {
-        if (this.playSizeFormat !== SCREEN_FORMAT.FULLSCREEN) {
-          this.playSizeFormat = SCREEN_FORMAT.FULLSCREEN
+        if (this.playSizeFormat !== ScreenFormats.FULLSCREEN) {
+          this.setPlaySizeFormat(ScreenFormats.FULLSCREEN)
         } else {
-          this.playSizeFormat = SCREEN_FORMAT.LARGE
+          this.setPlaySizeFormat(ScreenFormats.LARGE)
         }
       },
       stopPlaying: function () {
@@ -244,10 +240,12 @@
         this.autoplaying = false
         this.progress = 0
 
-        this.playSizeFormat = SCREEN_FORMAT.SMALL
+        this.setPlaySizeFormat(ScreenFormats.SMALL)
       },
       playPause: function (event) {
         event.preventDefault()
+
+        console.log(this.$store)
 
         this.paused = !this.paused
       },
@@ -272,8 +270,9 @@
     },
     watch: {
       playSizeFormat: async function (newState, oldState) {
+        console.log('Size changed:', newState)
         switch (newState) {
-          case SCREEN_FORMAT.FULLSCREEN:
+          case ScreenFormats.FULLSCREEN:
             if (this.browserSupportsPiP && document.pictureInPictureElement) {
               await document.exitPictureInPicture()
             }
@@ -282,7 +281,7 @@
 
             break
 
-          case SCREEN_FORMAT.LARGE:
+          case ScreenFormats.LARGE:
             if (document.fullscreenElement) {
               await document.exitFullscreen()
             }
@@ -293,7 +292,7 @@
 
             break
 
-          case SCREEN_FORMAT.SMALL:
+          case ScreenFormats.SMALL:
             if (document.fullscreenElement) {
               await document.exitFullscreen()
             }
@@ -306,7 +305,7 @@
         }
       },
       playing: async function (newState, oldState) {
-        if (!oldState.entity || !oldState.entity.title) this.playSizeFormat = SCREEN_FORMAT.LARGE
+        if (!oldState.entity || !oldState.entity.title) this.setPlaySizeFormat(ScreenFormats.LARGE)
 
         this.initialProgress = 0
         this.progress = 0
@@ -387,11 +386,11 @@
       window.addEventListener('keydown', (e) => {
         if (e.code !== 'Space') { return }
         if (this.playing === {}) { return }
-        if (this.playSizeFormat === SCREEN_FORMAT.SMALL) { return }
+        if (this.playSizeFormat === ScreenFormats.SMALL) { return }
 
         e.preventDefault()
 
-        if (this.playSizeFormat === SCREEN_FORMAT.FULLSCREEN || this.playSizeFormat === SCREEN_FORMAT.LARGE) {
+        if (this.playSizeFormat === ScreenFormats.FULLSCREEN || this.playSizeFormat === ScreenFormats.LARGE) {
           this.paused = !this.paused
         }
       })
@@ -418,13 +417,13 @@
       })
 
       this.player.addEventListener('enterpictureinpicture', () => {
-        this.playSizeFormat = SCREEN_FORMAT.SMALL
+        this.setPlaySizeFormat(ScreenFormats.SMALL)
         this.browserSupportsPiP = true
       })
 
       this.player.addEventListener('leavepictureinpicture', () => {
-        if (this.playSizeFormat === SCREEN_FORMAT.SMALL) {
-          this.playSizeFormat = SCREEN_FORMAT.LARGE
+        if (this.playSizeFormat === ScreenFormats.SMALL) {
+          this.setPlaySizeFormat(ScreenFormats.LARGE)
         }
       })
 
