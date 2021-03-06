@@ -1,11 +1,11 @@
 <template>
   <ListContainer :title="title" :badge="badge">
     <Series v-for="(show, index) in series"
-            v-bind:title="show.seriesName"
-            v-bind:seriesId="show.id"
-            v-bind:series="show"
-            v-bind:watching="show.watching"
-            v-bind:key="show.id" />
+            :title="show.seriesName"
+            :seriesId="show.id"
+            :series="show"
+            :watching="show.watching"
+            :key="show.id" />
   </ListContainer>
 </template>
 

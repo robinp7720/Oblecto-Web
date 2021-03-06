@@ -1,9 +1,9 @@
 <template>
   <ListContainer :title="title" :badge="badge">
     <Episode v-for="(episode, index) in episodes"
-             v-bind:subtitle="'S' + episode.airedSeason + 'E' + episode.airedEpisodeNumber + ' - ' + episode.Series.seriesName"
-             v-bind:key="episode.id"
-             v-bind:episode="episode"/>
+             :subtitle="`S${episode.airedSeason}E${episode.airedEpisodeNumber} - ${episode.Series.seriesName}`"
+             :key="episode.id"
+             :episode="episode"/>
   </ListContainer>
 </template>
 
