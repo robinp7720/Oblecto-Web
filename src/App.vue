@@ -1,5 +1,5 @@
 <template>
-  <div id="app">
+  <div id="app"">
     <ShowDialogModal/>
     <ShowModifyModal/>
     <UserAddModal/>
@@ -37,6 +37,8 @@
   import playBar from '@/components/playBar'
   import LoadingPage from '@/components/LoadingPage'
 
+  import { ScreenFormats } from '@/enums/ScreenFormats'
+
   // Modals
   import ShowDialogModal from '@/components/modals/ShowDialog'
   import ShowModifyModal from '@/components/modals/ShowModify'
@@ -67,9 +69,23 @@
       playBar,
       LoadingPage
     },
-    computed: mapState({
-      loaded: state => state.initialLoaded
-    }),
+    computed: {
+      ...mapState({
+        loaded: state => state.initialLoaded,
+        playSizeFormat: state => state.playSizeFormat
+      })
+    },
+    watch: {
+      playSizeFormat: async function (newState, oldState) {
+        if (newState === ScreenFormats.LARGE) {
+          document.body.style.overflow = 'hidden'
+
+          return
+        }
+
+        document.body.style.overflow = 'auto'
+      }
+    },
     created () {
 
     },
