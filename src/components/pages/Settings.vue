@@ -1,7 +1,7 @@
 <template>
   <div class="settings">
     <ul class="settings-nav">
-      <li class="settings-nav-item"><router-link :to="{ name: 'SettingsMaintenance'}" class="nav-link">Maintance</router-link></li>
+      <li class="settings-nav-item"><router-link :to="{ name: 'SettingsMaintenance'}" class="nav-link">Maintenance</router-link></li>
       <li class="settings-nav-item"><router-link :to="{ name: 'SettingsUsers'}" class="nav-link">Users</router-link></li>
       <li class="settings-nav-item"><router-link :to="{ name: 'SettingsLibraries'}" class="nav-link">Libraries</router-link></li>
       <li class="settings-nav-item"><router-link :to="{ name: 'IndexerSettings'}" class="nav-link">Indexer Settings</router-link></li>
