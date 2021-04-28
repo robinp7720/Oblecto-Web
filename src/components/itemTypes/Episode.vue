@@ -2,12 +2,10 @@
   <transition name="slide-fade" appear>
     <div class="episode">
       <div class="episode-poster"
-           v-bind:style="{ backgroundImage: 'url(' + bannerUrl + ')' }">
-
-
+           :style="{ backgroundImage: 'url(' + bannerUrl + ')' }">
         <a class="play" v-on:click="playEpisode"><i class="fa fa-play" aria-hidden="true"></i></a>
         <div :title="episode.episodeName" class="title" v-if="inside">{{ episode.episodeName }}</div>
-        <div v-if="progress" class="progress" v-bind:style="{ width: progress * 100 + '%' }"></div>
+        <div v-if="progress" class="progress" :style="{ width: progress * 100 + '%' }"></div>
         <div class="actions">
           <a class="action-item" v-on:click="openEpisodeDialog" title="Options">
             <i class="fa fa-info" aria-hidden="true"></i>
@@ -135,7 +133,7 @@
   }
 
   .title {
-    font-family: Roboto;
+    font-family: Roboto, sans-serif;
     font-size: 13px;
 
     margin-top: 5px;
@@ -147,7 +145,7 @@
   }
 
   .subtitle {
-    font-family: Roboto;
+    font-family: Roboto, sans-serif;
     font-size: 12px;
 
     margin-top: 5px;
