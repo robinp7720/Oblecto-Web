@@ -163,5 +163,4 @@ export default new Vuex.Store({
       await dispatch('playMovieLocal', id)
     }
   }
-
 })
