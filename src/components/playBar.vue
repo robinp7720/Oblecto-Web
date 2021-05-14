@@ -60,429 +60,429 @@
 </template>
 
 <script>
-  import FontAwesomeIcon from '@fortawesome/vue-fontawesome'
+import FontAwesomeIcon from '@fortawesome/vue-fontawesome'
 
-  import faDown from '@fortawesome/fontawesome-free-solid/faAngleDown'
-  import faUp from '@fortawesome/fontawesome-free-solid/faAngleUp'
-  import faStop from '@fortawesome/fontawesome-free-solid/faStop'
-  import faPlay from '@fortawesome/fontawesome-free-solid/faPlay'
-  import faPause from '@fortawesome/fontawesome-free-solid/faPause'
-  import faFullscreen from '@fortawesome/fontawesome-free-solid/faExpandArrowsAlt'
-  import faDeFullscreen from '@fortawesome/fontawesome-free-solid/faCompress'
-  import faCog from '@fortawesome/fontawesome-free-solid/faCog'
+import faDown from '@fortawesome/fontawesome-free-solid/faAngleDown'
+import faUp from '@fortawesome/fontawesome-free-solid/faAngleUp'
+import faStop from '@fortawesome/fontawesome-free-solid/faStop'
+import faPlay from '@fortawesome/fontawesome-free-solid/faPlay'
+import faPause from '@fortawesome/fontawesome-free-solid/faPause'
+import faFullscreen from '@fortawesome/fontawesome-free-solid/faExpandArrowsAlt'
+import faDeFullscreen from '@fortawesome/fontawesome-free-solid/faCompress'
+import faCog from '@fortawesome/fontawesome-free-solid/faCog'
 
-  import { ScreenFormats } from '@/enums/ScreenFormats'
+import { ScreenFormats } from '@/enums/ScreenFormats'
 
-  import { mapMutations, mapState } from 'vuex'
+import { mapMutations, mapState } from 'vuex'
 
-  let AUTOPLAY_TIME_LEFT_THRESHOLD = 5
-  let IGNORE_RESTORE_PROGRESS_THRESHOLD = 0.9
+const AUTOPLAY_TIME_LEFT_THRESHOLD = 5
+const IGNORE_RESTORE_PROGRESS_THRESHOLD = 0.9
 
-  export default {
-    components: {
-      FontAwesomeIcon
-    },
-    name: 'play-bar',
-    data () {
-      return {
-        paused: true,
-        progress: 0,
+export default {
+  components: {
+    FontAwesomeIcon
+  },
+  name: 'play-bar',
+  data () {
+    return {
+      paused: true,
+      progress: 0,
 
-        loading: false,
+      loading: false,
 
-        fullscreenEnabled: document.fullscreenEnabled || false, // Does the client support putting content in a fullscreen state?
-        browserSupportsPiP: document.pictureInPictureEnabled || false,
+      fullscreenEnabled: document.fullscreenEnabled || false, // Does the client support putting content in a fullscreen state?
+      browserSupportsPiP: document.pictureInPictureEnabled || false,
 
-        initialProgress: 0,
-        playbarTimeout: 0,
-        showVideo: false,
-        nextepisode: false,
-        qualityPopUp: false,
+      initialProgress: 0,
+      playbarTimeout: 0,
+      showVideo: false,
+      nextepisode: false,
+      qualityPopUp: false,
 
-        autoplaying: false,
+      autoplaying: false,
 
-        PlayingFileID: 0,
+      PlayingFileID: 0,
 
-        shouldPreSeek: true,
+      shouldPreSeek: true,
 
-        playbackSession: {}
-      }
-    },
-    computed: {
-      player () {
-        return this.$refs.videoPlayer
-      },
-      playbar () {
-        return this.$refs.playbar
-      },
-      iconUp () {
-        return faUp
-      },
-      iconDown () {
-        return faDown
-      },
-      iconStop () {
-        return faStop
-      },
-      iconPlay () {
-        return faPlay
-      },
-      iconPause () {
-        return faPause
-      },
-      iconFullscreen () {
-        return faFullscreen
-      },
-      iconDeFullscreen () {
-        return faDeFullscreen
-      },
-      PlayTimeDisplayValue () {
-        let hours = ('0' + Math.floor(this.progress * this.playing.entity.Files[this.PlayingFileID].duration / (60 * 60))).substr(-2)
-        let mins = ('0' + Math.floor(this.progress * this.playing.entity.Files[this.PlayingFileID].duration / 60) % 60).substr(-2)
-        let seconds = ('0' + Math.floor(this.progress * this.playing.entity.Files[this.PlayingFileID].duration) % 60).substr(-2)
-
-        return `${hours}:${mins}:${seconds}`
-      },
-
-      DurationDisplayValue () {
-        let hours = ('0' + Math.floor(this.playing.entity.Files[this.PlayingFileID].duration / (60 * 60))).substr(-2)
-        let mins = ('0' + Math.floor(this.playing.entity.Files[this.PlayingFileID].duration / 60) % 60).substr(-2)
-        let seconds = ('0' + Math.floor(this.playing.entity.Files[this.PlayingFileID].duration) % 60).substr(-2)
-
-        return `${hours}:${mins}:${seconds}`
-      },
-      iconCog () {
-        return faCog
-      },
-      ...mapState(['playing', 'autoplay', 'host', 'playSizeFormat'])
-    },
-    methods: {
-      ...mapMutations(['setPlaySizeFormat']),
-      viewShow: function () {
-        if (this.playing.type === 'episode') {
-          this.$router.push({ name: 'SeriesView', params: { seriesId: this.playing.entity.Series.id } })
-          this.setPlaySizeFormat(ScreenFormats.SMALL)
-        }
-      },
-      changeFileId: async function (id) {
-        this.updateLocalTracker()
-
-        let tracking = this.playing.entity.TrackMovies || this.playing.entity.TrackEpisodes
-
-        this.PlayingFileID = id
-
-        await this.updateSession()
-
-        if (this.playbackSession.seeking === 'server') {
-          if (tracking[0] !== undefined) {
-            this.initialProgress = tracking[0].time
-          }
-        } else {
-          this.initialProgress = 0
-          this.shouldPreSeek = true
-        }
-
-        this.qualityPopUp = false
-
-        this.loading = true
-        this.setURL()
-      },
-      updateSession: async function () {
-        this.playbackSession = (await this.axios.get(`/session/create/${this.playing.entity.Files[this.PlayingFileID].id}`)).data
-      },
-      updateURL: async function () {
-        await this.updateSession()
-        this.setURL()
-      },
-      setURL: function () {
-        let token = this.playbackSession.sessionId
-
-        if (this.playbackSession.seeking === 'server') {
-          this.player.src = `${this.axios.defaults.baseURL}/session/stream/${token}?offset=${this.initialProgress}`
-        } else {
-          this.player.src = `${this.axios.defaults.baseURL}/session/stream/${token}`
-        }
-      },
-      seek: function (event) {
-        // Calculate the offset in seconds from where the user clicked on the seekbar
-        let position = this.playing.entity.Files[this.PlayingFileID].duration * event.clientX / document.documentElement.clientWidth
-
-        if (this.playbackSession.seeking === 'server') {
-          if (position < this.initialProgress + this.player.duration && position - this.initialProgress > 0) {
-            this.player.currentTime = position - this.initialProgress
-
-            return
-          }
-
-          this.initialProgress = position
-          this.updateURL()
-        } else {
-          this.player.currentTime = position
-        }
-      },
-      toggleFullScreen: function () {
-        if (this.playSizeFormat !== ScreenFormats.FULLSCREEN) {
-          this.setPlaySizeFormat(ScreenFormats.FULLSCREEN)
-        } else {
-          this.setPlaySizeFormat(ScreenFormats.LARGE)
-        }
-      },
-      stopPlaying: function () {
-        this.player.src = ''
-
-        this.$store.dispatch('clearPlaying')
-        this.$store.dispatch('updateWatching')
-
-        this.showVideo = false
-        this.qualityPopUp = false
-        this.paused = true
-        this.loading = false
-        this.autoplaying = false
-        this.progress = 0
-
-        this.setPlaySizeFormat(ScreenFormats.SMALL)
-      },
-      playPause: function (event) {
-        event.preventDefault()
-
-        console.log(this.$store)
-
-        this.paused = !this.paused
-      },
-      playNext: function () {
-        this.$store.dispatch('playEpisode', this.nextepisode.id)
-      },
-      updateLocalTracker: function () {
-        if (this.playing.type === 'movie') {
-          if (!this.playing.entity.TrackMovies) this.playing.entity.TrackMovies = []
-          if (!this.playing.entity.TrackMovies[0]) this.playing.entity.TrackMovies[0] = {}
-
-          this.playing.entity.TrackMovies[0].time = this.initialProgress + this.player.currentTime
-        }
-
-        if (this.playing.type === 'episode') {
-          if (!this.playing.entity.TrackEpisodes) this.playing.entity.TrackEpisodes = []
-          if (!this.playing.entity.TrackEpisodes[0]) this.playing.entity.TrackEpisodes[0] = {}
-
-          this.playing.entity.TrackEpisodes[0].time = this.initialProgress + this.player.currentTime
-        }
-      }
-    },
-    watch: {
-      playSizeFormat: async function (newState, oldState) {
-        console.log('Size changed:', newState)
-        switch (newState) {
-          case ScreenFormats.FULLSCREEN:
-            if (this.browserSupportsPiP && document.pictureInPictureElement) {
-              await document.exitPictureInPicture()
-            }
-
-            await this.playbar.requestFullscreen()
-
-            break
-
-          case ScreenFormats.LARGE:
-            if (document.fullscreenElement) {
-              await document.exitFullscreen()
-            }
-
-            if (this.browserSupportsPiP && document.pictureInPictureElement) {
-              await document.exitPictureInPicture()
-            }
-
-            break
-
-          case ScreenFormats.SMALL:
-            if (document.fullscreenElement) {
-              await document.exitFullscreen()
-            }
-
-            if (this.browserSupportsPiP) {
-              await this.player.requestPictureInPicture()
-            }
-
-            break
-        }
-      },
-      playing: async function (newState, oldState) {
-        if (!oldState.entity || !oldState.entity.title) this.setPlaySizeFormat(ScreenFormats.LARGE)
-
-        this.initialProgress = 0
-        this.progress = 0
-        this.PlayingFileID = 0
-        this.shouldPreSeek = false
-        this.showVideo = false
-        this.qualityPopUp = false
-        this.paused = true
-        this.loading = false
-        this.autoplaying = false
-
-        this.nextepisode = null
-
-        if (this.playing.entity === undefined) {
-          navigator.mediaSession.playbackState = 'none'
-
-          return
-        }
-
-        this.loading = true
-
-        this.showVideo = true
-
-        let tracking = this.playing.entity.TrackMovies || this.playing.entity.TrackEpisodes
-
-        // If the progress is above 90 percent, we shouldn't seek to the last position since the user probably
-        // wants to start from the beginning.
-
-        await this.updateSession()
-
-        if (tracking[0]) {
-          this.shouldPreSeek = tracking[0].progress < IGNORE_RESTORE_PROGRESS_THRESHOLD
-        }
-
-        if (this.playbackSession.seeking === 'server') {
-          if (tracking[0] !== undefined && this.shouldPreSeek) {
-            this.initialProgress = tracking[0].time
-          }
-        }
-
-        this.setURL()
-
-        // Set the mediaSession environment
-        if ('mediaSession' in navigator) {
-          let imageURL = ''
-
-          if (this.playing.type === 'episode') {
-            imageURL = this.host + '/episode/' + this.playing.entity.id + '/banner'
-          }
-
-          // eslint-disable-next-line no-undef
-          navigator.mediaSession.metadata = new MediaMetadata({
-            title: this.playing.title,
-            album: this.playing.entity.Series.seriesName,
-            artwork: [
-              { src: imageURL }
-            ]
-          })
-
-          navigator.mediaSession.setActionHandler('nexttrack', this.playNext)
-          navigator.mediaSession.setActionHandler('stop', this.stopPlaying)
-        }
-
-        if (this.playing.type === 'episode') {
-          this.nextepisode = (await this.axios.get(`/episode/${this.playing.entity.id}/next`)).data
-        }
-      },
-      paused: async function (newState, oldState) {
-        navigator.mediaSession.playbackState = newState ? 'paused' : 'playing'
-        if (newState) {
-          return this.player.pause()
-        }
-
-        this.player.play()
-      }
-    },
-    mounted: function () {
-      window.addEventListener('keydown', (e) => {
-        if (e.code !== 'Space') { return }
-        if (this.playing === {}) { return }
-        if (this.playSizeFormat === ScreenFormats.SMALL) { return }
-
-        e.preventDefault()
-
-        if (this.playSizeFormat === ScreenFormats.FULLSCREEN || this.playSizeFormat === ScreenFormats.LARGE) {
-          this.paused = !this.paused
-        }
-      })
-
-      this.player.addEventListener('waiting', () => {
-        this.loading = true
-      })
-
-      this.player.addEventListener('playing', () => {
-        this.paused = false
-        this.loading = false
-      })
-
-      this.player.addEventListener('pause', () => {
-        this.paused = true
-      })
-
-      this.player.addEventListener('play', () => {
-        this.paused = false
-      })
-
-      this.player.addEventListener('ended', () => {
-        this.$store.dispatch('updateWatching')
-      })
-
-      this.player.addEventListener('enterpictureinpicture', () => {
-        this.setPlaySizeFormat(ScreenFormats.SMALL)
-        this.browserSupportsPiP = true
-      })
-
-      this.player.addEventListener('leavepictureinpicture', () => {
-        if (this.playSizeFormat === ScreenFormats.SMALL) {
-          this.setPlaySizeFormat(ScreenFormats.LARGE)
-        }
-      })
-
-      this.player.addEventListener('loadedmetadata', () => {
-        let tracking = this.playing.entity.TrackMovies || this.playing.entity.TrackEpisodes
-
-        if (tracking[0] && this.shouldPreSeek) {
-          this.player.currentTime = tracking[0].time - this.initialProgress
-        }
-
-        this.player.play()
-
-        this.paused = false
-        this.loading = false
-      })
-
-      this.player.addEventListener('timeupdate', () => {
-        this.updateLocalTracker()
-
-        if (this.playing.entity === undefined) {
-          this.playbarTimeout = 0
-
-          return
-        }
-
-        if (this.playbarTimeout < 20) {
-          this.playbarTimeout += 1
-        }
-
-        this.progress = (this.initialProgress + this.player.currentTime) / this.playing.entity.Files[this.PlayingFileID].duration
-
-        if (this.autoplay && !this.autoplaying) {
-          if (this.playing.entity.Files[this.PlayingFileID].duration - (this.initialProgress + this.player.currentTime) <= AUTOPLAY_TIME_LEFT_THRESHOLD) {
-            this.autoplaying = true
-            this.playNext()
-          }
-        }
-
-        switch (this.playing.type) {
-          case 'episode':
-            this.$socket.emit('playing', {
-              time: this.playing.entity.TrackEpisodes[0].time = this.initialProgress + this.player.currentTime,
-              progress: this.progress,
-              episodeId: this.playing.entity.id,
-              type: 'tv'
-            })
-            break
-          case 'movie':
-            this.$socket.emit('playing', {
-              time: this.playing.entity.TrackMovies[0].time,
-              progress: this.progress,
-              movieId: this.playing.entity.id,
-              type: 'movie'
-            })
-            break
-        }
-      })
+      playbackSession: {}
     }
+  },
+  computed: {
+    player () {
+      return this.$refs.videoPlayer
+    },
+    playbar () {
+      return this.$refs.playbar
+    },
+    iconUp () {
+      return faUp
+    },
+    iconDown () {
+      return faDown
+    },
+    iconStop () {
+      return faStop
+    },
+    iconPlay () {
+      return faPlay
+    },
+    iconPause () {
+      return faPause
+    },
+    iconFullscreen () {
+      return faFullscreen
+    },
+    iconDeFullscreen () {
+      return faDeFullscreen
+    },
+    PlayTimeDisplayValue () {
+      const hours = ('0' + Math.floor(this.progress * this.playing.entity.Files[this.PlayingFileID].duration / (60 * 60))).substr(-2)
+      const mins = ('0' + Math.floor(this.progress * this.playing.entity.Files[this.PlayingFileID].duration / 60) % 60).substr(-2)
+      const seconds = ('0' + Math.floor(this.progress * this.playing.entity.Files[this.PlayingFileID].duration) % 60).substr(-2)
+
+      return `${hours}:${mins}:${seconds}`
+    },
+
+    DurationDisplayValue () {
+      const hours = ('0' + Math.floor(this.playing.entity.Files[this.PlayingFileID].duration / (60 * 60))).substr(-2)
+      const mins = ('0' + Math.floor(this.playing.entity.Files[this.PlayingFileID].duration / 60) % 60).substr(-2)
+      const seconds = ('0' + Math.floor(this.playing.entity.Files[this.PlayingFileID].duration) % 60).substr(-2)
+
+      return `${hours}:${mins}:${seconds}`
+    },
+    iconCog () {
+      return faCog
+    },
+    ...mapState(['playing', 'autoplay', 'host', 'playSizeFormat'])
+  },
+  methods: {
+    ...mapMutations(['setPlaySizeFormat']),
+    viewShow: function () {
+      if (this.playing.type === 'episode') {
+        this.$router.push({ name: 'SeriesView', params: { seriesId: this.playing.entity.Series.id } })
+        this.setPlaySizeFormat(ScreenFormats.SMALL)
+      }
+    },
+    changeFileId: async function (id) {
+      this.updateLocalTracker()
+
+      const tracking = this.playing.entity.TrackMovies || this.playing.entity.TrackEpisodes
+
+      this.PlayingFileID = id
+
+      await this.updateSession()
+
+      if (this.playbackSession.seeking === 'server') {
+        if (tracking[0] !== undefined) {
+          this.initialProgress = tracking[0].time
+        }
+      } else {
+        this.initialProgress = 0
+        this.shouldPreSeek = true
+      }
+
+      this.qualityPopUp = false
+
+      this.loading = true
+      this.setURL()
+    },
+    updateSession: async function () {
+      this.playbackSession = (await this.axios.get(`/session/create/${this.playing.entity.Files[this.PlayingFileID].id}`)).data
+    },
+    updateURL: async function () {
+      await this.updateSession()
+      this.setURL()
+    },
+    setURL: function () {
+      const token = this.playbackSession.sessionId
+
+      if (this.playbackSession.seeking === 'server') {
+        this.player.src = `${this.axios.defaults.baseURL}/session/stream/${token}?offset=${this.initialProgress}`
+      } else {
+        this.player.src = `${this.axios.defaults.baseURL}/session/stream/${token}`
+      }
+    },
+    seek: function (event) {
+      // Calculate the offset in seconds from where the user clicked on the seekbar
+      const position = this.playing.entity.Files[this.PlayingFileID].duration * event.clientX / document.documentElement.clientWidth
+
+      if (this.playbackSession.seeking === 'server') {
+        if (position < this.initialProgress + this.player.duration && position - this.initialProgress > 0) {
+          this.player.currentTime = position - this.initialProgress
+
+          return
+        }
+
+        this.initialProgress = position
+        this.updateURL()
+      } else {
+        this.player.currentTime = position
+      }
+    },
+    toggleFullScreen: function () {
+      if (this.playSizeFormat !== ScreenFormats.FULLSCREEN) {
+        this.setPlaySizeFormat(ScreenFormats.FULLSCREEN)
+      } else {
+        this.setPlaySizeFormat(ScreenFormats.LARGE)
+      }
+    },
+    stopPlaying: function () {
+      this.player.src = ''
+
+      this.$store.dispatch('clearPlaying')
+      this.$store.dispatch('updateWatching')
+
+      this.showVideo = false
+      this.qualityPopUp = false
+      this.paused = true
+      this.loading = false
+      this.autoplaying = false
+      this.progress = 0
+
+      this.setPlaySizeFormat(ScreenFormats.SMALL)
+    },
+    playPause: function (event) {
+      event.preventDefault()
+
+      console.log(this.$store)
+
+      this.paused = !this.paused
+    },
+    playNext: function () {
+      this.$store.dispatch('playEpisode', this.nextepisode.id)
+    },
+    updateLocalTracker: function () {
+      if (this.playing.type === 'movie') {
+        if (!this.playing.entity.TrackMovies) this.playing.entity.TrackMovies = []
+        if (!this.playing.entity.TrackMovies[0]) this.playing.entity.TrackMovies[0] = {}
+
+        this.playing.entity.TrackMovies[0].time = this.initialProgress + this.player.currentTime
+      }
+
+      if (this.playing.type === 'episode') {
+        if (!this.playing.entity.TrackEpisodes) this.playing.entity.TrackEpisodes = []
+        if (!this.playing.entity.TrackEpisodes[0]) this.playing.entity.TrackEpisodes[0] = {}
+
+        this.playing.entity.TrackEpisodes[0].time = this.initialProgress + this.player.currentTime
+      }
+    }
+  },
+  watch: {
+    playSizeFormat: async function (newState, oldState) {
+      console.log('Size changed:', newState)
+      switch (newState) {
+        case ScreenFormats.FULLSCREEN:
+          if (this.browserSupportsPiP && document.pictureInPictureElement) {
+            await document.exitPictureInPicture()
+          }
+
+          await this.playbar.requestFullscreen()
+
+          break
+
+        case ScreenFormats.LARGE:
+          if (document.fullscreenElement) {
+            await document.exitFullscreen()
+          }
+
+          if (this.browserSupportsPiP && document.pictureInPictureElement) {
+            await document.exitPictureInPicture()
+          }
+
+          break
+
+        case ScreenFormats.SMALL:
+          if (document.fullscreenElement) {
+            await document.exitFullscreen()
+          }
+
+          if (this.browserSupportsPiP) {
+            await this.player.requestPictureInPicture()
+          }
+
+          break
+      }
+    },
+    playing: async function (newState, oldState) {
+      if (!oldState.entity || !oldState.entity.title) this.setPlaySizeFormat(ScreenFormats.LARGE)
+
+      this.initialProgress = 0
+      this.progress = 0
+      this.PlayingFileID = 0
+      this.shouldPreSeek = false
+      this.showVideo = false
+      this.qualityPopUp = false
+      this.paused = true
+      this.loading = false
+      this.autoplaying = false
+
+      this.nextepisode = null
+
+      if (this.playing.entity === undefined) {
+        navigator.mediaSession.playbackState = 'none'
+
+        return
+      }
+
+      this.loading = true
+
+      this.showVideo = true
+
+      const tracking = this.playing.entity.TrackMovies || this.playing.entity.TrackEpisodes
+
+      // If the progress is above 90 percent, we shouldn't seek to the last position since the user probably
+      // wants to start from the beginning.
+
+      await this.updateSession()
+
+      if (tracking[0]) {
+        this.shouldPreSeek = tracking[0].progress < IGNORE_RESTORE_PROGRESS_THRESHOLD
+      }
+
+      if (this.playbackSession.seeking === 'server') {
+        if (tracking[0] !== undefined && this.shouldPreSeek) {
+          this.initialProgress = tracking[0].time
+        }
+      }
+
+      this.setURL()
+
+      // Set the mediaSession environment
+      if ('mediaSession' in navigator) {
+        let imageURL = ''
+
+        if (this.playing.type === 'episode') {
+          imageURL = this.host + '/episode/' + this.playing.entity.id + '/banner'
+        }
+
+        // eslint-disable-next-line no-undef
+        navigator.mediaSession.metadata = new MediaMetadata({
+          title: this.playing.title,
+          album: this.playing.entity.Series.seriesName,
+          artwork: [
+            { src: imageURL }
+          ]
+        })
+
+        navigator.mediaSession.setActionHandler('nexttrack', this.playNext)
+        navigator.mediaSession.setActionHandler('stop', this.stopPlaying)
+      }
+
+      if (this.playing.type === 'episode') {
+        this.nextepisode = (await this.axios.get(`/episode/${this.playing.entity.id}/next`)).data
+      }
+    },
+    paused: async function (newState, oldState) {
+      navigator.mediaSession.playbackState = newState ? 'paused' : 'playing'
+      if (newState) {
+        return this.player.pause()
+      }
+
+      this.player.play()
+    }
+  },
+  mounted: function () {
+    window.addEventListener('keydown', (e) => {
+      if (e.code !== 'Space') { return }
+      if (this.playing === {}) { return }
+      if (this.playSizeFormat === ScreenFormats.SMALL) { return }
+
+      e.preventDefault()
+
+      if (this.playSizeFormat === ScreenFormats.FULLSCREEN || this.playSizeFormat === ScreenFormats.LARGE) {
+        this.paused = !this.paused
+      }
+    })
+
+    this.player.addEventListener('waiting', () => {
+      this.loading = true
+    })
+
+    this.player.addEventListener('playing', () => {
+      this.paused = false
+      this.loading = false
+    })
+
+    this.player.addEventListener('pause', () => {
+      this.paused = true
+    })
+
+    this.player.addEventListener('play', () => {
+      this.paused = false
+    })
+
+    this.player.addEventListener('ended', () => {
+      this.$store.dispatch('updateWatching')
+    })
+
+    this.player.addEventListener('enterpictureinpicture', () => {
+      this.setPlaySizeFormat(ScreenFormats.SMALL)
+      this.browserSupportsPiP = true
+    })
+
+    this.player.addEventListener('leavepictureinpicture', () => {
+      if (this.playSizeFormat === ScreenFormats.SMALL) {
+        this.setPlaySizeFormat(ScreenFormats.LARGE)
+      }
+    })
+
+    this.player.addEventListener('loadedmetadata', () => {
+      const tracking = this.playing.entity.TrackMovies || this.playing.entity.TrackEpisodes
+
+      if (tracking[0] && this.shouldPreSeek) {
+        this.player.currentTime = tracking[0].time - this.initialProgress
+      }
+
+      this.player.play()
+
+      this.paused = false
+      this.loading = false
+    })
+
+    this.player.addEventListener('timeupdate', () => {
+      this.updateLocalTracker()
+
+      if (this.playing.entity === undefined) {
+        this.playbarTimeout = 0
+
+        return
+      }
+
+      if (this.playbarTimeout < 20) {
+        this.playbarTimeout += 1
+      }
+
+      this.progress = (this.initialProgress + this.player.currentTime) / this.playing.entity.Files[this.PlayingFileID].duration
+
+      if (this.autoplay && !this.autoplaying) {
+        if (this.playing.entity.Files[this.PlayingFileID].duration - (this.initialProgress + this.player.currentTime) <= AUTOPLAY_TIME_LEFT_THRESHOLD) {
+          this.autoplaying = true
+          this.playNext()
+        }
+      }
+
+      switch (this.playing.type) {
+        case 'episode':
+          this.$socket.emit('playing', {
+            time: this.playing.entity.TrackEpisodes[0].time = this.initialProgress + this.player.currentTime,
+            progress: this.progress,
+            episodeId: this.playing.entity.id,
+            type: 'tv'
+          })
+          break
+        case 'movie':
+          this.$socket.emit('playing', {
+            time: this.playing.entity.TrackMovies[0].time,
+            progress: this.progress,
+            movieId: this.playing.entity.id,
+            type: 'movie'
+          })
+          break
+      }
+    })
   }
+}
 </script>
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
@@ -608,7 +608,6 @@
 
       opacity: 0.2
 
-
   @keyframes loading
     from
       left: -10%
@@ -641,8 +640,6 @@
         background-color: rgba(0,0,0,0.3)
       li:hover
         background-color: rgba(0,0,0,0.5)
-
-
 
   .hiddenBar
     cursor: none

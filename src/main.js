@@ -1,93 +1,90 @@
 // The Vue build version to load with the `import` command
 // (runtime-only or standalone) has been set in webpack.base.conf with an alias.
-import Vue from 'vue'
-import App from './App'
-import router from './router'
-import store from './store'
-import axios from 'axios'
-import VueAxios from 'vue-axios'
-import { Tabs, Tab } from 'vue-tabs-component'
-import VModal from 'vue-js-modal'
-import Notifications from 'vue-notification'
-import VueSocketio from 'vue-socket.io'
-import oblectoClient from '@/oblectoClient'
+import Vue from 'vue';
+import App from './App';
+import router from './router';
+import store from './store';
+import axios from 'axios';
+import VueAxios from 'vue-axios';
+import { Tabs, Tab } from 'vue-tabs-component';
+import VModal from 'vue-js-modal';
+import Notifications from 'vue-notification';
+import VueSocketio from 'vue-socket.io';
 
-Vue.use(VModal)
+import oblectoClient from '@/oblectoClient';
+import { host } from '@/oblectoClient';
 
-Vue.use(Notifications)
+Vue.use(VModal);
 
-Vue.use(VueAxios, axios)
+Vue.use(Notifications);
 
-let host = OBLECTO_HOST ||
-  window.location.protocol + '//' + window.location.hostname + ':' + (window.location.port || '80')
+Vue.use(VueAxios, axios);
 
-store.dispatch('updateHost', host)
-Vue.use(VueSocketio, host)
+store.dispatch('updateHost', host);
+Vue.use(VueSocketio, host);
 
-Vue.component('tabs', Tabs)
-Vue.component('tab', Tab)
+Vue.component('tabs', Tabs);
+Vue.component('tab', Tab);
 
-Vue.config.productionTip = false
+Vue.config.productionTip = false;
 
-let connectionFailedCount = 0
+let connectionFailedCount = 0;
 
 /* eslint-disable no-new */
 export const instance = new Vue({
-  el: '#app',
-  store,
-  sockets: {
-    connect_error: function () {
-      connectionFailedCount++
+    store,
+    sockets: {
+        connect_error: function () {
+            connectionFailedCount++;
 
-      if (connectionFailedCount === 1) {
-        this.$notify({
-          group: 'system',
-          title: 'Connection failed',
-          text: 'Failed to connect to the Oblecto web socket server. Is the server online?',
-          type: 'error'
-        })
-      }
+            if (connectionFailedCount === 1) {
+                this.$notify({
+                    group: 'system',
+                    title: 'Connection failed',
+                    text: 'Failed to connect to the Oblecto web socket server. Is the server online?',
+                    type: 'error'
+                });
+            }
+        },
+        connect: function () {
+            connectionFailedCount = 0;
+
+            this.$notify({
+                group: 'system',
+                title: 'Connection to Oblecto succeeded',
+                text: 'Client has successfully connected to the Oblecto websocket interface!',
+                type: 'success'
+            });
+
+            // Authenticate socket if auth token exits
+            if (oblectoClient.accessToken) {
+                this.$socket.emit('authenticate', { token: oblectoClient.accessToken });
+
+                this.$notify({
+                    group: 'system',
+                    title: 'Authentication success',
+                    text: 'Socket interface has been authenticated',
+                    type: 'success'
+                });
+
+                this.$store.dispatch('updateAll');
+            }
+        },
+        indexer: function (val) {
+            if (val.event === 'added') {
+                this.$store.dispatch('updateAll');
+            }
+        },
+        play: function (msg) {
+            if (msg.episodeId) {
+                store.dispatch('playEpisodeLocal', msg.episodeId);
+            }
+
+            if (msg.movieId) {
+                store.dispatch('playMovieLocal', msg.movieId);
+            }
+        }
     },
-    connect: function () {
-      connectionFailedCount = 0
-
-      this.$notify({
-        group: 'system',
-        title: 'Connection to Oblecto succeeded',
-        text: 'Client has successfully connected to the Oblecto websocket interface!',
-        type: 'success'
-      })
-
-      // Authenticate socket if auth token exits
-      if (oblectoClient.accessToken) {
-        this.$socket.emit('authenticate', { token: oblectoClient.accessToken })
-
-        this.$notify({
-          group: 'system',
-          title: 'Authentication success',
-          text: 'Socket interface has been authenticated',
-          type: 'success'
-        })
-
-        this.$store.dispatch('updateAll')
-      }
-    },
-    indexer: function (val) {
-      if (val.event === 'added') {
-        this.$store.dispatch('updateAll')
-      }
-    },
-    play: function (msg) {
-      if (msg.episodeId) {
-        store.dispatch('playEpisodeLocal', msg.episodeId)
-      }
-
-      if (msg.movieId) {
-        store.dispatch('playMovieLocal', msg.movieId)
-      }
-    }
-  },
-  router,
-  template: '<App/>',
-  components: { App }
-})
+    router,
+    render: h => h(App)
+}).$mount('#app');

@@ -56,7 +56,6 @@
       padding: 10px
 
     .poster
-      width:
       img
         width: 100%
 </style>
