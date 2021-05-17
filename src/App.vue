@@ -1,5 +1,5 @@
 <template>
-  <div id="app"">
+  <div id="app">
     <ShowDialogModal/>
     <ShowModifyModal/>
     <UserAddModal/>
@@ -72,12 +72,22 @@
     computed: {
       ...mapState({
         loaded: state => state.initialLoaded,
-        playSizeFormat: state => state.playSizeFormat
+        playSizeFormat: state => state.playSizeFormat,
+        playing: state => state.playing
       })
     },
     watch: {
+      playing: async function (newState, oldState) {
+        if (this.playSizeFormat === ScreenFormats.LARGE && this.playing.entity) {
+          document.body.style.overflow = 'hidden'
+
+          return
+        }
+
+        document.body.style.overflow = 'auto'
+      },
       playSizeFormat: async function (newState, oldState) {
-        if (newState === ScreenFormats.LARGE) {
+        if (newState === ScreenFormats.LARGE && this.playing.entity) {
           document.body.style.overflow = 'hidden'
 
           return
