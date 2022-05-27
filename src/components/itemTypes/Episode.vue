@@ -22,87 +22,86 @@
 </template>
 
 <script>
-  import { mapState } from 'vuex'
+import { mapState } from 'vuex';
 
-  export default {
-    name: 'Episode',
-    created () {
-      if (this.episode.TrackEpisodes[0]) {
-        this.progress = this.episode.TrackEpisodes[0].progress
-      }
-
-      const img = new Image()
-      img.src = this.host + '/episode/' + this.episode.id + '/banner'
-
-      img.onload = () => {
-        this.bannerUrl = img.src
-        this.bannerLoaded = true
-      }
-
-      img.onerror = () => {
-        this.posterLoaded = true
-      }
-    },
-    mounted () {
-
-    },
-    watch: {
-      episode: async function (newState, oldState) {
-        if (this.episode.TrackEpisodes[0]) {
-          this.progress = this.episode.TrackEpisodes[0].progress
-        }
-      }
-    },
-    data () {
-      return {
-        progress: 0,
-        loaded: false,
-        bannerUrl: '',
-        bannerLoaded: false
-      }
-    },
-    sockets: {
-      'client-episode-progress': function (message) {
-        if (message.episodeId === this.episode.id) {
-          this.episode.TrackEpisodes[0] = message
-          this.progress = message.progress
-        }
-      }
-    },
-    props: {
-      'subtitle': {
-        type: String,
-        required: false
-      },
-      'inside': {
-        type: Boolean,
-        required: false,
-        default: false
-      },
-      'episode': {
-        required: true,
-        default: false
-      }
-    },
-    computed: {
-      ...mapState([
-        'host'
-      ])
-    },
-    methods: {
-      playEpisode: function (event) {
-        event.preventDefault()
-        // this.$router.push({name: 'PlayEpisode', params: {episodeId: this.episodeId}})
-        this.$store.dispatch('playEpisode', this.episode.id)
-      },
-      openEpisodeDialog: function (event) {
-        this.$modal.show('EpisodeDialog', { episode: this.episode })
-      },
-      viewEpisodeInfo: function (event) {
-        this.$router.push({ name: 'EpisodeInfo', params: { episode: this.episode.id } })
-      }
+export default {
+  name: 'episode-entity',
+  created() {
+    if (this.episode.TrackEpisodes[0]) {
+      this.progress = this.episode.TrackEpisodes[0].progress;
     }
-  }
+
+    const img = new Image();
+    img.src = `${this.host}/episode/${this.episode.id}/banner`;
+
+    img.onload = () => {
+      this.bannerUrl = img.src;
+      this.bannerLoaded = true;
+    };
+
+    img.onerror = () => {
+      this.posterLoaded = true;
+    };
+  },
+  mounted() {
+
+  },
+  watch: {
+    async episode() {
+      if (this.episode.TrackEpisodes[0]) {
+        this.progress = this.episode.TrackEpisodes[0].progress;
+      }
+    },
+  },
+  data() {
+    return {
+      progress: 0,
+      loaded: false,
+      bannerUrl: '',
+      bannerLoaded: false,
+    };
+  },
+  sockets: {
+    'client-episode-progress': function (message) {
+      if (message.episodeId === this.episode.id) {
+        this.progress = message.progress;
+      }
+    },
+  },
+  props: {
+    subtitle: {
+      type: String,
+      required: false,
+    },
+    inside: {
+      type: Boolean,
+      required: false,
+      default: false,
+    },
+    episode: {
+      required: true,
+      default: false,
+    },
+  },
+  computed: {
+    ...mapState([
+      'host',
+    ]),
+  },
+  methods: {
+    playEpisode(event) {
+      event.preventDefault();
+      // this.$router.push({name: 'PlayEpisode', params: {episodeId: this.episodeId}})
+      this.$store.dispatch('playEpisode', this.episode.id);
+    },
+    openEpisodeDialog() {
+      this.$modal.show('EpisodeDialog', { episode: this.episode });
+    },
+    viewEpisodeInfo() {
+      this.$router.push({ name: 'EpisodeInfo', params: { episode: this.episode.id } });
+    },
+  },
+};
 </script>
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->

@@ -12,7 +12,7 @@
       </tr>
       </thead>
       <tbody>
-      <user-entry v-for="(user, index) in users"
+      <user-entry v-for="user in users"
             v-bind:user="user"
             v-bind:key="user.id"
       ></user-entry>
@@ -23,25 +23,25 @@
 </template>
 
 <script>
-  import userEntry from '@/components/settings/UserManagement/userEntry'
+import userEntry from '@/components/settings/UserManagement/userEntry.vue';
 
-  export default {
-    name: 'UserManager',
-    components: { userEntry },
-    data () {
-      return {
-        users: {}
-      }
+export default {
+  name: 'UserManager',
+  components: { userEntry },
+  data() {
+    return {
+      users: {},
+    };
+  },
+  async created() {
+    this.users = (await this.axios.get('/users')).data;
+  },
+  methods: {
+    async userAdd() {
+      this.$modal.show('UserAdd');
     },
-    async created () {
-      this.users = (await this.axios.get(`/users`)).data
-    },
-    methods: {
-      async userAdd () {
-        this.$modal.show('UserAdd')
-      }
-    }
-  }
+  },
+};
 </script>
 
 <style scoped lang="sass">

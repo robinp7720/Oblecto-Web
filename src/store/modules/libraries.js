@@ -1,3 +1,5 @@
+/* eslint no-shadow: ["error", { "allow": ["state"] }] */
+
 import Vue from 'vue';
 import * as types from '../mutation-types';
 

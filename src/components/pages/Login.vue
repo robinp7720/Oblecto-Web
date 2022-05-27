@@ -17,58 +17,58 @@
 </template>
 
 <script>
-  import oblectoClient from '@/oblectoClient'
-  import { mapState } from 'vuex'
+import oblectoClient from '@/oblectoClient';
+import { mapState } from 'vuex';
 
-  export default {
-    name: 'Login',
-    data () {
-      return {
-        credentials: {
-          username: '',
-          password: ''
+export default {
+  name: 'login-view',
+  data() {
+    return {
+      credentials: {
+        username: '',
+        password: '',
+      },
+    };
+  },
+  computed: mapState([
+    'host',
+  ]),
+  methods: {
+    async changeHost() {
+      await this.$store.dispatch('updateHost', prompt('New host?'));
+    },
+    async submit() {
+      try {
+        await oblectoClient.authenticate(this.credentials.username, this.credentials.password);
+
+        this.axios.defaults.headers.common = { Authorization: `bearer ${oblectoClient.accessToken}` };
+
+        // Authenticate the socket.io connection to the server
+        // This allows the server to update the client in realtime
+        this.$socket.emit('authenticate', { token: oblectoClient.accessToken });
+
+        try {
+          await this.$store.dispatch('updateAll');
+        } catch (e) {
+          console.log(e);
         }
+
+        // After the login procedure is complete, send the user to the homepage
+        this.$router.push({ name: 'Main' });
+      } catch (e) {
+        console.log(e);
+
+        // If an error has occurred during the login process, send an error message to the client
+        this.$notify({
+          group: 'system',
+          title: 'Error occurred',
+          text: 'An error occurred during login',
+          type: 'error',
+        });
       }
     },
-    computed: mapState([
-      'host'
-    ]),
-    methods: {
-      async changeHost () {
-        await this.$store.dispatch('updateHost', prompt('New host?'))
-      },
-      async submit () {
-        try {
-          await oblectoClient.authenticate(this.credentials.username, this.credentials.password)
-
-          this.axios.defaults.headers.common = { 'Authorization': `bearer ${oblectoClient.accessToken}` }
-
-          // Authenticate the socket.io connection to the server
-          // This allows the server to update the client in realtime
-          this.$socket.emit('authenticate', { token: oblectoClient.accessToken })
-
-          try {
-            await this.$store.dispatch('updateAll')
-          } catch (e) {
-            console.log(e)
-          }
-
-          // After the login procedure is complete, send the user to the homepage
-          this.$router.push({ name: 'Main' })
-        } catch (e) {
-          console.log(e)
-
-          // If an error has occurred during the login process, send an error message to the client
-          this.$notify({
-            group: 'system',
-            title: 'Error occurred',
-            text: 'An error occurred during login',
-            type: 'error'
-          })
-        }
-      }
-    }
-  }
+  },
+};
 </script>
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->

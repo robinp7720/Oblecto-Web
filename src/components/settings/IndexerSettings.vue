@@ -10,7 +10,7 @@
       </tr>
       </thead>
       <tbody>
-      <tr v-for="(filetype, index) in videoFiletypes">
+      <tr v-for="(filetype, index) in videoFiletypes" v-bind:key="index">
         <td class="id">
           {{ index + 1 }}
         </td>
@@ -30,36 +30,36 @@
 </template>
 
 <script>
-  import FontAwesomeIcon from '@fortawesome/vue-fontawesome'
-  import faTrash from '@fortawesome/fontawesome-free-solid/faTrash'
-  import oblectoClient from '@/oblectoClient'
+import FontAwesomeIcon from '@fortawesome/vue-fontawesome';
+import faTrash from '@fortawesome/fontawesome-free-solid/faTrash';
+import oblectoClient from '@/oblectoClient';
 
-  export default {
-    name: 'IndexerSettings',
-    components: {
-      FontAwesomeIcon
+export default {
+  name: 'IndexerSettings',
+  components: {
+    FontAwesomeIcon,
+  },
+  computed: {
+    deleteIcon() {
+      return faTrash;
     },
-    computed: {
-      deleteIcon () {
-        return faTrash
-      }
-    },
-    data () {
-      return {
-        videoFiletypes: []
-      }
-    },
-    async created () {
-      let filetypes = (await oblectoClient.axios.get(`/settings/fileExtensions`)).data
+  },
+  data() {
+    return {
+      videoFiletypes: [],
+    };
+  },
+  async created() {
+    const filetypes = (await oblectoClient.axios.get('/settings/fileExtensions')).data;
 
-      this.videoFiletypes = filetypes.video
+    this.videoFiletypes = filetypes.video;
+  },
+  methods: {
+    async filetypeAdd(type) {
+      console.log(`Add filetype: ${type}`);
     },
-    methods: {
-      async filetypeAdd (type) {
-
-      }
-    }
-  }
+  },
+};
 </script>
 
 <style scoped lang="sass">
@@ -117,7 +117,6 @@
 
     .actions
       text-align: center
-
 
     .button
       background-color: rgba(0,0,0,0.5)

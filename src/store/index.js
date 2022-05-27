@@ -1,18 +1,19 @@
-import Vue from 'vue';
-import Vuex from 'vuex';
+/* eslint no-shadow: ["error", { "allow": ["state", "episodes", "series", "movies"] }] */
+
+import { createStore } from 'vuex';
 import libraries from '@/store/modules/libraries';
 
 import VueSocketio from 'vue-socket.io';
 import oblectoClient from '@/oblectoClient';
 import router from '@/router';
-import { ScreenFormats } from '@/enums/ScreenFormats';
+import ScreenFormats from '@/enums/ScreenFormats';
+import Vue from 'vue';
+import { Axios } from 'axios';
 import episodes from './modules/episodes';
 import series from './modules/series';
 import movies from './modules/movies';
 
-Vue.use(Vuex);
-
-export default new Vuex.Store({
+export default createStore({
   state: {
     host: null,
     initialLoaded: false,
@@ -35,28 +36,28 @@ export default new Vuex.Store({
   },
   mutations: {
     saveWatchingEpisodes(state, watching) {
-      Vue.set(state, 'watchingEpisodes', watching);
+      state.watchingEpisodes = watching;
     },
     saveNextEpisodes(state, next) {
-      Vue.set(state, 'nextEpisodes', next);
+      state.nextEpisodes = next;
     },
     saveWatchingMovies(state, watching) {
-      Vue.set(state, 'watchingMovies', watching);
+      state.watching = watching;
     },
     setPlaying(state, playing) {
-      Vue.set(state, 'playing', playing);
+      state.playing = playing;
     },
     updateHost(state, host) {
-      Vue.set(state, 'host', host);
+      state.host = host;
     },
     initialLoaded(state, initialLoaded) {
-      Vue.set(state, 'initialLoaded', initialLoaded);
+      state.initialLoaded = initialLoaded;
     },
     setPlaybackRemote(state, remote) {
-      Vue.set(state, 'playbackRemote', remote);
+      state.playbackRemote = remote;
     },
     setPlaySizeFormat(state, size) {
-      Vue.set(state, 'playSizeFormat', size);
+      state.playSizeFormat = size;
     },
   },
   actions: {
@@ -119,7 +120,7 @@ export default new Vuex.Store({
     async playEpisodeLocal({ commit, dispatch }, id) {
       await dispatch('clearPlaying');
 
-      const { data: episode } = await Vue.axios.get(`/episode/${id}/info`);
+      const { data: episode } = await Axios.get(`/episode/${id}/info`);
 
       commit('setPlaying', {
         title: episode.episodeName,
@@ -127,22 +128,22 @@ export default new Vuex.Store({
         entity: episode,
       });
     },
-    async playEpisode({ state, commit, dispatch }, id) {
-      if (state.playbackRemote !== 'local') {
-        await Vue.axios.post(`/client/${state.playbackRemote}/playback`, {
+    async playEpisode({ state, dispatch }, id) {
+      /* if (state.playbackRemote !== 'local') {
+        await Axios.post(`/client/${state.playbackRemote}/playback`, {
           id,
           clientId: state.playbackRemote,
           type: 'episode',
         });
         return;
-      }
+      } */
 
       await dispatch('playEpisodeLocal', id);
     },
     async playMovieLocal({ commit, dispatch }, id) {
       await dispatch('clearPlaying');
 
-      const { data: movie } = await Vue.axios.get(`/movie/${id}/info`);
+      const { data: movie } = await Axios.get(`/movie/${id}/info`);
 
       commit('setPlaying', {
         title: movie.movieName,
@@ -150,15 +151,15 @@ export default new Vuex.Store({
         entity: movie,
       });
     },
-    async playMovie({ state, commit, dispatch }, id) {
-      if (state.playbackRemote !== 'local') {
+    async playMovie({ state, dispatch }, id) {
+      /* if (state.playbackRemote !== 'local') {
         await Vue.axios.post(`/client/${state.playbackRemote}/playback`, {
           id,
           clientId: state.playbackRemote,
           type: 'movie',
         });
         return;
-      }
+      } */
 
       await dispatch('playMovieLocal', id);
     },

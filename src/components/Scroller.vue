@@ -14,37 +14,37 @@
 </template>
 
 <script>
-import Velocity from 'velocity-animate'
+import Velocity from 'velocity-animate';
 
 export default {
-  name: 'Scroller',
+  name: 'scoller-container',
   methods: {
-    beforeEnter: function (el) {
-      el.style.opacity = 0
-      el.style.width = 0
+    beforeEnter(el) {
+      el.style.opacity = 0;
+      el.style.width = 0;
     },
-    enter: function (el, done) {
-      let delay = el.dataset.index * 150
-      setTimeout(function () {
+    enter(el, done) {
+      const delay = el.dataset.index * 150;
+      setTimeout(() => {
         Velocity(
           el,
           { opacity: 1, width: '357px' },
-          { complete: done }
-        )
-      }, delay)
+          { complete: done },
+        );
+      }, delay);
     },
-    leave: function (el, done) {
-      let delay = el.dataset.index * 150
-      setTimeout(function () {
+    leave(el, done) {
+      const delay = el.dataset.index * 150;
+      setTimeout(() => {
         Velocity(
           el,
           { opacity: 0, width: 0 },
-          { complete: done }
-        )
-      }, delay)
-    }
-  }
-}
+          { complete: done },
+        );
+      }, delay);
+    },
+  },
+};
 </script>
 
 <style scoped lang="sass">

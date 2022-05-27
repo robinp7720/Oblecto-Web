@@ -26,7 +26,8 @@
     "vue-axios": "^3.4.1",
     "vue-router": "^4.0.15",
     "vue-socket.io": "^2.1.1",
-    "vuex": "^4.0.0"
+    "vuex": "^4.0.0",
+    "register-service-worker": "^1.7.2"
   },
   "devDependencies": {
     "@babel/core": "^7.12.16",

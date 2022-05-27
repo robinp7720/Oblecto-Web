@@ -1,16 +1,5 @@
 <template>
   <div id="app">
-    <ShowDialogModal/>
-    <ShowModifyModal/>
-    <UserAddModal/>
-    <MovieDialogModal/>
-    <EpisodeDialogModal/>
-    <LibraryAdd/>
-    <NewMovieSet/>
-    <PasswordChange/>
-    <CopyText/>
-    <ChangeRemoteDialog />
-
     <notifications group="system" classes="system-notification" position="bottom center" />
 
     <NavBar v-if="$router.history.current.name !== 'login' && loaded"/>
@@ -30,81 +19,59 @@
 </template>
 
 <script>
-  import { mapState } from 'vuex'
+import { mapState } from 'vuex';
 
-  import NavBar from '@/components/NavBar'
-  import WatchPanel from '@/components/WatchPanel'
-  import playBar from '@/components/playBar'
-  import LoadingPage from '@/components/LoadingPage'
+import NavBar from '@/components/NavBar.vue';
+import WatchPanel from '@/components/WatchPanel.vue';
+import playBar from '@/components/playBar.vue';
+import LoadingPage from '@/components/LoadingPage.vue';
 
-  import { ScreenFormats } from '@/enums/ScreenFormats'
+import ScreenFormats from '@/enums/ScreenFormats';
 
-  // Modals
-  import ShowDialogModal from '@/components/modals/ShowDialog'
-  import ShowModifyModal from '@/components/modals/ShowModify'
-  import UserAddModal from '@/components/modals/UserAdd'
-  import MovieDialogModal from '@/components/modals/MovieDialog'
-  import EpisodeDialogModal from '@/components/modals/EpisodeDialog'
-  import LibraryAdd from '@/components/modals/LibraryAdd'
-  import NewMovieSet from '@/components/modals/NewMovieSet'
-  import PasswordChange from '@/components/modals/PasswordChange'
-  import CopyText from '@/components/modals/CopyText'
-  import ChangeRemoteDialog from '@/components/modals/ChangeRemoteDialog'
+export default {
+  name: 'app',
+  components: {
+    WatchPanel,
+    NavBar,
+    playBar,
+    LoadingPage,
+  },
+  computed: {
+    ...mapState({
+      loaded: (state) => state.initialLoaded,
+      playSizeFormat: (state) => state.playSizeFormat,
+      playing: (state) => state.playing,
+    }),
+  },
+  watch: {
+    async playing() {
+      if (this.playSizeFormat === ScreenFormats.LARGE && this.playing.entity) {
+        document.body.style.overflow = 'hidden';
 
-  export default {
-    name: 'app',
-    components: {
-      ChangeRemoteDialog,
-      WatchPanel: WatchPanel,
-      NavBar,
-      ShowDialogModal,
-      PasswordChange,
-      ShowModifyModal,
-      UserAddModal,
-      MovieDialogModal,
-      EpisodeDialogModal,
-      CopyText,
-      NewMovieSet,
-      LibraryAdd,
-      playBar,
-      LoadingPage
-    },
-    computed: {
-      ...mapState({
-        loaded: state => state.initialLoaded,
-        playSizeFormat: state => state.playSizeFormat,
-        playing: state => state.playing
-      })
-    },
-    watch: {
-      playing: async function (newState, oldState) {
-        if (this.playSizeFormat === ScreenFormats.LARGE && this.playing.entity) {
-          document.body.style.overflow = 'hidden'
-
-          return
-        }
-
-        document.body.style.overflow = 'auto'
-      },
-      playSizeFormat: async function (newState, oldState) {
-        if (newState === ScreenFormats.LARGE && this.playing.entity) {
-          document.body.style.overflow = 'hidden'
-
-          return
-        }
-
-        document.body.style.overflow = 'auto'
+        return;
       }
-    },
-    created () {
 
+      document.body.style.overflow = 'auto';
     },
-    beforeCreate () {
-      this.$store.dispatch('updateAll')
+    async playSizeFormat(newState) {
+      if (newState === ScreenFormats.LARGE && this.playing.entity) {
+        document.body.style.overflow = 'hidden';
+
+        return;
+      }
+
+      document.body.style.overflow = 'auto';
     },
-    methods: {
-    }
-  }
+  },
+  created() {
+
+  },
+  beforeCreate() {
+    this.$store.dispatch('updateAll');
+  },
+  methods: {
+  },
+};
 </script>
 
 <style lang="sass">
@@ -149,7 +116,6 @@
     background: -webkit-linear-gradient(to bottom, #696060 0%, #55535b 36%, #28343b 100%) /* Chrome10-25,Safari5.1-6 */
     background: linear-gradient(to bottom, #696060 0%, #55535b 36%, #28343b 100%) /* W3C, IE10+, FF16+, Chrome26+, Opera12+, Safari7+ */
 
-
   @media screen and (max-height: 1200px)
     #app
       padding-top: 0
@@ -182,6 +148,5 @@
     opacity: 0
     -webkit-transform: translate(-30px, 0)
     transform: translate(-30px, 0)
-
 
 </style>

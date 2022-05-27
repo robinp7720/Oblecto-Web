@@ -1,3 +1,5 @@
+/* eslint no-shadow: ["error", { "allow": ["state"] }] */
+
 import oblectoClient from '@/oblectoClient';
 import * as types from '../mutation-types';
 
@@ -10,7 +12,7 @@ const getters = {
 };
 
 const actions = {
-  async getSeries({ commit, state }, { sort, order }) {
+  async getSeries({ commit }, { sort, order }) {
     const shows = await oblectoClient.seriesLibrary.getList(sort, order, 100, 0);
 
     commit(types.RECEIVE_SHOWS, { shows, sort });

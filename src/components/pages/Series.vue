@@ -19,24 +19,24 @@
 </template>
 
 <script>
-  import { mapState } from 'vuex'
-  import EpisodeList from '@/components/itemLists/EpisodeList'
-  import SeriesList from '@/components/itemLists/SeriesList'
+import { mapState } from 'vuex';
+import EpisodeList from '@/components/itemLists/EpisodeList.vue';
+import SeriesList from '@/components/itemLists/SeriesList.vue';
 
-  export default {
-    name: 'Series',
-    components: {
-      SeriesList,
-      EpisodeList
-    },
-    computed: mapState({
-      series: state => state.series.lists,
-      episodes: state => state.episodes.lists
-    }),
-    created () {
+export default {
+  name: 'series-view',
+  components: {
+    SeriesList,
+    EpisodeList,
+  },
+  computed: mapState({
+    series: (state) => state.series.lists,
+    episodes: (state) => state.episodes.lists,
+  }),
+  created() {
 
-    }
-  }
+  },
+};
 </script>
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->

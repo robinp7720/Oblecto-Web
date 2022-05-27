@@ -6,14 +6,14 @@
 </template>
 
 <script>
-  export default {
-    name: 'Sets',
-    methods: {
-      async newMovieSet () {
-        this.$modal.show('NewMovieSet')
-      }
-    }
-  }
+export default {
+  name: 'settings-sets',
+  methods: {
+    async newMovieSet() {
+      this.$modal.show('NewMovieSet');
+    },
+  },
+};
 </script>
 
 <style scoped lang="sass">

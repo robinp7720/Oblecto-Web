@@ -14,9 +14,9 @@
 </template>
 
 <script>
-  export default {
-    name: 'Settings'
-  }
+export default {
+  name: 'settings-main',
+};
 </script>
 
 <style scoped lang="sass">
@@ -47,6 +47,5 @@
 
     a.router-link-active
       color: #eee
-
 
 </style>

@@ -1,6 +1,6 @@
 <template>
   <ListContainer :title="title" :badge="badge">
-    <Series v-for="(show, index) in series"
+    <Series v-for="show in series"
             :title="show.seriesName"
             :seriesId="show.id"
             :series="show"
@@ -10,14 +10,14 @@
 </template>
 
 <script>
-  import Series from '@/components/itemTypes/Series'
-  import ListContainer from '@/components/ListContainer'
+import Series from '@/components/itemTypes/Series.vue';
+import ListContainer from '@/components/ListContainer.vue';
 
-  export default {
-    name: 'SeriesList',
-    components: { Series, ListContainer },
-    props: { 'series': Array, 'title': String, 'badge': String }
-  }
+export default {
+  name: 'SeriesList',
+  components: { Series, ListContainer },
+  props: { series: Array, title: String, badge: String },
+};
 </script>
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->

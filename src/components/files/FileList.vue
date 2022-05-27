@@ -2,7 +2,7 @@
   <div class="file-list-container">
     <ul class="file-list" v-if="files.length > 0">
       <li
-        v-for="(FileIterator, index) in files"
+        v-for="FileIterator in files"
         :key="FileIterator.id"
         class="file-list-item"
       >
@@ -20,27 +20,27 @@
 </template>
 
 <script>
-import FontAwesomeIcon from '@fortawesome/vue-fontawesome'
-import faCopy from '@fortawesome/fontawesome-free-solid/faCopy'
+import FontAwesomeIcon from '@fortawesome/vue-fontawesome';
+import faCopy from '@fortawesome/fontawesome-free-solid/faCopy';
 
 export default {
   name: 'FileList',
   components: { FontAwesomeIcon },
-  props: [ 'files' ],
+  props: ['files'],
   computed: {
-    iconCopy: () => faCopy
+    iconCopy: () => faCopy,
   },
   methods: {
-    getUrl: async function (fileId) {
-      let token = (await this.axios.get(`/session/create/${fileId}?noremux=true`)).data.sessionId
+    async getUrl(fileId) {
+      const token = (await this.axios.get(`/session/create/${fileId}?noremux=true`)).data.sessionId;
 
-      return `${this.axios.defaults.baseURL}/session/stream/${token}`
+      return `${this.axios.defaults.baseURL}/session/stream/${token}`;
     },
-    copyUrl: async function (fileId) {
-      this.$modal.show('CopyText', { title: 'Copy URL', text: await this.getUrl(fileId) })
-    }
-  }
-}
+    async copyUrl(fileId) {
+      this.$modal.show('CopyText', { title: 'Copy URL', text: await this.getUrl(fileId) });
+    },
+  },
+};
 </script>
 
 <style scoped lang="sass">

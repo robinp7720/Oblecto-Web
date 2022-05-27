@@ -5,9 +5,9 @@
 </template>
 
 <script>
-    export default {
-      name: 'LoadingPage'
-    }
+export default {
+  name: 'LoadingPage',
+};
 </script>
 
 <style scoped lang="sass">
@@ -28,9 +28,6 @@
       height: 128px
       margin-top: -64px
       margin-left: -64px
-
-
-
 
   .loader
     width: 128px

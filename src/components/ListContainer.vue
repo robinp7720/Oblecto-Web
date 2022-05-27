@@ -12,15 +12,13 @@
 </template>
 
 <script>
-import FontAwesomeIcon from '@fortawesome/vue-fontawesome'
-
-import Scroller from '@/components/Scroller'
+import Scroller from '@/components/Scroller.vue';
 
 export default {
   name: 'ListContainer',
-  props: { 'title': String, 'badge': Number },
-  components: { FontAwesomeIcon, Scroller }
-}
+  props: { title: String, badge: Number },
+  components: { Scroller },
+};
 </script>
 
 <style scoped lang="sass">

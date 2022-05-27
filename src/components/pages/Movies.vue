@@ -7,7 +7,7 @@
     <MovieList title="Recently released movies"
                v-bind:movies="movies.releaseDate"/>
 
-    <MovieList v-for="(set, index) in sets"
+    <MovieList v-for="set in sets"
              v-bind:title="set.setName"
              v-bind:key="set.id"
              v-bind:movies="set.movies"
@@ -16,27 +16,27 @@
 </template>
 
 <script>
-  import MovieList from '@/components/itemLists/MovieList'
-  import { mapState } from 'vuex'
+import MovieList from '@/components/itemLists/MovieList.vue';
+import { mapState } from 'vuex';
 
-  export default {
-    name: 'Movies',
-    components: {
-      MovieList: MovieList
-    },
-    computed: mapState('movies', {
-      movies: state => state.lists,
-      sets: state => state.sets
-    }),
-    data () {
-      return {
+export default {
+  name: 'movies-view',
+  components: {
+    MovieList,
+  },
+  computed: mapState('movies', {
+    movies: (state) => state.lists,
+    sets: (state) => state.sets,
+  }),
+  data() {
+    return {
 
-      }
-    },
-    created: function () {
+    };
+  },
+  created() {
 
-    }
-  }
+  },
+};
 </script>
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->

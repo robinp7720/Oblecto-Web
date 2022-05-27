@@ -1,5 +1,4 @@
 <template>
-  <transition name="slide-fade" appear>
     <li class="movie-horizontal" v-if="horizontal">
       <div class="movie-poster" v-bind:style="{ backgroundImage: 'url(' + host + '/movie/' + movieId + '/banner)' }">
         <a class="play" v-on:click="playMovie"><i class="fa fa-play" aria-hidden="true"></i></a>
@@ -26,65 +25,51 @@
       <div :title="title" class="title">{{ title }}</div>
       <div class="subtitle" v-if="subtitle">{{ subtitle }}</div>
     </li>
-  </transition>
 </template>
 
 <script>
-  import { mapState } from 'vuex'
+import { mapState } from 'vuex';
 
-  export default {
-    name: 'Movie',
-    props: ['title', 'movieId', 'subtitle', 'inside', 'horizontal', 'movie'],
-    computed: mapState([
-      'host'
-    ]),
-    created () {
-      if (this.movie.TrackMovies[0]) {
-        this.progress = this.movie.TrackMovies[0].progress
-      }
-    },
-    data () {
-      return {
-        progress: 0
-      }
-    },
-    sockets: {
-      'client-movie-progress': function (message) {
-        if (message.movieId === this.movieId) {
-          this.movie.TrackMovies[0] = message
-          this.progress = message.progress
-        }
-      }
-    },
-    methods: {
-      playMovie: function (event) {
-        event.preventDefault()
-        this.$store.dispatch('playMovie', this.movie.id)
-      },
-      openModal: function (event) {
-        this.$modal.show('MovieDialog', { movie: this.movie })
-      },
-      viewMovieInfo: function (event) {
-        this.$router.push({ name: 'MovieInfo', params: { movieId: this.movieId } })
-      }
+export default {
+  name: 'movie-entity',
+  props: ['title', 'movieId', 'subtitle', 'inside', 'horizontal', 'movie'],
+  computed: mapState([
+    'host',
+  ]),
+  created() {
+    if (this.movie.TrackMovies[0]) {
+      this.progress = this.movie.TrackMovies[0].progress;
     }
-  }
+  },
+  data() {
+    return {
+      progress: 0,
+    };
+  },
+  sockets: {
+    'client-movie-progress': function (message) {
+      if (message.movieId === this.movieId) {
+        this.progress = message.progress;
+      }
+    },
+  },
+  methods: {
+    playMovie(event) {
+      event.preventDefault();
+      this.$store.dispatch('playMovie', this.movie.id);
+    },
+    openModal() {
+      this.$modal.show('MovieDialog', { movie: this.movie });
+    },
+    viewMovieInfo() {
+      this.$router.push({ name: 'MovieInfo', params: { movieId: this.movieId } });
+    },
+  },
+};
 </script>
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style scoped>
-  .slide-fade-enter-active {
-    transition: all .5s;
-  }
-  .slide-fade-leave-active {
-    transition: all .5s;
-  }
-  .slide-fade-enter, .slide-fade-leave-to
-    /* .slide-fade-leave-active below version 2.1.8 */ {
-    transform: translateX(10px);
-    opacity: 0;
-  }
-
   .movie-horizontal {
     display: inline-block;
     margin: 0 10px;
@@ -183,7 +168,6 @@
     }
 
   }
-
 
   .actions {
     position: absolute;

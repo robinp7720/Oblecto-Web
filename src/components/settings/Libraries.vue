@@ -10,7 +10,7 @@
       </tr>
       </thead>
       <tbody>
-      <tr v-for="(library, index) in movies">
+      <tr v-for="(library, index) in movies" v-bind:key="index">
         <td class="id">
           {{ index + 1 }}
         </td>
@@ -36,7 +36,7 @@
       </tr>
       </thead>
       <tbody>
-      <tr v-for="(library, index) in shows">
+      <tr v-for="(library, index) in shows" v-bind:key="index">
         <td class="id">
           {{ index + 1 }}
         </td>
@@ -56,47 +56,47 @@
 </template>
 
 <script>
-  import { mapActions, mapState } from 'vuex'
+import { mapActions, mapState } from 'vuex';
 
-  import FontAwesomeIcon from '@fortawesome/vue-fontawesome'
-  import faTrash from '@fortawesome/fontawesome-free-solid/faTrash'
+import FontAwesomeIcon from '@fortawesome/vue-fontawesome';
+import faTrash from '@fortawesome/fontawesome-free-solid/faTrash';
 
-  export default {
-    name: 'Libraries',
-    components: {
-      FontAwesomeIcon
+export default {
+  name: 'settings-libraries',
+  components: {
+    FontAwesomeIcon,
+  },
+  computed: {
+    ...mapState('libraries', [
+      'shows',
+      'movies',
+    ]),
+    deleteIcon() {
+      return faTrash;
     },
-    computed: {
-      ...mapState('libraries', [
-        'shows',
-        'movies'
-      ]),
-      deleteIcon () {
-        return faTrash
-      }
+  },
+  data() {
+    return {
+      movieLibraries: {},
+      seriesLibraries: {},
+    };
+  },
+  async created() {
+    this.updateAll();
+  },
+  methods: {
+    ...mapActions('libraries', [
+      'updateAll',
+      'deleteMovieLibrary',
+      'deleteSeriesLibrary',
+    ]),
+    async libraryAdd(libraryType) {
+      this.$modal.show('LibraryAdd', {
+        libraryType,
+      });
     },
-    data () {
-      return {
-        movieLibraries: {},
-        seriesLibraries: {}
-      }
-    },
-    async created () {
-      this.updateAll()
-    },
-    methods: {
-      ...mapActions('libraries', [
-        'updateAll',
-        'deleteMovieLibrary',
-        'deleteSeriesLibrary'
-      ]),
-      async libraryAdd (libraryType) {
-        this.$modal.show('LibraryAdd', {
-          libraryType
-        })
-      }
-    }
-  }
+  },
+};
 </script>
 
 <style scoped lang="sass">
@@ -154,7 +154,6 @@
 
     .actions
       text-align: center
-
 
     .button
       background-color: rgba(0,0,0,0.5)

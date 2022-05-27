@@ -14,26 +14,26 @@
 </template>
 
 <script>
-  import { mapState } from 'vuex'
+import { mapState } from 'vuex';
 
-  export default {
-    name: 'Show',
-    props: ['title', 'subtitle', 'series'],
-    data () {
-      return {}
+export default {
+  name: 'series-entity',
+  props: ['title', 'subtitle', 'series'],
+  data() {
+    return {};
+  },
+  computed: mapState([
+    'host',
+  ]),
+  methods: {
+    openModal() {
+      this.$modal.show('ShowDialog', { show: this.series });
     },
-    computed: mapState([
-      'host'
-    ]),
-    methods: {
-      openModal: function (event) {
-        this.$modal.show('ShowDialog', { show: this.series })
-      },
-      viewEpisodes: function (event) {
-        this.$router.push({ name: 'SeriesView', params: { seriesId: this.series.id } })
-      }
-    }
-  }
+    viewEpisodes() {
+      this.$router.push({ name: 'SeriesView', params: { seriesId: this.series.id } });
+    },
+  },
+};
 </script>
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
@@ -123,7 +123,6 @@
     }
 
   }
-
 
   .actions {
     position: absolute;

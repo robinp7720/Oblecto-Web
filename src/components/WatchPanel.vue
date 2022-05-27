@@ -15,29 +15,27 @@
 </template>
 
 <script>
-  import EpisodeList from '@/components/itemLists/EpisodeList'
-  import SeriesList from '@/components/itemLists/SeriesList'
-  import MovieList from '@/components/itemLists/MovieList'
-  import { mapState } from 'vuex'
+import EpisodeList from '@/components/itemLists/EpisodeList.vue';
+import MovieList from '@/components/itemLists/MovieList.vue';
+import { mapState } from 'vuex';
 
-  export default {
-    name: 'watchPanel',
-    components: {
-      SeriesList,
-      EpisodeList,
-      MovieList
-    },
-    computed: mapState([
-      'watchingEpisodes',
-      'watchingMovies',
-      'nextEpisodes'
-    ]),
-    created () {
+export default {
+  name: 'watchPanel',
+  components: {
+    EpisodeList,
+    MovieList,
+  },
+  computed: mapState([
+    'watchingEpisodes',
+    'watchingMovies',
+    'nextEpisodes',
+  ]),
+  created() {
 
-    },
-    methods: {
-    }
-  }
+  },
+  methods: {
+  },
+};
 </script>
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
@@ -65,7 +63,6 @@
 
     @media screen and (max-width: 700px)
       height: 316px
-
 
 </style>
 

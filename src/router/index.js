@@ -1,112 +1,106 @@
-import Vue from 'vue';
-import Router from 'vue-router';
+import { createRouter, createWebHistory } from 'vue-router';
 
-import SeriesView from '@/components/pages/SeriesView';
-import MovieInfo from '@/components/pages/MovieInfo';
-import Login from '@/components/pages/Login';
-import Movies from '@/components/pages/Movies';
-import Search from '@/components/pages/Search';
-import Main from '@/components/pages/Main';
+import SeriesView from '@/components/pages/SeriesView.vue';
+import MovieInfo from '@/components/pages/MovieInfo.vue';
+import Login from '@/components/pages/Login.vue';
+import Movies from '@/components/pages/Movies.vue';
+import Search from '@/components/pages/Search.vue';
+import Main from '@/components/pages/Main.vue';
 
-import Settings from '@/components/pages/Settings';
-import Maintenance from '@/components/settings/Maintenance';
-import UserManager from '@/components/settings/UserManager';
-import Libraries from '@/components/settings/Libraries';
-import Sets from '@/components/settings/Sets';
-import IndexerSettings from '@/components/settings/IndexerSettings';
+import Settings from '@/components/pages/Settings.vue';
+import Maintenance from '@/components/settings/Maintenance.vue';
+import UserManager from '@/components/settings/UserManager.vue';
+import Libraries from '@/components/settings/Libraries.vue';
+import Sets from '@/components/settings/Sets.vue';
+import IndexerSettings from '@/components/settings/IndexerSettings.vue';
 
-import VueAxios from 'vue-axios';
-import axios from 'axios';
 import oblectoClient from '@/oblectoClient';
-import Series from '@/components/pages/Series';
+import Series from '@/components/pages/Series.vue';
 
-Vue.use(VueAxios, axios);
+const routes = [
+  {
+    path: '/',
+    name: 'Main',
+    component: Main,
+    meta: { requiresAuth: true },
+  },
+  {
+    path: '/series',
+    name: 'Series',
+    component: Series,
+    meta: { requiresAuth: true },
+  },
+  {
+    path: '/movies',
+    name: 'Movies',
+    component: Movies,
+    meta: { requiresAuth: true },
+  },
+  {
+    path: '/series/:seriesId',
+    name: 'SeriesView',
+    component: SeriesView,
+    meta: { requiresAuth: true },
+  },
+  {
+    path: '/movie/:movieId',
+    name: 'MovieInfo',
+    component: MovieInfo,
+    meta: { requiresAuth: true },
+  },
+  {
+    path: '/search/:search',
+    name: 'Search',
+    component: Search,
+    meta: { requiresAuth: true },
+  },
+  {
+    path: '/login',
+    name: 'login',
+    component: Login,
+  },
+  {
+    path: '/settings',
+    component: Settings,
+    meta: { requiresAuth: true },
+    children: [
+      {
+        name: 'SettingsHome',
+        path: '',
+        component: Maintenance,
+      },
+      {
+        name: 'SettingsMaintenance',
+        path: 'maintenance',
+        component: Maintenance,
+      },
+      {
+        name: 'SettingsUsers',
+        path: 'users',
+        component: UserManager,
+      },
+      {
+        name: 'SettingsLibraries',
+        path: 'libraries',
+        component: Libraries,
+      },
+      {
+        name: 'SettingsSets',
+        path: 'sets',
+        component: Sets,
+      },
+      {
+        name: 'IndexerSettings',
+        path: 'indexer',
+        component: IndexerSettings,
+      },
+    ],
+  },
+];
 
-Vue.use(Router);
-
-const router = new Router({
-  mode: 'history',
-  base: BASE_PATH,
-  routes: [
-    {
-      path: '/',
-      name: 'Main',
-      component: Main,
-      meta: { requiresAuth: true },
-    },
-    {
-      path: '/series',
-      name: 'Series',
-      component: Series,
-      meta: { requiresAuth: true },
-    },
-    {
-      path: '/movies',
-      name: 'Movies',
-      component: Movies,
-      meta: { requiresAuth: true },
-    },
-    {
-      path: '/series/:seriesId',
-      name: 'SeriesView',
-      component: SeriesView,
-      meta: { requiresAuth: true },
-    },
-    {
-      path: '/movie/:movieId',
-      name: 'MovieInfo',
-      component: MovieInfo,
-      meta: { requiresAuth: true },
-    },
-    {
-      path: '/search/:search',
-      name: 'Search',
-      component: Search,
-      meta: { requiresAuth: true },
-    },
-    {
-      path: '/login',
-      name: 'login',
-      component: Login,
-    },
-    {
-      path: '/settings',
-      component: Settings,
-      meta: { requiresAuth: true },
-      children: [
-        {
-          name: 'SettingsHome',
-          path: '',
-          component: Maintenance,
-        },
-        {
-          name: 'SettingsMaintenance',
-          path: 'maintenance',
-          component: Maintenance,
-        },
-        {
-          name: 'SettingsUsers',
-          path: 'users',
-          component: UserManager,
-        },
-        {
-          name: 'SettingsLibraries',
-          path: 'libraries',
-          component: Libraries,
-        },
-        {
-          name: 'SettingsSets',
-          path: 'sets',
-          component: Sets,
-        },
-        {
-          name: 'IndexerSettings',
-          path: 'indexer',
-          component: IndexerSettings,
-        },
-      ],
-    },
-  ],
+const router = createRouter({
+  history: createWebHistory(process.env.BASE_URL),
+  routes,
 });
 
 router.beforeEach((to, from, next) => {
@@ -116,12 +110,12 @@ router.beforeEach((to, from, next) => {
         path: '/login',
         query: { redirect: to.fullPath },
       });
-    } else {
-      next();
+
+      return;
     }
-  } else {
-    next(); // make sure to always call next()!
   }
+
+  next();
 });
 
 export default router;

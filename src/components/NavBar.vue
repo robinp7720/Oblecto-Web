@@ -14,6 +14,7 @@
       <div class="search">
         <form action="" class="search" id="search-form" v-on:submit.prevent="search">
           <input type="text" id="search-input" class="input-text" v-model="searchText">
+          <label for="search-input">Search</label>
           <button type="submit">
             <FontAwesomeIcon
               :icon="iconSearch"/>
@@ -39,56 +40,56 @@
 </template>
 
 <script>
-import FontAwesomeIcon from '@fortawesome/vue-fontawesome'
-import { mapState } from 'vuex'
+import FontAwesomeIcon from '@fortawesome/vue-fontawesome';
+import { mapState } from 'vuex';
 
-import faCog from '@fortawesome/fontawesome-free-solid/faCog'
-import faSearch from '@fortawesome/fontawesome-free-solid/faSearch'
-import faLogout from '@fortawesome/fontawesome-free-solid/faSignOutAlt'
-import faBroadCast from '@fortawesome/fontawesome-free-solid/faBroadcastTower'
+import faCog from '@fortawesome/fontawesome-free-solid/faCog';
+import faSearch from '@fortawesome/fontawesome-free-solid/faSearch';
+import faLogout from '@fortawesome/fontawesome-free-solid/faSignOutAlt';
+import faBroadCast from '@fortawesome/fontawesome-free-solid/faBroadcastTower';
 
 export default {
   name: 'NavBar',
   components: {
-    FontAwesomeIcon
+    FontAwesomeIcon,
   },
-  data () {
+  data() {
     return {
-      searchText: ''
-    }
+      searchText: '',
+    };
   },
   computed: {
-    iconSettings () {
-      return faCog
+    iconSettings() {
+      return faCog;
     },
-    iconLogout () {
-      return faLogout
+    iconLogout() {
+      return faLogout;
     },
-    iconSearch () {
-      return faSearch
+    iconSearch() {
+      return faSearch;
     },
-    iconRemote () {
-      return faBroadCast
+    iconRemote() {
+      return faBroadCast;
     },
     ...mapState([
-      'host'
-    ])
+      'host',
+    ]),
   },
   methods: {
-    search: function (event) {
-      this.$router.push({ name: 'Search', params: { search: this.searchText } })
+    search() {
+      this.$router.push({ name: 'Search', params: { search: this.searchText } });
     },
-    changeRemote: function (event) {
-      event.preventDefault()
-      this.$modal.show('ChangeRemoteDialog')
+    changeRemote(event) {
+      event.preventDefault();
+      this.$modal.show('ChangeRemoteDialog');
     },
-    logout: function (event) {
-      this.$socket.disconnect()
+    logout() {
+      this.$socket.disconnect();
 
-      this.$store.dispatch('logout')
-    }
-  }
-}
+      this.$store.dispatch('logout');
+    },
+  },
+};
 </script>
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
@@ -142,7 +143,6 @@ export default {
     height: 100%
     @media screen and (max-width: 800px)
       column-count: 2
-
 
   .nav-link
     display: inline-block
