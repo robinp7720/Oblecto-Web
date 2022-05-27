@@ -1,28 +1,28 @@
-import Vue from 'vue'
-import Router from 'vue-router'
+import Vue from 'vue';
+import Router from 'vue-router';
 
-import SeriesView from '@/components/pages/SeriesView'
-import MovieInfo from '@/components/pages/MovieInfo'
-import Login from '@/components/pages/Login'
-import Movies from '@/components/pages/Movies'
-import Search from '@/components/pages/Search'
-import Main from '@/components/pages/Main'
+import SeriesView from '@/components/pages/SeriesView';
+import MovieInfo from '@/components/pages/MovieInfo';
+import Login from '@/components/pages/Login';
+import Movies from '@/components/pages/Movies';
+import Search from '@/components/pages/Search';
+import Main from '@/components/pages/Main';
 
-import Settings from '@/components/pages/Settings'
-import Maintenance from '@/components/settings/Maintenance'
-import UserManager from '@/components/settings/UserManager'
-import Libraries from '@/components/settings/Libraries'
-import Sets from '@/components/settings/Sets'
-import IndexerSettings from '@/components/settings/IndexerSettings'
+import Settings from '@/components/pages/Settings';
+import Maintenance from '@/components/settings/Maintenance';
+import UserManager from '@/components/settings/UserManager';
+import Libraries from '@/components/settings/Libraries';
+import Sets from '@/components/settings/Sets';
+import IndexerSettings from '@/components/settings/IndexerSettings';
 
-import VueAxios from 'vue-axios'
-import axios from 'axios'
-import oblectoClient from '@/oblectoClient'
-import Series from '@/components/pages/Series'
+import VueAxios from 'vue-axios';
+import axios from 'axios';
+import oblectoClient from '@/oblectoClient';
+import Series from '@/components/pages/Series';
 
-Vue.use(VueAxios, axios)
+Vue.use(VueAxios, axios);
 
-Vue.use(Router)
+Vue.use(Router);
 
 const router = new Router({
   mode: 'history',
@@ -32,42 +32,42 @@ const router = new Router({
       path: '/',
       name: 'Main',
       component: Main,
-      meta: { requiresAuth: true }
+      meta: { requiresAuth: true },
     },
     {
       path: '/series',
       name: 'Series',
       component: Series,
-      meta: { requiresAuth: true }
+      meta: { requiresAuth: true },
     },
     {
       path: '/movies',
       name: 'Movies',
       component: Movies,
-      meta: { requiresAuth: true }
+      meta: { requiresAuth: true },
     },
     {
       path: '/series/:seriesId',
       name: 'SeriesView',
       component: SeriesView,
-      meta: { requiresAuth: true }
+      meta: { requiresAuth: true },
     },
     {
       path: '/movie/:movieId',
       name: 'MovieInfo',
       component: MovieInfo,
-      meta: { requiresAuth: true }
+      meta: { requiresAuth: true },
     },
     {
       path: '/search/:search',
       name: 'Search',
       component: Search,
-      meta: { requiresAuth: true }
+      meta: { requiresAuth: true },
     },
     {
       path: '/login',
       name: 'login',
-      component: Login
+      component: Login,
     },
     {
       path: '/settings',
@@ -77,51 +77,51 @@ const router = new Router({
         {
           name: 'SettingsHome',
           path: '',
-          component: Maintenance
+          component: Maintenance,
         },
         {
           name: 'SettingsMaintenance',
           path: 'maintenance',
-          component: Maintenance
+          component: Maintenance,
         },
         {
           name: 'SettingsUsers',
           path: 'users',
-          component: UserManager
+          component: UserManager,
         },
         {
           name: 'SettingsLibraries',
           path: 'libraries',
-          component: Libraries
+          component: Libraries,
         },
         {
           name: 'SettingsSets',
           path: 'sets',
-          component: Sets
+          component: Sets,
         },
         {
           name: 'IndexerSettings',
           path: 'indexer',
-          component: IndexerSettings
-        }
-      ]
-    }
-  ]
-})
+          component: IndexerSettings,
+        },
+      ],
+    },
+  ],
+});
 
 router.beforeEach((to, from, next) => {
-  if (to.matched.some(record => record.meta.requiresAuth)) {
+  if (to.matched.some((record) => record.meta.requiresAuth)) {
     if (!oblectoClient.accessToken) {
       next({
         path: '/login',
-        query: { redirect: to.fullPath }
-      })
+        query: { redirect: to.fullPath },
+      });
     } else {
-      next()
+      next();
     }
   } else {
-    next() // make sure to always call next()!
+    next(); // make sure to always call next()!
   }
-})
+});
 
-export default router
+export default router;

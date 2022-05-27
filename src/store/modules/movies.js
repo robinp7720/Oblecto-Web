@@ -1,41 +1,41 @@
-import * as types from '../mutation-types'
-import oblectoClient from '@/oblectoClient'
+import oblectoClient from '@/oblectoClient';
+import * as types from '../mutation-types';
 
 const state = {
   lists: {},
-  sets: {}
-}
+  sets: {},
+};
 
 const getters = {
 
-}
+};
 
 const actions = {
-  async getMovies ({ commit, state }, { sort, order }) {
-    let movies = await oblectoClient.movieLibrary.getList(sort, order, 100, 0)
+  async getMovies({ commit, state }, { sort, order }) {
+    const movies = await oblectoClient.movieLibrary.getList(sort, order, 100, 0);
 
-    commit(types.RECEIVE_MOVIES, { movies, sort })
+    commit(types.RECEIVE_MOVIES, { movies, sort });
   },
-  async getMovieSets ({ commit, state }) {
-    let { data: sets } = await oblectoClient.movieLibrary.getSets()
+  async getMovieSets({ commit, state }) {
+    const { data: sets } = await oblectoClient.movieLibrary.getSets();
 
-    commit(types.RECEIVE_MOVIES_SETS, sets)
-  }
-}
+    commit(types.RECEIVE_MOVIES_SETS, sets);
+  },
+};
 
 const mutations = {
-  [types.RECEIVE_MOVIES] (state, { movies, sort }) {
-    state.lists[sort] = movies
+  [types.RECEIVE_MOVIES](state, { movies, sort }) {
+    state.lists[sort] = movies;
   },
-  [types.RECEIVE_MOVIES_SETS] (state, sets) {
-    state.sets = sets
-  }
-}
+  [types.RECEIVE_MOVIES_SETS](state, sets) {
+    state.sets = sets;
+  },
+};
 
 export default {
   namespaced: true,
   state,
   getters,
   actions,
-  mutations
-}
+  mutations,
+};
