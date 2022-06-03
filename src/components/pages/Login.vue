@@ -9,7 +9,7 @@
       <label for="password">Password</label>
       <input id="password" type="password" v-model="credentials.password">
       <div class="bottom">
-        <span class="server-indicator">{{ host }} <a v-on:click="changeHost" class="nav-link">Change</a></span>
+        <span class="server-indicator">{{ host }}</span>
         <button type="submit" @click="submit">Login</button>
       </div>
     </div>
@@ -34,9 +34,6 @@ export default {
     'host',
   ]),
   methods: {
-    async changeHost() {
-      await this.$store.dispatch('updateHost', prompt('New host?'));
-    },
     async submit() {
       try {
         await oblectoClient.authenticate(this.credentials.username, this.credentials.password);
@@ -45,7 +42,7 @@ export default {
 
         // Authenticate the socket.io connection to the server
         // This allows the server to update the client in realtime
-        this.$socket.emit('authenticate', { token: oblectoClient.accessToken });
+        // this.$socket.emit('authenticate', { token: oblectoClient.accessToken });
 
         try {
           await this.$store.dispatch('updateAll');
@@ -57,14 +54,6 @@ export default {
         this.$router.push({ name: 'Main' });
       } catch (e) {
         console.log(e);
-
-        // If an error has occurred during the login process, send an error message to the client
-        this.$notify({
-          group: 'system',
-          title: 'Error occurred',
-          text: 'An error occurred during login',
-          type: 'error',
-        });
       }
     },
   },

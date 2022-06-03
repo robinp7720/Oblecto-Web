@@ -3,11 +3,9 @@
 import { createStore } from 'vuex';
 import libraries from '@/store/modules/libraries';
 
-import VueSocketio from 'vue-socket.io';
 import oblectoClient from '@/oblectoClient';
 import router from '@/router';
 import ScreenFormats from '@/enums/ScreenFormats';
-import Vue from 'vue';
 import { Axios } from 'axios';
 import episodes from './modules/episodes';
 import series from './modules/series';
@@ -91,8 +89,8 @@ export default createStore({
       router.push({ name: 'login' });
     },
     async updateWatching({ commit, dispatch }) {
-      const { data: episodes } = await Vue.axios.get('/episodes/watching');
-      const { data: movies } = await Vue.axios.get('/movies/watching');
+      const { data: episodes } = await Axios.get('/episodes/watching');
+      const { data: movies } = await Axios.get('/movies/watching');
 
       try {
         await dispatch('updateNext');
@@ -104,15 +102,11 @@ export default createStore({
       commit('saveWatchingMovies', movies);
     },
     async updateNext(state) {
-      const { data: nextEpisodes } = await Vue.axios.get('/episodes/next');
+      const { data: nextEpisodes } = await Axios.get('/episodes/next');
       state.commit('saveNextEpisodes', nextEpisodes);
     },
     updateHost(state, host) {
       state.commit('updateHost', host);
-
-      // Update sockets and axios http urls
-      Vue.use(VueSocketio, host);
-      Vue.axios.defaults.baseURL = host;
     },
     clearPlaying(state) {
       state.commit('setPlaying', {});
@@ -128,7 +122,7 @@ export default createStore({
         entity: episode,
       });
     },
-    async playEpisode({ state, dispatch }, id) {
+    async playEpisode({ dispatch }, id) {
       /* if (state.playbackRemote !== 'local') {
         await Axios.post(`/client/${state.playbackRemote}/playback`, {
           id,
@@ -151,7 +145,7 @@ export default createStore({
         entity: movie,
       });
     },
-    async playMovie({ state, dispatch }, id) {
+    async playMovie({ dispatch }, id) {
       /* if (state.playbackRemote !== 'local') {
         await Vue.axios.post(`/client/${state.playbackRemote}/playback`, {
           id,

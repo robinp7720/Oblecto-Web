@@ -1,6 +1,6 @@
 /* eslint no-shadow: ["error", { "allow": ["state"] }] */
 
-import Vue from 'vue';
+import { Axios } from 'axios';
 import * as types from '../mutation-types';
 
 const state = {
@@ -18,17 +18,17 @@ const actions = {
     dispatch('updateTVShows');
   },
   async updateMovies({ commit }) {
-    const { data: movies } = await Vue.axios.get('/sources/movies');
+    const { data: movies } = await Axios.get('/sources/movies');
 
     commit(types.RECIEVE_LIBRARIES_MOVIES, movies);
   },
   async updateTVShows({ commit }) {
-    const { data: shows } = await Vue.axios.get('/sources/tvshows');
+    const { data: shows } = await Axios.get('/sources/tvshows');
 
     commit(types.RECIEVE_LIBRARIES_SHOWS, shows);
   },
   async deleteMovieLibrary({ dispatch }, path) {
-    await Vue.axios.delete('/sources/movies', {
+    await Axios.delete('/sources/movies', {
       data: {
         path,
       },
@@ -37,7 +37,7 @@ const actions = {
     dispatch('updateAll');
   },
   async deleteSeriesLibrary({ dispatch }, path) {
-    await Vue.axios.delete('/sources/tvshows', {
+    await Axios.delete('/sources/tvshows', {
       data: {
         path,
       },

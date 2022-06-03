@@ -1,18 +1,16 @@
 <template>
   <div id="app">
-    <notifications group="system" classes="system-notification" position="bottom center" />
+    <NavBar v-if="$route.name !== 'login' && loaded"/>
 
-    <NavBar v-if="$router.history.current.name !== 'login' && loaded"/>
+    <WatchPanel  v-if="$route.name !== 'login' && loaded"/>
 
-    <WatchPanel  v-if="$router.history.current.name !== 'login' && loaded"/>
-
-    <playBar v-if="$router.history.current.name !== 'login' && loaded"/>
+    <playBar v-if="$route.name !== 'login' && loaded"/>
 
     <transition name="long-fade" mode="out">
-      <LoadingPage v-if="$router.history.current.name !== 'login' && !loaded"></LoadingPage>
+      <LoadingPage v-if="$route.name !== 'login' && !loaded"></LoadingPage>
     </transition>
 
-    <transition name="fade" mode="out-in" v-if="$router.history.current.name === 'login' || loaded">
+    <transition name="fade" mode="out-in" v-if="$route.name === 'login' || loaded">
       <router-view />
     </transition>
   </div>
