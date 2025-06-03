@@ -10,16 +10,13 @@ import { Tabs, Tab } from 'vue-tabs-component'
 import VModal from 'vue-js-modal'
 import Notifications from 'vue-notification'
 import VueSocketio from 'vue-socket.io'
-import oblectoClient from '@/oblectoClient'
+import oblectoClient, { host } from '@/oblectoClient'
 
 Vue.use(VModal)
 
 Vue.use(Notifications)
 
 Vue.use(VueAxios, axios)
-
-let host = OBLECTO_HOST ||
-  window.location.protocol + '//' + window.location.hostname + ':' + (window.location.port || '80')
 
 store.dispatch('updateHost', host)
 Vue.use(VueSocketio, host)
