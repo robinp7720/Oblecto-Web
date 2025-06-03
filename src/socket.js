@@ -5,7 +5,7 @@ import oblectoClient from '@/oblectoClient'
 let socket = null
 let connectionFailedCount = 0
 
-export function initSocket(vm, host = oblectoClient.axios.defaults.baseURL) {
+export function initSocket (vm, host = oblectoClient.axios.defaults.baseURL) {
   if (socket) {
     socket.close()
   }
@@ -70,11 +70,11 @@ export function initSocket(vm, host = oblectoClient.axios.defaults.baseURL) {
   return socket
 }
 
-export function reconnectSocket(vm, host) {
+export function reconnectSocket (vm, host) {
   return initSocket(vm, host)
 }
 
-export function getSocket() {
+export function getSocket () {
   return socket
 }
 
