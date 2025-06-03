@@ -23,6 +23,7 @@
 
 <script>
   import { mapState } from 'vuex'
+  import { getSocket } from '@/socket'
 
   export default {
     name: 'Episode',
@@ -42,9 +43,14 @@
       img.onerror = () => {
         this.posterLoaded = true
       }
+
+      getSocket().on('client-episode-progress', this.handleEpisodeProgress)
     },
     mounted () {
 
+    },
+    beforeDestroy () {
+      getSocket().off('client-episode-progress', this.handleEpisodeProgress)
     },
     watch: {
       episode: async function (newState, oldState) {
@@ -59,14 +65,6 @@
         loaded: false,
         bannerUrl: '',
         bannerLoaded: false
-      }
-    },
-    sockets: {
-      'client-episode-progress': function (message) {
-        if (message.episodeId === this.episode.id) {
-          this.episode.TrackEpisodes[0] = message
-          this.progress = message.progress
-        }
       }
     },
     props: {
@@ -90,6 +88,12 @@
       ])
     },
     methods: {
+      handleEpisodeProgress: function (message) {
+        if (message.episodeId === this.episode.id) {
+          this.episode.TrackEpisodes[0] = message
+          this.progress = message.progress
+        }
+      },
       playEpisode: function (event) {
         event.preventDefault()
         // this.$router.push({name: 'PlayEpisode', params: {episodeId: this.episodeId}})

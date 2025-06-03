@@ -31,6 +31,7 @@
 
 <script>
   import { mapState } from 'vuex'
+  import { getSocket } from '@/socket'
 
   export default {
     name: 'Movie',
@@ -42,21 +43,23 @@
       if (this.movie.TrackMovies[0]) {
         this.progress = this.movie.TrackMovies[0].progress
       }
+      getSocket().on('client-movie-progress', this.handleMovieProgress)
     },
     data () {
       return {
         progress: 0
       }
     },
-    sockets: {
-      'client-movie-progress': function (message) {
+    beforeDestroy () {
+      getSocket().off('client-movie-progress', this.handleMovieProgress)
+    },
+    methods: {
+      handleMovieProgress: function (message) {
         if (message.movieId === this.movieId) {
           this.movie.TrackMovies[0] = message
           this.progress = message.progress
         }
-      }
-    },
-    methods: {
+      },
       playMovie: function (event) {
         event.preventDefault()
         this.$store.dispatch('playMovie', this.movie.id)

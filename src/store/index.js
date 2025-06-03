@@ -5,7 +5,6 @@ import series from './modules/series'
 import episodes from './modules/episodes'
 import libraries from '@/store/modules/libraries'
 
-import VueSocketio from 'vue-socket.io'
 import oblectoClient from '@/oblectoClient'
 import router from '@/router'
 import { ScreenFormats } from '@/enums/ScreenFormats'
@@ -109,8 +108,7 @@ export default new Vuex.Store({
     updateHost: function (state, host) {
       state.commit('updateHost', host)
 
-      // Update sockets and axios http urls
-      Vue.use(VueSocketio, host)
+      // Update axios http urls
       Vue.axios.defaults.baseURL = host
       oblectoClient.axios.defaults.baseURL = host
     },
