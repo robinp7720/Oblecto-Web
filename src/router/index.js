@@ -1,5 +1,4 @@
-import Vue from 'vue'
-import Router from 'vue-router'
+import { createRouter, createWebHistory } from 'vue-router'
 
 import SeriesView from '@/components/pages/SeriesView'
 import MovieInfo from '@/components/pages/MovieInfo'
@@ -15,19 +14,10 @@ import Libraries from '@/components/settings/Libraries'
 import Sets from '@/components/settings/Sets'
 import IndexerSettings from '@/components/settings/IndexerSettings'
 
-import VueAxios from 'vue-axios'
-import axios from 'axios'
 import oblectoClient from '@/oblectoClient'
 import Series from '@/components/pages/Series'
 
-Vue.use(VueAxios, axios)
-
-Vue.use(Router)
-
-const router = new Router({
-  mode: 'history',
-  base: BASE_PATH,
-  routes: [
+const routes = [
     {
       path: '/',
       name: 'Main',
@@ -106,7 +96,11 @@ const router = new Router({
         }
       ]
     }
-  ]
+]
+
+const router = createRouter({
+  history: createWebHistory(BASE_PATH),
+  routes
 })
 
 router.beforeEach((to, from, next) => {
