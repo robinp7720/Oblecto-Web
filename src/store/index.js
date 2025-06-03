@@ -1,5 +1,5 @@
 import Vue from 'vue'
-import Vuex from 'vuex'
+import { createStore } from 'vuex'
 import movies from './modules/movies'
 import series from './modules/series'
 import episodes from './modules/episodes'
@@ -10,9 +10,7 @@ import oblectoClient from '@/oblectoClient'
 import router from '@/router'
 import { ScreenFormats } from '@/enums/ScreenFormats'
 
-Vue.use(Vuex)
-
-export default new Vuex.Store({
+export default createStore({
   state: {
     host: null,
     initialLoaded: false,
