@@ -10,7 +10,7 @@ import { Tabs, Tab } from 'vue-tabs-component'
 import VModal from 'vue-js-modal'
 import Notifications from 'vue-notification'
 import VueSocketio from 'vue-socket.io'
-import oblectoClient, { host } from '@/oblectoClient'
+import oblectoClient from '@/oblectoClient'
 
 Vue.use(VModal)
 
@@ -18,8 +18,8 @@ Vue.use(Notifications)
 
 Vue.use(VueAxios, axios)
 
-store.dispatch('updateHost', host)
-Vue.use(VueSocketio, host)
+store.dispatch('updateHost', oblectoClient.axios.defaults.baseURL)
+Vue.use(VueSocketio, oblectoClient.axios.defaults.baseURL)
 
 Vue.component('tabs', Tabs)
 Vue.component('tab', Tab)

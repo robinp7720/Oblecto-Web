@@ -112,6 +112,7 @@ export default new Vuex.Store({
       // Update sockets and axios http urls
       Vue.use(VueSocketio, host)
       Vue.axios.defaults.baseURL = host
+      oblectoClient.axios.defaults.baseURL = host
     },
     clearPlaying: function (state) {
       state.commit('setPlaying', {})

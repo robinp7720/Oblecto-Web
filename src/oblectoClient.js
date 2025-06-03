@@ -8,5 +8,4 @@ if (window.location.port) {
 
 if (OBLECTO_HOST) host = OBLECTO_HOST
 
-export { host }
 export default new OblectoClient(host)
