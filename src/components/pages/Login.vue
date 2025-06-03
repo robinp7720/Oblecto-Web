@@ -19,6 +19,7 @@
 <script>
   import oblectoClient from '@/oblectoClient'
   import { mapState } from 'vuex'
+  import { reconnectSocket } from '@/socket'
 
   export default {
     name: 'Login',
@@ -35,7 +36,10 @@
     ]),
     methods: {
       async changeHost () {
-        await this.$store.dispatch('updateHost', prompt('New host?'))
+        const newHost = prompt('New host?')
+        if (!newHost) return
+        await this.$store.dispatch('updateHost', newHost)
+        reconnectSocket(this.$root, newHost)
       },
       async submit () {
         try {
