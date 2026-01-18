@@ -32,10 +32,15 @@ export default {
 </script>
 
 <style scoped lang="sass">
+.list-container
+  padding: 0 10px
+
 .titlebar
   overflow: hidden
 
-  padding: 30px 20px 15px
+  padding: 30px 0 18px
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06)
+  margin-bottom: 6px
 
   .title
     padding: 0
@@ -44,8 +49,11 @@ export default {
     float: left
 
     font:
-      family: roboto
-      size: 20px
+      family: var(--font-display)
+      size: 22px
+      weight: 600
+    letter-spacing: 0.02em
+    color: var(--color-text)
 
   .scroll-buttons
     float: right

@@ -4,21 +4,25 @@
     @before-open="beforeOpen"
   >
     <div class="container">
-      <h3>{{ show.seriesName }}</h3>
-      <ul>
-        <li>
-          <a
-            href="#"
-            @click="indexShow"
-          >Re-index show</a>
-        </li>
-        <li>
-          <a
-            href="#"
-            @click="modifyShow"
-          >Edit show data</a>
-        </li>
-      </ul>
+      <div class="heading">
+        <h3>{{ show.seriesName }}</h3>
+      </div>
+      <div class="body">
+        <ul>
+          <li>
+            <a
+              href="#"
+              @click="indexShow"
+            >Re-index show</a>
+          </li>
+          <li>
+            <a
+              href="#"
+              @click="modifyShow"
+            >Edit show data</a>
+          </li>
+        </ul>
+      </div>
     </div>
   </modal>
 </template>
@@ -58,18 +62,17 @@
 </script>
 
 <style scoped lang="sass">
-  @use "sass:color"
 
   h3
     width: 100%
-    color: white
+    color: var(--color-text)
     margin: 0
     margin-bottom: 10px
     padding: 20px
 
-    background-color: rgba(0,0,0,0.3)
+    background-color: rgba(255, 255, 255, 0.06)
 
-    box-shadow: 0 0 5px 2px rgba(color.adjust(#696060, $lightness: -20%), 0.75)
+    box-shadow: var(--shadow-soft)
 
   ul
     list-style: none
@@ -80,7 +83,7 @@
         display: inline-block
         width: 100%
         padding: 10px 20px
-        color: white
+        color: var(--color-text)
         text-decoration: none
 
         -webkit-transition: background-color 0.1s
@@ -89,7 +92,7 @@
         -o-transition: background-color 0.1s
         transition: background-color 0.1s
       a:hover
-        background-color: rgba(0,0,0,0.1)
-        box-shadow: 0 0 2px 2px rgba(color.adjust(#696060, $lightness: -20%), 0.2)
+        background-color: rgba(255, 255, 255, 0.08)
+        box-shadow: 0 0 12px rgba(12, 10, 12, 0.25)
 
 </style>

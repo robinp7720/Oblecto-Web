@@ -1,70 +1,84 @@
 # Oblecto Web UI Design Guide
 
-This guide documents the design tokens and styling patterns observed in the Oblecto Web application. Use this as a reference when creating new components or pages to ensure visual consistency.
+This guide documents the updated design tokens and styling patterns for the Oblecto Web UI. Use these tokens and patterns for new components to keep the interface cohesive.
 
-## Colors
-
-### Backgrounds
-- **Global App Gradient:**
-  - Start: `#696060` (0%)
-  - Middle: `#55535b` (36%)
-  - End: `#28343b` (100%)
-  - Usage: `App.vue` background.
-
-- **Panel/Card Background:**
-  - Base: `#696060`
-  - Usage: Used for content containers like movie info cards and modals.
-
-- **Navigation Bar:**
-  - Base: `color.adjust(#696060, $lightness: -20%)` (approx `#544d4d`)
-  - Usage: Top navigation bar background.
-
-### Text
-- **Primary Text:** `#eee` (approx white)
-- **Secondary/Muted Text:** `rgba(250, 240, 240, 0.6)`
-- **Paragraph Text:** `rgba(250, 240, 240, 0.9)`
-
-### Interface Elements
-- **Borders/Separators:** `rgba(0,0,0,0.5)` (used for `<hr>`)
-- **Buttons (General):**
-  - Background: `rgba(0,0,0,0.5)`
-  - Border: `rgba(0,0,0,0.8) 1px solid`
-  - Text: `rgba(255,255,255,0.5)`
-  - Hover: `rgba(0,0,0,0.9)`
+## Design Direction
+- **Mood:** cinematic dusk, warm graphite, copper highlights.
+- **Surfaces:** glassy panels with soft borders and deep shadows.
+- **Motion:** subtle lift on hover, fade/slide on entry; no jittery micro-animations.
 
 ## Typography
+- **Body:** `"Space Grotesk"` (primary), fallback `"Work Sans"`.
+- **Display/Headings:** `"Fraunces"` for section headers and hero titles.
+- **Letter spacing:** small positive tracking for navigation and UI labels.
 
-- **Font Family:** `Roboto`, sans-serif (imported in `index.html` and referenced in `NavBar.vue`).
-- **Headings:**
-  - `h2`: Font size `1.2em`, margin `0 0 5px`.
-- **Body:** Standard font size `1em`.
+## Core Colors
 
-## Layout & Spacing
+### Backgrounds
+- **App Gradient:**
+  - Start: `#6e605f`
+  - Mid: `#4b4850`
+  - End: `#1d262f`
+  - Usage: `#app` background.
+- **Modal Backdrop:**
+  - `linear-gradient(180deg, #5d5353 0%, #3d3a42 45%, #1b242d 100%)`
 
-- **Border Radius:** `3px` (consistently used for buttons, cards, inputs).
-- **Shadows:**
-  - Standard Shadow: `0 2px 5px 2px rgba(darken(#696060, 20), 0.75)`
-  - Used on: Info cards, modals, navigation bar.
+### Surfaces
+- **Surface Base:** `#3b3437`
+- **Surface Strong:** `#453d40`
+- **Surface Card (glass):** `rgba(45, 39, 43, 0.9)`
+- **Surface Glass:** `rgba(36, 30, 33, 0.72)`
 
-## Components
+### Text
+- **Primary:** `#f4f1ee`
+- **Muted:** `rgba(244, 241, 238, 0.72)`
+- **Faint:** `rgba(244, 241, 238, 0.55)`
 
-### Cards (`.info`, `.movie`)
-- Background: `#696060`
-- Border Radius: `3px`
-- Box Shadow: Standard Shadow.
-- Padding: `20px` (content), `40px` (bottom).
+### Accent
+- **Copper:** `#d9813c`
+- **Copper Highlight:** `#f2a154`
+- **Copper Soft:** `rgba(217, 129, 60, 0.35)`
 
-### Modals (`.v--modal`)
-- Inherit the global app gradient background.
+### Borders & Shadows
+- **Border:** `rgba(255, 255, 255, 0.12)`
+- **Border Strong:** `rgba(255, 255, 255, 0.22)`
+- **Soft Shadow:** `0 12px 30px rgba(16, 12, 14, 0.35)`
+- **Strong Shadow:** `0 18px 40px rgba(16, 12, 14, 0.6)`
 
-### Input Fields
-- Background: `rgba(255, 255, 255, 0.3)`
-- Border Radius: `3px`
-- Border: `none`
-- Padding: `5px`
+## Radii
+- **Small:** `8px`
+- **Medium:** `12px`
+- **Large:** `18px`
+- **Pill:** `999px` (buttons, badges, search)
 
-## Settings Page Specifics (Target)
-To align the settings page, we should:
-1. Use the **Standard Shadow** and **Border Radius** for the settings sidebar and content cards.
-2. Use the **Global Gradient** or **Panel Background** (`#696060`) instead of the flat dark grays (`#303030`).
-3. Match button styles to the semi-transparent dark style found elsewhere.
+## Component Patterns
+
+### Navigation Bar
+- Height: `64px`
+- Background: dark glass gradient with blur
+- Text: uppercase, letter-spaced, accent hover
+
+### List Containers
+- Title uses display font, subtle divider line under titles.
+
+### Media Cards (Movies, Series, Episodes)
+- Rounded corners (`14px`), soft shadow, lift on hover.
+- Action overlays use top-to-bottom dark gradient.
+- Progress bars use the copper accent.
+
+### Watch Panel
+- Glassy panel with border and strong shadow.
+- Tabs show active state via copper underline.
+
+### Forms & Inputs
+- Inputs: translucent surface (`rgba(255,255,255,0.12)`) with soft focus glow.
+- Buttons: pill style, copper gradient for primary actions.
+
+## Motion
+- Hover lift: `transform: translateY(-3px)` on cards.
+- Use subtle opacity and transform transitions (0.2s).
+
+## Implementation Notes
+- Use CSS variables from `App.vue` for tokens (colors, fonts, radii, shadows).
+- Avoid legacy `Roboto` usage; use the body and display fonts instead.
+- Favor glass surfaces and borders over flat dark panels.

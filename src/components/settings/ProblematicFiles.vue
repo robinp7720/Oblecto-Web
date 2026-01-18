@@ -1,33 +1,35 @@
 <template>
   <div class="wrapper">
     <div class="settings-card">
-      <h2 style="margin-bottom: 20px; padding-bottom: 10px; border-bottom: 1px solid #444;">Problematic Files</h2>
-      <p v-if="files.length === 0" style="color: #999; text-align: center;">No problematic files found.</p>
+      <h2 class="settings-section-title">Problematic Files</h2>
+      <p v-if="files.length === 0" class="settings-empty">No problematic files found.</p>
       
-      <table v-else class="settings-table">
-        <thead>
-          <tr>
-            <th>Path</th>
-            <th>Error</th>
-            <th width="120">Actions</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr v-for="file in files" :key="file.id">
-            <td style="word-break: break-all; max-width: 300px;">{{ file.path }}</td>
-            <td>
-               <div class="error-msg">
-                  {{ file.error }}
-               </div>
-            </td>
-            <td class="actions">
-              <a class="btn-icon" @click="retryFile(file)" title="Retry Indexing">
-                 <font-awesome-icon icon="sync" :spin="file.retrying" />
-              </a>
-            </td>
-          </tr>
-        </tbody>
-      </table>
+      <div v-else class="settings-table-scroll">
+        <table class="settings-table">
+          <thead>
+            <tr>
+              <th>Path</th>
+              <th>Error</th>
+              <th width="120">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr v-for="file in files" :key="file.id">
+              <td class="settings-table-cell-wrap">{{ file.path }}</td>
+              <td>
+                 <div class="error-msg">
+                    {{ file.error }}
+                 </div>
+              </td>
+              <td class="actions">
+                <a class="btn-icon" @click="retryFile(file)" title="Retry Indexing">
+                   <font-awesome-icon icon="sync" :spin="file.retrying" />
+                </a>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
     </div>
   </div>
 </template>
@@ -88,19 +90,19 @@ export default {
 @use "@/assets/sass/settings.sass"
 
 .error-msg
-  color: #ff6b6b
+  color: #ffb4a7
   font-size: 0.9em
   white-space: pre-wrap
   max-height: 100px
   overflow-y: auto
-  background: rgba(0,0,0,0.2)
+  background: rgba(255, 255, 255, 0.08)
   padding: 5px
-  border-radius: 3px
+  border-radius: 10px
 
 .btn-icon
   cursor: pointer
-  color: #ccc
+  color: var(--color-text-muted)
   font-size: 1.2em
   &:hover
-    color: #fff
+    color: var(--color-text)
 </style>

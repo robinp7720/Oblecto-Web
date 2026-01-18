@@ -1,7 +1,7 @@
 <template>
   <div class="wrapper">
     <div class="settings-card">
-      <h2 style="margin-bottom: 20px; padding-bottom: 10px; border-bottom: 1px solid #444;">General Configuration</h2>
+      <h2 class="settings-section-title">General Configuration</h2>
       
       <div class="setting-row">
         <label class="checkbox-container">
@@ -32,38 +32,40 @@
     </div>
 
     <div class="settings-card">
-      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; border-bottom: 1px solid #444; padding-bottom: 10px;">
-        <h2 style="margin: 0; border: none; padding: 0;">Video Filetypes</h2>
+      <div class="settings-header-row">
+        <h2 class="settings-title-plain">Video Filetypes</h2>
         <a class="btn" @click="filetypeAdd('video')">
           <font-awesome-icon icon="plus" /> Add Filetype
         </a>
       </div>
-      <table class="settings-table">
-        <thead>
-          <tr>
-            <th width="50">#</th>
-            <th>Filetype</th>
-            <th width="100">Actions</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr v-if="videoFiletypes.length === 0">
-            <td colspan="3" style="text-align: center; color: #999;">No video filetypes configured.</td>
-          </tr>
-          <tr v-for="(filetype, index) in videoFiletypes" :key="index">
-            <td class="id">{{ index + 1 }}</td>
-            <td>{{ filetype }}</td>
-            <td class="actions">
-              <a
-                title="Remove filetype"
-                @click="deleteFiletype(filetype, 'video')"
-              >
-                <FontAwesomeIcon :icon="deleteIcon" />
-              </a>
-            </td>
-          </tr>
-        </tbody>
-      </table>
+      <div class="settings-table-scroll">
+        <table class="settings-table">
+          <thead>
+            <tr>
+              <th width="50">#</th>
+              <th>Filetype</th>
+              <th width="100">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr v-if="videoFiletypes.length === 0">
+              <td colspan="3" class="settings-table-center">No video filetypes configured.</td>
+            </tr>
+            <tr v-for="(filetype, index) in videoFiletypes" :key="index">
+              <td class="id">{{ index + 1 }}</td>
+              <td>{{ filetype }}</td>
+              <td class="actions">
+                <a
+                  title="Remove filetype"
+                  @click="deleteFiletype(filetype, 'video')"
+                >
+                  <FontAwesomeIcon :icon="deleteIcon" />
+                </a>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
     </div>
   </div>
 </template>
@@ -161,7 +163,7 @@
   margin-bottom: 20px
   
 .description
-  color: #888
+  color: var(--color-text-muted)
   font-size: 0.9em
   margin-top: 5px
   margin-left: 28px
@@ -189,16 +191,16 @@
     left: 0
     height: 18px
     width: 18px
-    background-color: #333
-    border: 1px solid #555
-    border-radius: 3px
+    background-color: rgba(255, 255, 255, 0.08)
+    border: 1px solid var(--color-border)
+    border-radius: 6px
 
   &:hover input ~ .checkmark
-    background-color: #444
+    background-color: rgba(255, 255, 255, 0.16)
 
   input:checked ~ .checkmark
-    background-color: #2196F3
-    border-color: #2196F3
+    background-color: var(--color-accent)
+    border-color: var(--color-accent)
 
   input:checked ~ .checkmark:after
     display: block

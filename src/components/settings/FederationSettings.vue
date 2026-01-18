@@ -1,8 +1,8 @@
 <template>
   <div class="wrapper">
     <div class="settings-card">
-      <h2 style="margin-bottom: 20px; padding-bottom: 10px; border-bottom: 1px solid #444;">Federation</h2>
-      <p style="color: #ccc; margin-bottom: 20px;">
+      <h2 class="settings-section-title">Federation</h2>
+      <p class="settings-description">
         Connect multiple Oblecto servers to share libraries and streaming capabilities.
       </p>
       
@@ -28,7 +28,7 @@
       <div class="form-group">
         <label>Private Key Path</label>
         <input type="text" v-model="federation.key" @change="saveSettings" placeholder="/etc/oblecto/id_rsa">
-        <p class="description" style="margin-left: 0">Path to the RSA private key for identity.</p>
+        <p class="settings-description settings-description-tight">Path to the RSA private key for identity.</p>
       </div>
 
     </div>
@@ -84,12 +84,6 @@
 .setting-row
   margin-bottom: 20px
   
-.description
-  color: #888
-  font-size: 0.9em
-  margin-top: 5px
-  margin-left: 28px
-
 .resize-grid
   display: flex
   gap: 20px
@@ -120,16 +114,16 @@
     left: 0
     height: 18px
     width: 18px
-    background-color: #333
-    border: 1px solid #555
-    border-radius: 3px
+    background-color: rgba(255, 255, 255, 0.08)
+    border: 1px solid var(--color-border)
+    border-radius: 6px
 
   &:hover input ~ .checkmark
-    background-color: #444
+    background-color: rgba(255, 255, 255, 0.16)
 
   input:checked ~ .checkmark
-    background-color: #2196F3
-    border-color: #2196F3
+    background-color: var(--color-accent)
+    border-color: var(--color-accent)
 
   input:checked ~ .checkmark:after
     display: block

@@ -2,72 +2,76 @@
   <div class="wrapper">
     <!-- Movie Sets -->
     <div class="settings-card">
-      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; border-bottom: 1px solid #444; padding-bottom: 10px;">
-        <h2 style="margin: 0; border: none; padding: 0;">Movie Sets</h2>
+      <div class="settings-header-row">
+        <h2 class="settings-title-plain">Movie Sets</h2>
         <a class="btn" @click="openModal('movie')">
           <font-awesome-icon icon="plus" /> New Movie Set
         </a>
       </div>
-      <table class="settings-table">
-        <thead>
-          <tr>
-            <th width="50">#</th>
-            <th>Name</th>
-            <th>Overview</th>
-            <th width="100">Actions</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr v-if="movieSets.length === 0">
-            <td colspan="4" style="text-align: center; color: #999;">No movie sets found.</td>
-          </tr>
-          <tr v-for="(set, index) in movieSets" :key="set.id">
-            <td class="id">{{ index + 1 }}</td>
-            <td>{{ set.setName }}</td>
-            <td>{{ set.overview || '-' }}</td>
-            <td class="actions">
-              <a title="Delete set" @click="deleteSet(set.id, 'movie')">
-                <font-awesome-icon :icon="deleteIcon" />
-              </a>
-            </td>
-          </tr>
-        </tbody>
-      </table>
+      <div class="settings-table-scroll">
+        <table class="settings-table">
+          <thead>
+            <tr>
+              <th width="50">#</th>
+              <th>Name</th>
+              <th>Overview</th>
+              <th width="100">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr v-if="movieSets.length === 0">
+              <td colspan="4" class="settings-table-center">No movie sets found.</td>
+            </tr>
+            <tr v-for="(set, index) in movieSets" :key="set.id">
+              <td class="id">{{ index + 1 }}</td>
+              <td>{{ set.setName }}</td>
+              <td>{{ set.overview || '-' }}</td>
+              <td class="actions">
+                <a title="Delete set" @click="deleteSet(set.id, 'movie')">
+                  <font-awesome-icon :icon="deleteIcon" />
+                </a>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
     </div>
 
     <!-- Series Sets -->
     <div class="settings-card">
-      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; border-bottom: 1px solid #444; padding-bottom: 10px;">
-        <h2 style="margin: 0; border: none; padding: 0;">TV Show Sets</h2>
+      <div class="settings-header-row">
+        <h2 class="settings-title-plain">TV Show Sets</h2>
         <a class="btn" @click="openModal('series')">
           <font-awesome-icon icon="plus" /> New TV Show Set
         </a>
       </div>
-      <table class="settings-table">
-        <thead>
-          <tr>
-            <th width="50">#</th>
-            <th>Name</th>
-            <th>Overview</th>
-            <th width="100">Actions</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr v-if="seriesSets.length === 0">
-            <td colspan="4" style="text-align: center; color: #999;">No TV show sets found.</td>
-          </tr>
-          <tr v-for="(set, index) in seriesSets" :key="set.id">
-            <td class="id">{{ index + 1 }}</td>
-            <td>{{ set.setName }}</td>
-            <td>{{ set.overview || '-' }}</td>
-            <td class="actions">
-              <a title="Delete set" @click="deleteSet(set.id, 'series')">
-                <font-awesome-icon :icon="deleteIcon" />
-              </a>
-            </td>
-          </tr>
-        </tbody>
-      </table>
+      <div class="settings-table-scroll">
+        <table class="settings-table">
+          <thead>
+            <tr>
+              <th width="50">#</th>
+              <th>Name</th>
+              <th>Overview</th>
+              <th width="100">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr v-if="seriesSets.length === 0">
+              <td colspan="4" class="settings-table-center">No TV show sets found.</td>
+            </tr>
+            <tr v-for="(set, index) in seriesSets" :key="set.id">
+              <td class="id">{{ index + 1 }}</td>
+              <td>{{ set.setName }}</td>
+              <td>{{ set.overview || '-' }}</td>
+              <td class="actions">
+                <a title="Delete set" @click="deleteSet(set.id, 'series')">
+                  <font-awesome-icon :icon="deleteIcon" />
+                </a>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
     </div>
 
     <!-- Simple Modal for creating sets -->
@@ -89,8 +93,8 @@
             <span class="checkmark"></span>
           </label>
         </div>
-        <div style="text-align: right; margin-top: 20px;">
-          <a class="btn btn-secondary" @click="closeModal" style="margin-right: 10px;">Cancel</a>
+        <div class="settings-inline-actions">
+          <a class="btn btn-secondary" @click="closeModal">Cancel</a>
           <a class="btn" @click="createSet">Create</a>
         </div>
       </div>

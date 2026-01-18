@@ -1,18 +1,18 @@
 <template>
   <div class="wrapper">
     <div class="settings-card">
-      <h2 style="margin-bottom: 20px; padding-bottom: 10px; border-bottom: 1px solid #444;">Seedbox Setup</h2>
-      <p style="color: #ccc; margin-bottom: 20px;">
+      <h2 class="settings-section-title">Seedbox Setup</h2>
+      <p class="settings-description">
         Configure remote seedboxes for automated downloads and media imports.
       </p>
-      <p class="description" style="margin-left: 0">
+      <p class="description settings-description settings-description-tight">
         Each seedbox can be enabled individually, with its own import rules.
       </p>
     </div>
 
     <div class="settings-card">
-      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; border-bottom: 1px solid #444; padding-bottom: 10px;">
-        <h2 style="margin: 0; border: none; padding: 0;">Seedbox Connections</h2>
+      <div class="settings-header-row">
+        <h2 class="settings-title-plain">Seedbox Connections</h2>
         <a class="btn" @click="resetForm">
           <font-awesome-icon icon="plus" /> New Seedbox
         </a>
@@ -108,7 +108,7 @@
     </div>
 
     <div class="settings-card">
-      <h2 style="margin-bottom: 20px; padding-bottom: 10px; border-bottom: 1px solid #444;">Configured Seedboxes</h2>
+      <h2 class="settings-section-title">Configured Seedboxes</h2>
 
       <div class="settings-table-scroll">
         <table class="settings-table">
@@ -126,7 +126,7 @@
           </thead>
           <tbody>
             <tr v-if="seedboxes.length === 0">
-              <td colspan="8" style="text-align: center; color: #999;">No seedboxes configured.</td>
+              <td colspan="8" class="settings-table-center">No seedboxes configured.</td>
             </tr>
             <tr v-for="(seedbox, index) in seedboxes" :key="seedbox.id || index">
               <td class="id">{{ index + 1 }}</td>
@@ -297,7 +297,7 @@
   margin-bottom: 20px
 
 .description
-  color: #888
+  color: var(--color-text-muted)
   font-size: 0.9em
   margin-top: 5px
   margin-left: 28px
@@ -336,16 +336,16 @@
     left: 0
     height: 18px
     width: 18px
-    background-color: #333
-    border: 1px solid #555
-    border-radius: 3px
+    background-color: rgba(255, 255, 255, 0.08)
+    border: 1px solid var(--color-border)
+    border-radius: 6px
 
   &:hover input ~ .checkmark
-    background-color: #444
+    background-color: rgba(255, 255, 255, 0.16)
 
   input:checked ~ .checkmark
-    background-color: #2196F3
-    border-color: #2196F3
+    background-color: var(--color-accent)
+    border-color: var(--color-accent)
 
   input:checked ~ .checkmark:after
     display: block

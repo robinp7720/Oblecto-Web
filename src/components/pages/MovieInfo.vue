@@ -166,7 +166,6 @@ export default {
 </script>
 
 <style scoped lang="sass">
-@use "sass:color"
 .info-container
   margin-top: -20px
 
@@ -181,20 +180,26 @@ export default {
 
 .info
   font-size: 1em
-  border-radius: 3px
-  background: #696060
-  box-shadow: 0 2px 5px 2px rgba(color.adjust(#696060, $lightness: -20%), 0.75)
+  border-radius: 16px
+  background: var(--color-surface-card)
+  border: 1px solid var(--color-border)
+  box-shadow: var(--shadow-strong)
   padding-bottom: 40px
 
   min-height: 270px
+
+  &::after
+    content: ""
+    display: block
+    clear: both
 
   .poster
     position: relative
 
     height: 300px
     float: left
-    box-shadow: 0 2px 5px 2px rgba(color.adjust(#696060, $lightness: -20%), 0.75)
-    border-radius: 3px
+    box-shadow: 0 18px 40px rgba(12, 10, 12, 0.6)
+    border-radius: 14px
     overflow: hidden
 
     margin: -50px 20px 20px
@@ -210,17 +215,18 @@ export default {
 
     h2
       padding: 0
-      font-size: 1.2em
-      margin: 0 0 5px
+      font-size: 1.6em
+      margin: 0 0 8px
+      font-family: var(--font-display)
 
     .year, .genres
-      color: rgba(250, 240, 240, 0.6)
+      color: var(--color-text-muted)
       margin-bottom: 10px
       padding: 0
       font-weight: normal
 
     p
-      color: rgba(250, 240, 240, 0.9)
+      color: var(--color-text)
       padding: 0
       margin: 20px 0 0
 
@@ -245,7 +251,7 @@ export default {
     content: ''
 
 a
-  color: white
+  color: var(--color-text)
   margin: 0 5px
   cursor: pointer
 
@@ -264,8 +270,8 @@ a.play
   top: calc(50% - 50px)
   left: calc(50% - 50px)
 
-  background-color: rgba(0, 0, 0, 0.5)
-  border: 2px solid white
+  background-color: rgba(0, 0, 0, 0.6)
+  border: 2px solid rgba(255, 255, 255, 0.8)
   border-radius: 100%
   text-align: center
   line-height: 100px
@@ -278,8 +284,9 @@ a.play:hover
   opacity: 1 !important
 
 .error
-  background: #694040
-  box-shadow: 0 0 2px 2px rgba(color.adjust(#694040, $lightness: -20%), 0.75)
+  background: rgba(83, 44, 44, 0.8)
+  border: 1px solid rgba(255, 120, 120, 0.25)
+  box-shadow: 0 0 10px rgba(30, 10, 10, 0.4)
 
   padding: 10px
 

@@ -54,13 +54,13 @@ export default {
 </script>
 
 <style scoped lang="sass">
-@use "sass:color"
 .file-list-container
   padding: 0 10px
 
 .file-list
-  background: #696060
-  box-shadow: 0 0 2px 2px rgba(color.adjust(#696060, $lightness: -20%), 0.75)
+  background: var(--color-surface-card)
+  border: 1px solid var(--color-border)
+  box-shadow: var(--shadow-soft)
 
   border-spacing: 0
 
@@ -68,15 +68,17 @@ export default {
 
   width: 100%
 
-  border-radius: 3px
+  border-radius: 14px
   overflow: hidden
 
 .file-list-item
   padding: 10px 30px
+  color: var(--color-text)
 
 .file-list-item:nth-child(even)
-  background-color: color.adjust(#696060, $lightness: -2%)
+  background-color: rgba(255, 255, 255, 0.04)
 
 .file-item-right
   float: right
+  color: var(--color-text-faint)
 </style>

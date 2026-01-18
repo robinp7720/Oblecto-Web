@@ -99,7 +99,6 @@
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style scoped lang="sass">
-  @use "sass:color"
   .container
     position: fixed
     top: 0
@@ -111,51 +110,67 @@
     align-items: center
     justify-content: center
     .form
-      box-shadow: 0 0 5px 2px rgba(color.adjust(#696060, $lightness: -20%), 0.75)
+      box-shadow: var(--shadow-strong)
+      border: 1px solid var(--color-border)
+      background: rgba(32, 28, 32, 0.78)
 
       width: 100%
       max-width: 500px
-      background-color: rgba(0, 0, 0, 0.3)
-      -webkit-border-radius: 6px
-      -moz-border-radius: 6px
-      border-radius: 6px
+      border-radius: 18px
+      backdrop-filter: blur(12px)
 
-      padding: 20px 30px
+      padding: 28px 36px
       label
         display: block
-        color: #f2f2f2
-        padding: 5px
+        color: var(--color-text-muted)
+        padding: 6px 5px
         font:
-          family: Roboto
-          size: 1.2em
+          family: var(--font-body)
+          size: 1em
+          weight: 600
+        text-transform: uppercase
+        letter-spacing: 0.08em
       input
         display: block
         width: 100%
-        padding: 10px
-        -webkit-border-radius: 6px
-        -moz-border-radius: 6px
-        border-radius: 6px
-        border: #ccc solid 1px
+        padding: 12px 14px
+        border-radius: 12px
+        border: 1px solid transparent
         outline: none
+        background: rgba(255, 255, 255, 0.12)
+        color: var(--color-text)
+        transition: border-color 0.2s, background-color 0.2s
+        &:focus
+          border-color: var(--color-accent-soft)
+          background: rgba(255, 255, 255, 0.18)
       button
-        -webkit-border-radius: 6px
-        -moz-border-radius: 6px
-        border-radius: 6px
-        background: #ccc
-        padding: 10px 30px
+        border-radius: 999px
+        background: linear-gradient(120deg, var(--color-accent), var(--color-accent-strong))
+        padding: 12px 34px
         border: none
+        color: #1b1616
+        font-weight: 700
+        letter-spacing: 0.05em
         margin-top: 20px
         float: right
+        box-shadow: 0 12px 20px rgba(12, 10, 12, 0.35)
+        cursor: pointer
+        transition: transform 0.2s, box-shadow 0.2s
+        &:hover
+          transform: translateY(-1px)
+          box-shadow: 0 16px 26px rgba(12, 10, 12, 0.45)
 
   .server-indicator
     float: left
     padding: 10px  0
     border: none
     margin-top: 20px
+    color: var(--color-text-faint)
 
   .logo
     img
       display: block
-      width: 50%
-      margin: 20px auto
+      width: 56%
+      margin: 10px auto 18px
+      filter: drop-shadow(0 8px 16px rgba(0, 0, 0, 0.45))
 </style>

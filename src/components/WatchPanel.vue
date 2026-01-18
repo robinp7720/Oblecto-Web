@@ -53,15 +53,17 @@
 <style scoped lang="sass">
   .watching
     position: relative
-    margin-top: 50px
+    margin-top: 64px
 
     margin-bottom: 20px
     width: 100%
     padding: 20px 0
 
-    background: #4c4545
-    box-shadow: 0 0 5px 2px rgba(35, 34, 38, 0.75)
+    background: linear-gradient(140deg, rgba(53, 46, 50, 0.95), rgba(39, 34, 39, 0.88))
+    border: 1px solid var(--color-border)
+    box-shadow: var(--shadow-strong)
     z-index: 2
+    backdrop-filter: blur(6px)
 
     // The height of the panel if it is populated with shows.
     // If the height isn't set the panel will collapse and the whole thing looks terrible
@@ -69,7 +71,7 @@
 
     @media screen and (min-height: 1200px)
       position: fixed
-      top: 50px
+      top: 64px
       margin: 0
 
     @media screen and (max-width: 700px)
@@ -92,24 +94,27 @@
     .tabs-component-tab
       display: inline-block
       a
-        color: #999
+        color: var(--color-text-faint)
         display: block
         text-decoration: none
-        padding: 10px 20px
-        font-family: Roboto
-        font-size: 20px
+        padding: 12px 22px
+        font-family: var(--font-body)
+        font-size: 16px
         text-transform: capitalize
         font-weight: bold
+        letter-spacing: 0.04em
+        border-bottom: 2px solid transparent
+        transition: color 0.2s, border-color 0.2s
     .is-active
       a
-        color: #eee
+        color: var(--color-text)
+        border-color: var(--color-accent)
   .badge
     display: inline-block
     margin-left: 10px
-    background-color: rgba(0,0,0,0.5)
-    padding: 0 5px
-    -webkit-border-radius: 3px
-    -moz-border-radius: 3px
-    border-radius: 3px
-    color: #999
+    background-color: rgba(255, 255, 255, 0.08)
+    padding: 2px 8px
+    border-radius: 999px
+    color: var(--color-text-faint)
+    font-size: 0.8em
 </style>

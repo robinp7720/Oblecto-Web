@@ -1,7 +1,7 @@
 <template>
   <div class="wrapper">
     <div class="settings-card">
-      <h2 style="margin-bottom: 20px; padding-bottom: 10px; border-bottom: 1px solid #444;">Asset Storage</h2>
+      <h2 class="settings-section-title">Asset Storage</h2>
       
       <div class="setting-row">
         <label class="checkbox-container">
@@ -31,8 +31,8 @@
     </div>
 
     <div class="settings-card">
-      <h2 style="margin-bottom: 20px; padding-bottom: 10px; border-bottom: 1px solid #444;">Image Resizing</h2>
-      <p style="color: #888; margin-bottom: 15px;">Configure target widths (in pixels) for generated images.</p>
+      <h2 class="settings-section-title">Image Resizing</h2>
+      <p class="settings-description">Configure target widths (in pixels) for generated images.</p>
 
       <h3>Posters</h3>
       <div class="resize-grid">
@@ -84,7 +84,7 @@
     </div>
 
     <div class="settings-card">
-      <h2 style="margin-bottom: 20px; padding-bottom: 10px; border-bottom: 1px solid #444;">Metadata Providers</h2>
+      <h2 class="settings-section-title">Metadata Providers</h2>
       
       <div class="form-group">
         <label>TheMovieDB Key</label>
@@ -171,7 +171,7 @@
   margin-bottom: 20px
   
 .description
-  color: #888
+  color: var(--color-text-muted)
   font-size: 0.9em
   margin-top: 5px
   margin-left: 28px
@@ -207,16 +207,16 @@
     left: 0
     height: 18px
     width: 18px
-    background-color: #333
-    border: 1px solid #555
-    border-radius: 3px
+    background-color: rgba(255, 255, 255, 0.08)
+    border: 1px solid var(--color-border)
+    border-radius: 6px
 
   &:hover input ~ .checkmark
-    background-color: #444
+    background-color: rgba(255, 255, 255, 0.16)
 
   input:checked ~ .checkmark
-    background-color: #2196F3
-    border-color: #2196F3
+    background-color: var(--color-accent)
+    border-color: var(--color-accent)
 
   input:checked ~ .checkmark:after
     display: block

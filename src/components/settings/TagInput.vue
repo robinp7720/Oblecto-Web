@@ -60,11 +60,11 @@ export default {
 @use "sass:color"
 
 // design guide tokens
-$border-radius: 3px
-$text-color: #eee
-$text-muted: rgba(250, 240, 240, 0.6)
-$input-bg: rgba(255, 255, 255, 0.3)
-$tag-bg: rgba(0, 0, 0, 0.3)
+$border-radius: var(--radius-sm)
+$text-color: var(--color-text)
+$text-muted: var(--color-text-muted)
+$input-bg: rgba(255, 255, 255, 0.12)
+$tag-bg: rgba(255, 255, 255, 0.08)
 
 .tag-input
   width: 100%
@@ -74,10 +74,11 @@ $tag-bg: rgba(0, 0, 0, 0.3)
   flex-wrap: wrap
   gap: 10px
   align-items: center
-  background-color: rgba(255, 255, 255, 0.1)
+  background-color: rgba(255, 255, 255, 0.08)
   padding: 8px
   border-radius: $border-radius
   min-height: 42px
+  border: 1px solid rgba(255, 255, 255, 0.08)
 
 .tag
   background-color: $tag-bg
@@ -103,7 +104,7 @@ $tag-bg: rgba(0, 0, 0, 0.3)
 .add-select
   background-color: $input-bg
   color: $text-color
-  border: none
+  border: 1px solid transparent
   border-radius: $border-radius
   padding: 4px 10px
   font-size: 14px
@@ -112,12 +113,12 @@ $tag-bg: rgba(0, 0, 0, 0.3)
   width: auto
   appearance: none
   text-align: center
-  font-family: Roboto, sans-serif
+  font-family: var(--font-body)
   
   &:hover
-    background-color: rgba(255, 255, 255, 0.4)
+    background-color: rgba(255, 255, 255, 0.18)
 
   option
-    background-color: #544d4d // matching nav base color
-    color: white
+    background-color: #2f2a2d
+    color: var(--color-text)
 </style>

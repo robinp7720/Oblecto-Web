@@ -119,47 +119,136 @@
 </script>
 
 <style lang="sass">
+  :root
+    --font-body: "Space Grotesk", "Work Sans", sans-serif
+    --font-display: "Fraunces", "Cormorant Garamond", serif
+    --color-bg-1: #6e605f
+    --color-bg-2: #4b4850
+    --color-bg-3: #1d262f
+    --color-surface: #3b3437
+    --color-surface-strong: #453d40
+    --color-surface-glass: rgba(36, 30, 33, 0.72)
+    --color-surface-card: rgba(45, 39, 43, 0.9)
+    --color-text: #f4f1ee
+    --color-text-muted: rgba(244, 241, 238, 0.72)
+    --color-text-faint: rgba(244, 241, 238, 0.55)
+    --color-accent: #d9813c
+    --color-accent-strong: #f2a154
+    --color-accent-soft: rgba(217, 129, 60, 0.35)
+    --color-border: rgba(255, 255, 255, 0.12)
+    --color-border-strong: rgba(255, 255, 255, 0.22)
+    --color-shadow: rgba(16, 12, 14, 0.6)
+    --color-shadow-soft: rgba(16, 12, 14, 0.35)
+    --radius-sm: 8px
+    --radius-md: 12px
+    --radius-lg: 18px
+    --shadow-soft: 0 12px 30px var(--color-shadow-soft)
+    --shadow-strong: 0 18px 40px var(--color-shadow)
+
+  html, body
+    font-family: var(--font-body)
+    color: var(--color-text)
+    background-color: var(--color-bg-3)
+    letter-spacing: 0.01em
+
+  a
+    color: inherit
+    text-decoration: none
+
+  button, input, select, textarea
+    font-family: var(--font-body)
+
+  input, select, textarea
+    background-color: rgba(255, 255, 255, 0.12)
+    border: 1px solid transparent
+    border-radius: 12px
+    color: var(--color-text)
+
+    &:focus
+      outline: none
+      border-color: var(--color-accent-soft)
+      background-color: rgba(255, 255, 255, 0.18)
+
+  .container
+    max-width: 1400px
+    margin: 0 auto
+    padding: 0 24px
+    width: 100%
+
   .system-notification
-    background: #272222 !important
-    padding: 7px 10px
-    border: 1px solid #423a3a
-    margin-bottom: 4px
+    background: rgba(28, 23, 26, 0.95) !important
+    padding: 8px 12px
+    border: 1px solid var(--color-border)
+    border-radius: var(--radius-sm)
+    box-shadow: 0 10px 20px rgba(10, 8, 10, 0.35)
+    margin-bottom: 6px
 
     .notification-title
       font:
-        size: 0.8em
+        size: 0.85em
+        weight: 600
 
     .notification-content
       font:
-        size: 0.9em
+        size: 0.95em
 
   #app
-    background: #696060 /* Old browsers */
-    background: -moz-linear-gradient(to bottom, #696060 0%, #55535b 36%, #28343b 100%) /* FF3.6-15 */
-    background: -webkit-linear-gradient(to bottom, #696060 0%, #55535b 36%, #28343b 100%) /* Chrome10-25,Safari5.1-6 */
-    background: linear-gradient(to bottom, #696060 0%, #55535b 36%, #28343b 100%) /* W3C, IE10+, FF16+, Chrome26+, Opera12+, Safari7+ */
+    background-image: radial-gradient(1200px 500px at 10% -10%, rgba(217, 129, 60, 0.18), transparent 60%), radial-gradient(900px 500px at 90% 0%, rgba(118, 141, 168, 0.18), transparent 60%), linear-gradient(180deg, var(--color-bg-1) 0%, var(--color-bg-2) 42%, var(--color-bg-3) 100%)
     background-position: top
     background-attachment: fixed
-    background-repeat: round
-    -webkit-background-size: cover
+    background-repeat: no-repeat
     background-size: cover
 
-    padding-top: 415px
-    padding-bottom: 70px
+    padding-top: 440px
+    padding-bottom: 80px
 
     min-height: 100vh
 
-    color: #eee
+    color: var(--color-text)
 
     @media screen and (max-width: 700px)
-      padding-top: 375px
+      padding-top: 400px
 
   .v--modal
-    background: #696060 /* Old browsers */
-    background: -moz-linear-gradient(to bottom, #696060 0%, #55535b 36%, #28343b 100%) /* FF3.6-15 */
-    background: -webkit-linear-gradient(to bottom, #696060 0%, #55535b 36%, #28343b 100%) /* Chrome10-25,Safari5.1-6 */
-    background: linear-gradient(to bottom, #696060 0%, #55535b 36%, #28343b 100%) /* W3C, IE10+, FF16+, Chrome26+, Opera12+, Safari7+ */
+    background: radial-gradient(900px 500px at 20% -10%, rgba(217, 129, 60, 0.18), transparent 55%), linear-gradient(180deg, #5d5353 0%, #3d3a42 45%, #1b242d 100%)
 
+  .v--modal-overlay
+    background: rgba(10, 8, 12, 0.6)
+    backdrop-filter: blur(6px)
+
+  .v--modal-box
+    background: var(--color-surface-card) !important
+    color: var(--color-text)
+    border: 1px solid var(--color-border) !important
+    border-radius: var(--radius-lg) !important
+    box-shadow: var(--shadow-strong) !important
+    overflow: hidden
+
+    h3
+      font-family: var(--font-display)
+      letter-spacing: 0.02em
+
+    label
+      color: var(--color-text-muted)
+
+    .container
+      padding: 20px
+
+    .body
+      padding: 0
+
+    .heading
+      margin: -20px -20px 16px
+
+    .heading h3
+      margin: 0
+      padding: 18px 20px
+
+    .footer
+      margin: 16px -20px -20px
+      padding: 12px 20px 16px
+      background: rgba(12, 10, 12, 0.28)
+      border-top: 1px solid var(--color-border)
 
   @media screen and (max-height: 1200px)
     #app
@@ -193,6 +282,4 @@
     opacity: 0
     -webkit-transform: translate(-30px, 0)
     transform: translate(-30px, 0)
-
-
 </style>

@@ -1,33 +1,34 @@
-@use "sass:color"
-
 // Variables from DESIGN_GUIDE.md
-$base-color: #696060
-$text-color: #eee
-$text-muted: rgba(250, 240, 240, 0.6)
-$border-radius: 3px
-$shadow-color: rgba(color.adjust($base-color, $lightness: -20%), 0.75)
-$standard-shadow: 0 2px 5px 2px $shadow-color
+$base-color: var(--color-surface)
+$text-color: var(--color-text)
+$text-muted: var(--color-text-muted)
+$border-radius: var(--radius-md)
+$standard-shadow: var(--shadow-soft)
 
 // Button Variables
-$btn-bg: rgba(0,0,0,0.5)
-$btn-border: rgba(0,0,0,0.8)
-$btn-text: rgba(255,255,255,0.8)
-$btn-hover-bg: rgba(0,0,0,0.9)
+$btn-bg: rgba(255, 255, 255, 0.08)
+$btn-border: var(--color-border)
+$btn-text: var(--color-text)
+$btn-hover-bg: rgba(255, 255, 255, 0.18)
 
 // Layout
 .settings-layout
   display: flex
   min-height: calc(100vh - 60px)
   color: $text-color
-  // Use a simplified background that matches the app theme but is distinct for the settings area
-  background-color: color.adjust($base-color, $lightness: -10%)
+  background: rgba(22, 20, 24, 0.45)
+  border: 1px solid var(--color-border)
+  border-radius: var(--radius-lg)
+  margin: 20px
+  overflow: hidden
+  box-shadow: var(--shadow-strong)
 
   .settings-sidebar
     width: 250px
-    background-color: rgba(0, 0, 0, 0.2)
+    background: linear-gradient(160deg, rgba(40, 34, 38, 0.95), rgba(30, 26, 30, 0.9))
     flex-shrink: 0
     padding: 20px 0
-    border-right: 1px solid rgba(0,0,0,0.2)
+    border-right: 1px solid var(--color-border)
 
     .nav-list
       list-style: none
@@ -42,22 +43,74 @@ $btn-hover-bg: rgba(0,0,0,0.9)
           text-decoration: none
           transition: all 0.2s ease
           border-left: 3px solid transparent
-          font-family: Roboto, sans-serif
+          font-family: var(--font-body)
+          letter-spacing: 0.03em
 
           &:hover
             color: $text-color
-            background-color: rgba(255,255,255,0.05)
+            background-color: rgba(255,255,255,0.08)
 
           &.router-link-active
             color: $text-color
-            background-color: rgba(255,255,255,0.1)
-            border-left-color: $text-color
+            background-color: rgba(255,255,255,0.12)
+            border-left-color: var(--color-accent)
 
-  .settings-content
-    flex-grow: 1
-    padding: 30px
-    overflow-y: auto
-    // Transparent content background to let the layout background show through
+.settings-content
+  flex-grow: 1
+  padding: 30px
+  overflow-y: auto
+  // Transparent content background to let the layout background show through
+
+.settings-section-title
+  margin-bottom: 20px
+  padding-bottom: 10px
+  border-bottom: 1px solid var(--color-border)
+  color: var(--color-text)
+  font-family: var(--font-display)
+  font-weight: 600
+
+.settings-header-row
+  display: flex
+  justify-content: space-between
+  align-items: center
+  margin-bottom: 10px
+  border-bottom: 1px solid var(--color-border)
+  padding-bottom: 10px
+
+.settings-title-plain
+  margin: 0
+  border: none
+  padding: 0
+  font-family: var(--font-display)
+  font-weight: 600
+
+.settings-description
+  color: var(--color-text-muted)
+  margin-bottom: 20px
+
+.settings-description-tight
+  margin-left: 0
+
+.settings-section-gap
+  margin-bottom: 20px
+
+.settings-empty
+  text-align: center
+  color: var(--color-text-faint)
+
+.settings-inline-actions
+  display: flex
+  justify-content: flex-end
+  gap: 10px
+  margin-top: 20px
+
+.settings-table-center
+  text-align: center
+  color: var(--color-text-faint)
+
+.settings-table-cell-wrap
+  word-break: break-all
+  max-width: 300px
 
 // Common Components
 .settings-card
@@ -66,6 +119,7 @@ $btn-hover-bg: rgba(0,0,0,0.9)
   padding: 20px
   margin-bottom: 20px
   box-shadow: $standard-shadow
+  border: 1px solid var(--color-border)
 
   h2, h3
     margin-top: 0
@@ -73,16 +127,17 @@ $btn-hover-bg: rgba(0,0,0,0.9)
     border-bottom: 1px solid rgba(0,0,0,0.2)
     padding-bottom: 10px
     color: $text-color
-    font-weight: 400
+    font-weight: 600
+    font-family: var(--font-display)
 
 // Buttons (Matching Maintenance.vue style)
 .btn
   display: inline-block
   padding: 10px 20px
   border: 1px solid $btn-border
-  border-radius: $border-radius
+  border-radius: 999px
   cursor: pointer
-  font-family: Roboto, sans-serif
+  font-family: var(--font-body)
   font-size: 14px
   text-decoration: none
   transition: background-color 0.2s
@@ -95,9 +150,9 @@ $btn-hover-bg: rgba(0,0,0,0.9)
 
   &.btn-secondary
     // Re-use same style for secondary for consistency, or slightly lighter
-    background-color: rgba(0,0,0,0.3)
+    background-color: rgba(255,255,255,0.06)
     &:hover
-      background-color: rgba(0,0,0,0.6)
+      background-color: rgba(255,255,255,0.14)
 
   &.btn-block
     display: block
@@ -105,6 +160,12 @@ $btn-hover-bg: rgba(0,0,0,0.9)
     text-align: center
 
 // Tables
+.settings-table-scroll
+  max-height: 420px
+  overflow-y: auto
+  overflow-x: auto
+  border-radius: $border-radius
+
 .settings-table
   width: 100%
   border-collapse: separate 
@@ -118,7 +179,7 @@ $btn-hover-bg: rgba(0,0,0,0.9)
     border-bottom: 1px solid rgba(0,0,0,0.1)
 
   th
-    background-color: rgba(0,0,0,0.2)
+    background-color: rgba(255,255,255,0.06)
     font-weight: bold
     text-transform: uppercase
     font-size: 12px
@@ -132,7 +193,7 @@ $btn-hover-bg: rgba(0,0,0,0.9)
     border-bottom: none
 
   tr:nth-child(even)
-    background-color: rgba(0,0,0,0.1)
+    background-color: rgba(255,255,255,0.04)
 
   .actions
     text-align: right
@@ -160,12 +221,13 @@ $btn-hover-bg: rgba(0,0,0,0.9)
   select
     width: 100%
     padding: 10px
-    background-color: rgba(255, 255, 255, 0.3) // Matching DESIGN_GUIDE input
-    border: none
-    border-radius: $border-radius
-    color: #fff // Input text needs to be visible on the light-ish background
-    font-family: Roboto, sans-serif
+    background-color: rgba(255, 255, 255, 0.12)
+    border: 1px solid transparent
+    border-radius: 12px
+    color: #fff
+    font-family: var(--font-body)
     
     &:focus
       outline: none
-      background-color: rgba(255, 255, 255, 0.4)
+      background-color: rgba(255, 255, 255, 0.18)
+      border-color: var(--color-accent-soft)

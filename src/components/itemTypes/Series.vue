@@ -74,8 +74,9 @@
   }
 
   .title {
-    font-family: Roboto, sans-serif;
+    font-family: var(--font-body);
     font-size: 13px;
+    font-weight: 500;
 
     width: 136px;
 
@@ -84,11 +85,11 @@
     text-overflow: ellipsis;
 
     overflow: hidden;
-    color: #eee
+    color: var(--color-text)
   }
 
   .subtitle {
-    font-family: Roboto, sans-serif;
+    font-family: var(--font-body);
     font-size: 12px;
 
     width: 136px;
@@ -96,7 +97,7 @@
     margin-top: 5px;
     padding: 0;
     text-overflow: ellipsis;
-    color: #aaa;
+    color: var(--color-text-faint);
 
     overflow: hidden;
   }
@@ -106,9 +107,9 @@
     -moz-box-sizing: border-box;
     box-sizing: border-box;
 
-    box-shadow: 0 0 5px 0 rgba(0, 0, 0, 0.75);
+    box-shadow: 0 18px 30px rgba(10, 8, 10, 0.45);
 
-    background-color: rgba(0, 0, 0, 0.8);
+    background-color: rgba(0, 0, 0, 0.6);
     -webkit-background-size: cover;
     background-size: cover;
     background-position: center;
@@ -116,17 +117,17 @@
     height: 200px;
     width: 136px;
 
-    -webkit-border-radius: 3px;
-    -moz-border-radius: 3px;
-    border-radius: 3px;
+    -webkit-border-radius: 14px;
+    -moz-border-radius: 14px;
+    border-radius: 14px;
 
-    border: 0 solid #ae6600;
+    border: 0 solid var(--color-accent);
 
-    -webkit-transition: box-shadow 0.1s, opacity 0.1s;
-    -moz-transition: box-shadow 0.1s, opacity 0.1s;
-    -ms-transition: box-shadow 0.1s, opacity 0.1s;
-    -o-transition: box-shadow 0.1s, opacity 0.1s;
-    transition: box-shadow 0.1s, opacity 0.1s;
+    -webkit-transition: box-shadow 0.2s, opacity 0.2s, transform 0.2s;
+    -moz-transition: box-shadow 0.2s, opacity 0.2s, transform 0.2s;
+    -ms-transition: box-shadow 0.2s, opacity 0.2s, transform 0.2s;
+    -o-transition: box-shadow 0.2s, opacity 0.2s, transform 0.2s;
+    transition: box-shadow 0.2s, opacity 0.2s, transform 0.2s;
 
     position: relative;
     overflow: hidden;
@@ -162,18 +163,19 @@
     transition: bottom 0.2s;
     width: 100%;
     padding: 5px;
-    background-color: rgba(0, 0, 0, 0.5);
+    background: linear-gradient(180deg, rgba(10, 8, 10, 0), rgba(10, 8, 10, 0.75));
     overflow: visible
   }
 
   a {
-    color: white;
+    color: var(--color-text);
     margin: 0 5px;
     cursor: pointer;
   }
 
   .show-poster:hover {
-    box-shadow: 0 0 0 2px rgba(174, 102, 0, 0.75);
+    box-shadow: 0 16px 34px rgba(10, 8, 10, 0.55), 0 0 0 2px var(--color-accent-soft);
+    transform: translateY(-3px);
   }
 
   .show-poster:hover .actions {
@@ -191,8 +193,8 @@
     margin: 0;
     width: 100px;
     height: 100px;
-    background-color: rgba(0,0,0,0.5);
-    border: 2px solid white;
+    background-color: rgba(0,0,0,0.6);
+    border: 2px solid rgba(255, 255, 255, 0.8);
     border-radius: 100%;
     text-align: center;
     line-height: 100px;

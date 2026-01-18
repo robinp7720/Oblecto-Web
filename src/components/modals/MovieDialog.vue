@@ -3,20 +3,26 @@
     name="MovieDialog"
     @before-open="beforeOpen"
   >
-    <h3>{{ movie.movieName }}</h3>
-    <tabs :options="{ useUrlFragment: false }">
-      <tab name="Data" />
-      <tab name="Files">
-        <ul>
-          <li
-            v-for="(file, index) in movie.Files"
-            :key="file.id"
-          >
-            <span>{{ file.path }}</span>
-          </li>
-        </ul>
-      </tab>
-    </tabs>
+    <div class="container">
+      <div class="heading">
+        <h3>{{ movie.movieName }}</h3>
+      </div>
+      <div class="body">
+        <tabs :options="{ useUrlFragment: false }">
+          <tab name="Data" />
+          <tab name="Files">
+            <ul>
+              <li
+                v-for="(file, index) in movie.Files"
+                :key="file.id"
+              >
+                <span>{{ file.path }}</span>
+              </li>
+            </ul>
+          </tab>
+        </tabs>
+      </div>
+    </div>
   </modal>
 </template>
 
@@ -41,19 +47,15 @@
 </script>
 
 <style scoped lang="sass">
-  @use "sass:color"
-  .container
-    padding: 10px
-
   h3
     width: 100%
-    color: white
+    color: var(--color-text)
     margin: 0 0 10px
     padding: 20px
 
-    background-color: rgba(0,0,0,0.3)
+    background-color: rgba(255, 255, 255, 0.06)
 
-    box-shadow: 0 0 5px 2px rgba(color.adjust(#696060, $lightness: -20%), 0.75)
+    box-shadow: var(--shadow-soft)
 
   ul
     list-style: none
@@ -64,7 +66,7 @@
         display: inline-block
         width: 100%
         padding: 10px 20px
-        color: white
+        color: var(--color-text)
         text-decoration: none
 
         -webkit-transition: background-color 0.1s
@@ -73,7 +75,7 @@
         -o-transition: background-color 0.1s
         transition: background-color 0.1s
       span:hover
-        background-color: rgba(0,0,0,0.1)
-        box-shadow: 0 0 2px 2px rgba(color.adjust(#696060, $lightness: -20%), 0.2)
+        background-color: rgba(255, 255, 255, 0.08)
+        box-shadow: 0 0 12px rgba(12, 10, 12, 0.25)
 
 </style>

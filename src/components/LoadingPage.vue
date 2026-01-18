@@ -36,8 +36,8 @@
     width: 128px
     height: 128px
     background-color: transparent
-    border: solid rgba(0,0,0,0.2) 10px
-    border-bottom: solid #F15A24 10px
+    border: solid rgba(255,255,255,0.08) 10px
+    border-bottom: solid #d9813c 10px
     border-radius: 100%
     position: fixed
     top: 50%
@@ -56,10 +56,7 @@
 
     z-index: 100
 
-    background: #696060 /* Old browsers */
-    background: -moz-linear-gradient(to bottom, #696060 0%, #55535b 36%, #28343b 100%) /* FF3.6-15 */
-    background: -webkit-linear-gradient(to bottom, #696060 0%, #55535b 36%, #28343b 100%) /* Chrome10-25,Safari5.1-6 */
-    background: linear-gradient(to bottom, #696060 0%, #55535b 36%, #28343b 100%) /* W3C, IE10+, FF16+, Chrome26+, Opera12+, Safari7+ */
+    background: radial-gradient(900px 500px at 10% 0%, rgba(217, 129, 60, 0.2), transparent 55%), linear-gradient(180deg, #6e605f 0%, #4b4850 42%, #1d262f 100%)
     background-position: top
     background-attachment: fixed
     background-repeat: round

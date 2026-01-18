@@ -115,27 +115,31 @@ export default {
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style scoped lang="sass">
-@use "sass:color"
-
 .info-container
   padding: 50px 10px 0
 
 .info
   font-size: 1em
-  border-radius: 3px
-  background: #696060
-  box-shadow: 0 2px 5px 2px rgba(color.adjust(#696060, $lightness: -20%), 0.75)
+  border-radius: 16px
+  background: var(--color-surface-card)
+  border: 1px solid var(--color-border)
+  box-shadow: var(--shadow-strong)
   padding-bottom: 40px
 
   min-height: 270px
+
+  &::after
+    content: ""
+    display: block
+    clear: both
 
   .poster
     height: 300px
     width: 204px
 
     float: left
-    box-shadow: 0 2px 5px 2px rgba(color.adjust(#696060, $lightness: -20%), 0.75)
-    border-radius: 3px
+    box-shadow: 0 18px 40px rgba(12, 10, 12, 0.6)
+    border-radius: 14px
     overflow: hidden
 
     margin: -50px 20px 20px
@@ -154,17 +158,18 @@ export default {
 
     h2
       padding: 0
-      font-size: 1.2em
-      margin: 0 0 5px
+      font-size: 1.6em
+      margin: 0 0 8px
+      font-family: var(--font-display)
 
     .year, .genres
-      color: rgba(250, 240, 240, 0.6)
+      color: var(--color-text-muted)
       margin-bottom: 10px
       padding: 0
       font-weight: normal
 
     p
-      color: rgba(250, 240, 240, 0.9)
+      color: var(--color-text)
       padding: 0
       margin: 20px 0 0
 

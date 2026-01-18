@@ -562,31 +562,33 @@
       padding-top: 25px
       width: 100%
 
-      color: #eee
+      color: var(--color-text)
 
       z-index: 1000
 
-      background: linear-gradient(to bottom, #645c5c 0%, #5c5454 100%)
-      box-shadow: 0 0 5px 2px rgba(44, 40, 40, 0.75)
+      background: linear-gradient(135deg, rgba(49, 43, 47, 0.98), rgba(33, 29, 34, 0.96))
+      border-top: 1px solid var(--color-border)
+      box-shadow: 0 -12px 30px rgba(12, 10, 12, 0.45)
 
       .seriesid
-        color: rgba(255, 255, 255, 0.6)
+        color: var(--color-text-faint)
 
       .nextepisode
         cursor: pointer
 
-        background-color: rgba(44, 40, 40, 0.6)
-        box-shadow: 0 0 1px 2px rgba(44, 40, 40, 0.6)
+        background-color: rgba(255, 255, 255, 0.08)
+        box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.08)
+        color: var(--color-text)
 
         transition: background-color 0.1s, box-shadow 0.1s
 
-        padding: 5px 10px
+        padding: 6px 12px
         margin-left: 10px
-        border-radius: 3px
+        border-radius: 999px
 
       .nextepisode:hover
-        background-color: rgba(44, 40, 40, 0.9)
-        box-shadow: 0 0 1px 2px rgba(44, 40, 40, 0.9)
+        background-color: rgba(255, 255, 255, 0.18)
+        box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.16)
 
     .player
       position: fixed
@@ -604,7 +606,7 @@
       width: auto
       bottom: 74px
       right: 10px
-      border-radius: 3px
+      border-radius: var(--radius-md)
       overflow: hidden
       box-shadow: 0 0 5px 0 rgba(0, 0, 0, 0.75)
 
@@ -635,9 +637,9 @@
     left: 0
     width: 100%
 
-    background-color: rgba(0,0,0,0.25)
+    background-color: rgba(0, 0, 0, 0.35)
 
-    box-shadow: inset 0 0 5px 0 rgba(44, 40, 40, 0.75)
+    box-shadow: inset 0 0 8px rgba(0, 0, 0, 0.5)
 
     cursor: pointer
 
@@ -646,20 +648,19 @@
       top: 0
       left: 0
       height: 100%
-      background-color: #ae6600
+      background-color: var(--color-accent)
 
       z-index: 4
 
-      box-shadow: 0 0 5px 2px rgba(44, 40, 40, 0.75)
+      box-shadow: 0 0 10px rgba(16, 12, 14, 0.6)
 
     .progressbarload
       position: absolute
       top: 0
       left: 0
       height: 100%
-      background-color: #ae6600
-
-      box-shadow: 0 0 5px 2px #421c00
+      background-color: var(--color-accent)
+      box-shadow: 0 0 6px rgba(10, 8, 10, 0.6)
 
       opacity: 0.2
 
@@ -683,8 +684,11 @@
     bottom: 50px
     right: 10px
     width: auto
-    background: #696060
-    box-shadow: 0 0 5px 2px rgba(44, 40, 40, 0.75)
+    background: rgba(32, 27, 31, 0.95)
+    border: 1px solid var(--color-border)
+    border-radius: var(--radius-sm)
+    box-shadow: var(--shadow-soft)
+    backdrop-filter: blur(10px)
 
     ul
       list-style: none
@@ -693,9 +697,9 @@
         padding: 20px
         cursor: pointer
       li.selected
-        background-color: rgba(0,0,0,0.3)
+        background-color: rgba(255, 255, 255, 0.08)
       li:hover
-        background-color: rgba(0,0,0,0.5)
+        background-color: rgba(255, 255, 255, 0.12)
 
 
 

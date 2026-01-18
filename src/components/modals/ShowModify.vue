@@ -5,9 +5,11 @@
     @before-open="beforeOpen"
   >
     <div class="container">
-      <h3>{{ show.seriesName }}</h3>
-      <div class="wrapper">
-        <div class="half">
+      <div class="heading">
+        <h3>{{ show.seriesName }}</h3>
+      </div>
+      <div class="body">
+        <div class="wrapper">
           <div class="poster">
             <img
               :src="host + '/series/' + show.id + '/poster'"
@@ -42,29 +44,29 @@
 </script>
 
 <style scoped lang="sass">
-  @use "sass:color"
 
   h3
     width: 100%
-    color: white
+    color: var(--color-text)
     margin: 0
     margin-bottom: 10px
     padding: 20px
 
-    background-color: rgba(0,0,0,0.3)
+    background-color: rgba(255, 255, 255, 0.06)
 
-    box-shadow: 0 0 5px 2px rgba(color.adjust(#696060, $lightness: -20%), 0.75)
+    box-shadow: var(--shadow-soft)
 
   .wrapper
     width: 100%
-    .half
-      width: 50%
-      float: left
-
-      padding: 10px
+    display: flex
+    justify-content: center
+    padding: 10px 0
 
     .poster
-      width: 100%
+      width: min(260px, 70%)
+      box-shadow: 0 18px 40px rgba(12, 10, 12, 0.6)
+      border-radius: 14px
+      overflow: hidden
       img
         width: 100%
 </style>

@@ -14,14 +14,14 @@
           id="name"
           v-model="name"
           type="text"
-          :class="{invalid: name === ''}"
+          :class="{invalid: attempted && name === ''}"
         >
         <label for="name">Overview:</label>
         <input
           id="overview"
           v-model="overview"
           type="text"
-          :class="{invalid: overview === ''}"
+          :class="{invalid: attempted && overview === ''}"
         >
       </div>
       <div class="footer">
@@ -45,13 +45,25 @@
       return {
         name: '',
         overview: '',
-        public: true
+        public: true,
+        attempted: false
       }
     },
     methods: {
       beforeOpen (event) {
+        this.attempted = false
       },
       async addSet () {
+        this.attempted = true
+        if (!this.name || !this.overview) {
+          this.$notify({
+            group: 'system',
+            title: 'Missing fields',
+            text: 'Please provide a name and overview',
+            type: 'error'
+          })
+          return
+        }
         try {
           await oblectoClient.sets.createMovieSet({
             name: this.name,
@@ -79,21 +91,20 @@
 </script>
 
 <style scoped lang="sass">
-  @use "sass:color"
 
   .body
     padding: 10px
 
   h3
     width: 100%
-    color: white
+    color: var(--color-text)
     margin: 0
     margin-bottom: 10px
     padding: 20px
 
-    background-color: rgba(0,0,0,0.3)
+    background-color: rgba(255, 255, 255, 0.06)
 
-    box-shadow: 0 0 5px 2px rgba(color.adjust(#696060, $lightness: -20%), 0.75)
+    box-shadow: var(--shadow-soft)
 
   label
     display: block
@@ -101,34 +112,44 @@
     margin-left: 0
 
   input
-    margin-bottom: 10px
-    border-radius: 0
-    padding: 10px
+    margin-bottom: 12px
+    border-radius: 12px
+    padding: 12px 14px
     width: 100%
-    border: 2px #a8cca1 solid
+    border: 1px solid transparent
+    background-color: rgba(255, 255, 255, 0.12)
+    color: var(--color-text)
+    transition: border-color 0.2s, background-color 0.2s
+    &:focus
+      outline: none
+      border-color: var(--color-accent-soft)
+      background-color: rgba(255, 255, 255, 0.18)
   .invalid
-    border-color: #ff9f78
+    border-color: var(--color-accent-soft)
 
   .footer
-    background-color: rgba(0,0,0,0.3)
+    background-color: rgba(255, 255, 255, 0.06)
 
-    box-shadow: 0 0 5px 2px rgba(color.adjust(#696060, $lightness: -20%), 0.75)
+    box-shadow: var(--shadow-soft)
     padding: 10px
 
     overflow: hidden
 
     button
       float: right
-
-      background-color: rgba(0,0,0,0.5)
-      border: rgba(0,0,0,0.8) 1px solid
-      color: rgba(255,255,255,0.5)
-
-      padding: 10px
-      -webkit-border-radius: 3px
-      -moz-border-radius: 3px
-      border-radius: 3px
+      background: linear-gradient(120deg, var(--color-accent), var(--color-accent-strong))
+      border: none
+      color: #1b1616
+      padding: 10px 22px
+      border-radius: 999px
+      font-weight: 700
+      letter-spacing: 0.04em
       cursor: pointer
+      box-shadow: 0 12px 20px rgba(12, 10, 12, 0.35)
+      transition: transform 0.2s, box-shadow 0.2s
+      &:hover
+        transform: translateY(-1px)
+        box-shadow: 0 16px 26px rgba(12, 10, 12, 0.45)
 
 
 </style>
