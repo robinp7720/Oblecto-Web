@@ -27,12 +27,12 @@
           </div>
           
           <div class="form-group">
-            <label>Identifiers (comma separated)</label>
-            <input type="text" v-model="moviesConfig.movieIdentifiersInput" @change="saveMoviesConfig" placeholder="tmdb">
+            <label>Identifiers</label>
+            <TagInput v-model="moviesConfig.movieIdentifiers" :options="capabilities.movies.identifiers" @input="saveMoviesConfig" />
           </div>
           <div class="form-group">
-             <label>Updaters (comma separated)</label>
-             <input type="text" v-model="moviesConfig.movieUpdatersInput" @change="saveMoviesConfig" placeholder="tmdb">
+             <label>Updaters</label>
+             <TagInput v-model="moviesConfig.movieUpdaters" :options="capabilities.movies.updaters" @input="saveMoviesConfig" />
           </div>
       </div>
 
@@ -97,21 +97,21 @@
           <div class="resize-grid">
               <div class="form-group">
                 <label>Series Identifiers</label>
-                <input type="text" v-model="tvConfig.seriesIdentifiersInput" @change="saveTvConfig" placeholder="tmdb">
+                <TagInput v-model="tvConfig.seriesIdentifiers" :options="capabilities.tvshows.seriesIdentifiers" @input="saveTvConfig" />
               </div>
               <div class="form-group">
                  <label>Episode Identifiers</label>
-                 <input type="text" v-model="tvConfig.episodeIdentifiersInput" @change="saveTvConfig" placeholder="tmdb">
+                 <TagInput v-model="tvConfig.episodeIdentifiers" :options="capabilities.tvshows.episodeIdentifiers" @input="saveTvConfig" />
               </div>
           </div>
           <div class="resize-grid">
               <div class="form-group">
                 <label>Series Updaters</label>
-                <input type="text" v-model="tvConfig.seriesUpdatersInput" @change="saveTvConfig" placeholder="tmdb, tvdb">
+                <TagInput v-model="tvConfig.seriesUpdaters" :options="capabilities.tvshows.seriesUpdaters" @input="saveTvConfig" />
               </div>
               <div class="form-group">
                  <label>Episode Updaters</label>
-                 <input type="text" v-model="tvConfig.episodeUpdatersInput" @change="saveTvConfig" placeholder="tmdb, tvdb">
+                 <TagInput v-model="tvConfig.episodeUpdaters" :options="capabilities.tvshows.episodeUpdaters" @input="saveTvConfig" />
               </div>
           </div>
       </div>
@@ -151,13 +151,15 @@
   import faTrash from '@fortawesome/fontawesome-free-solid/faTrash'
   import faPlus from '@fortawesome/fontawesome-free-solid/faPlus'
   import fontawesome from '@fortawesome/fontawesome'
+  import TagInput from './TagInput'
 
   fontawesome.library.add(faTrash, faPlus)
 
   export default {
     name: 'Libraries',
     components: {
-      FontAwesomeIcon
+      FontAwesomeIcon,
+      TagInput
     },
     computed: {
       ...mapState('libraries', [
@@ -173,17 +175,21 @@
         moviesConfig: {
             doReIndex: false,
             indexBroken: false,
-            movieIdentifiersInput: '',
-            movieUpdatersInput: ''
+            movieIdentifiers: [],
+            movieUpdaters: []
         },
         tvConfig: {
             doReIndex: false,
             indexBroken: false,
             ignoreSeriesMismatch: true,
-            seriesIdentifiersInput: '',
-            episodeIdentifiersInput: '',
-            seriesUpdatersInput: '',
-            episodeUpdatersInput: ''
+            seriesIdentifiers: [],
+            episodeIdentifiers: [],
+            seriesUpdaters: [],
+            episodeUpdaters: []
+        },
+        capabilities: {
+            movies: { identifiers: [], updaters: [] },
+            tvshows: { seriesIdentifiers: [], episodeIdentifiers: [], seriesUpdaters: [], episodeUpdaters: [] }
         }
       }
     },
@@ -204,21 +210,24 @@
       },
       async loadConfig() {
           try {
+              // Load capabilities
+              this.capabilities = (await oblectoClient.axios.get('/api/v1/system/capabilities')).data
+
               const movies = (await oblectoClient.axios.get('/api/v1/settings/movies')).data
               const tv = (await oblectoClient.axios.get('/api/v1/settings/tvshows')).data
               
               this.moviesConfig = {
                   ...movies,
-                  movieIdentifiersInput: (movies.movieIdentifiers || []).join(', '),
-                  movieUpdatersInput: (movies.movieUpdaters || []).join(', ')
+                  movieIdentifiers: movies.movieIdentifiers || [],
+                  movieUpdaters: movies.movieUpdaters || []
               }
 
               this.tvConfig = {
                   ...tv,
-                  seriesIdentifiersInput: (tv.seriesIdentifiers || []).join(', '),
-                  episodeIdentifiersInput: (tv.episodeIdentifiers || []).join(', '),
-                  seriesUpdatersInput: (tv.seriesUpdaters || []).join(', '),
-                  episodeUpdatersInput: (tv.episodeUpdaters || []).join(', ')
+                  seriesIdentifiers: tv.seriesIdentifiers || [],
+                  episodeIdentifiers: tv.episodeIdentifiers || [],
+                  seriesUpdaters: tv.seriesUpdaters || [],
+                  episodeUpdaters: tv.episodeUpdaters || []
               }
           } catch (e) {
               console.error('Failed to load library config', e)
@@ -228,8 +237,8 @@
           const payload = {
               doReIndex: this.moviesConfig.doReIndex,
               indexBroken: this.moviesConfig.indexBroken,
-              movieIdentifiers: this.moviesConfig.movieIdentifiersInput.split(',').map(s => s.trim()).filter(s => s),
-              movieUpdaters: this.moviesConfig.movieUpdatersInput.split(',').map(s => s.trim()).filter(s => s)
+              movieIdentifiers: this.moviesConfig.movieIdentifiers,
+              movieUpdaters: this.moviesConfig.movieUpdaters
           }
           try {
               await oblectoClient.axios.patch('/api/v1/settings/movies', payload)
@@ -243,10 +252,10 @@
               doReIndex: this.tvConfig.doReIndex,
               indexBroken: this.tvConfig.indexBroken,
               ignoreSeriesMismatch: this.tvConfig.ignoreSeriesMismatch,
-              seriesIdentifiers: this.tvConfig.seriesIdentifiersInput.split(',').map(s => s.trim()).filter(s => s),
-              episodeIdentifiers: this.tvConfig.episodeIdentifiersInput.split(',').map(s => s.trim()).filter(s => s),
-              seriesUpdaters: this.tvConfig.seriesUpdatersInput.split(',').map(s => s.trim()).filter(s => s),
-              episodeUpdaters: this.tvConfig.episodeUpdatersInput.split(',').map(s => s.trim()).filter(s => s)
+              seriesIdentifiers: this.tvConfig.seriesIdentifiers,
+              episodeIdentifiers: this.tvConfig.episodeIdentifiers,
+              seriesUpdaters: this.tvConfig.seriesUpdaters,
+              episodeUpdaters: this.tvConfig.episodeUpdaters
           }
           try {
               await oblectoClient.axios.patch('/api/v1/settings/tvshows', payload)
