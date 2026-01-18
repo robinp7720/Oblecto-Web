@@ -1,5 +1,6 @@
 <template>
   <div class="Libraries">
+    <!-- MOVIES SECTION -->
     <div class="settings-card">
       <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; border-bottom: 1px solid #444; padding-bottom: 10px;">
         <h2 style="margin: 0; border: none; padding: 0;">Movies</h2>
@@ -7,6 +8,34 @@
           <font-awesome-icon icon="plus" /> Add movie library
         </a>
       </div>
+      
+      <!-- Configuration -->
+      <div style="margin-bottom: 20px;">
+          <div class="setting-row">
+            <label class="checkbox-container">
+              Re-index on Startup
+              <input type="checkbox" v-model="moviesConfig.doReIndex" @change="saveMoviesConfig">
+              <span class="checkmark"></span>
+            </label>
+          </div>
+          <div class="setting-row">
+            <label class="checkbox-container">
+              Index Broken Files
+              <input type="checkbox" v-model="moviesConfig.indexBroken" @change="saveMoviesConfig">
+              <span class="checkmark"></span>
+            </label>
+          </div>
+          
+          <div class="form-group">
+            <label>Identifiers (comma separated)</label>
+            <input type="text" v-model="moviesConfig.movieIdentifiersInput" @change="saveMoviesConfig" placeholder="tmdb">
+          </div>
+          <div class="form-group">
+             <label>Updaters (comma separated)</label>
+             <input type="text" v-model="moviesConfig.movieUpdatersInput" @change="saveMoviesConfig" placeholder="tmdb">
+          </div>
+      </div>
+
       <table class="settings-table">
         <thead>
           <tr>
@@ -68,6 +97,7 @@
 
 <script>
   import { mapActions, mapState } from 'vuex'
+  import oblectoClient from '@/oblectoClient'
 
   import FontAwesomeIcon from '@fortawesome/vue-fontawesome'
   import faTrash from '@fortawesome/fontawesome-free-solid/faTrash'
@@ -92,12 +122,17 @@
     },
     data () {
       return {
-        movieLibraries: {},
-        seriesLibraries: {}
+        moviesConfig: {
+            doReIndex: false,
+            indexBroken: false,
+            movieIdentifiersInput: '',
+            movieUpdatersInput: ''
+        },
       }
     },
     async created () {
-      this.updateAll()
+      this.updateAll() // Vuex action for paths
+      this.loadConfig()
     },
     methods: {
       ...mapActions('libraries', [
@@ -109,6 +144,44 @@
         this.$modal.show('LibraryAdd', {
           libraryType
         })
+      },
+      async loadConfig() {
+          try {
+              const movies = (await oblectoClient.axios.get('/api/v1/settings/movies')).data
+              const tv = (await oblectoClient.axios.get('/api/v1/settings/tvshows')).data
+              
+              this.moviesConfig = {
+                  ...movies,
+                  movieIdentifiersInput: (movies.movieIdentifiers || []).join(', '),
+                  movieUpdatersInput: (movies.movieUpdaters || []).join(', ')
+              }
+
+              this.tvConfig = {
+                  ...tv,
+                  seriesIdentifiersInput: (tv.seriesIdentifiers || []).join(', '),
+                  episodeIdentifiersInput: (tv.episodeIdentifiers || []).join(', '),
+                  seriesUpdatersInput: (tv.seriesUpdaters || []).join(', '),
+                  episodeUpdatersInput: (tv.episodeUpdaters || []).join(', ')
+              }
+          } catch (e) {
+              console.error('Failed to load library config', e)
+          }
+      },
+      async saveMoviesConfig() {
+          const payload = {
+              doReIndex: this.moviesConfig.doReIndex,
+              indexBroken: this.moviesConfig.indexBroken,
+              movieIdentifiers: this.moviesConfig.movieIdentifiersInput.split(',').map(s => s.trim()).filter(s => s),
+              movieUpdaters: this.moviesConfig.movieUpdatersInput.split(',').map(s => s.trim()).filter(s => s)
+          }
+          try {
+              await oblectoClient.axios.patch('/api/v1/settings/movies', payload)
+              this.$notify({ type: 'success', title: 'Saved', text: 'Movie settings saved' })
+          } catch(e) {
+              this.$notify({ type: 'error', title: 'Error', text: 'Failed to save movie settings' })
+          }
+      },
+      async saveTvConfig() {
       }
     }
   }
