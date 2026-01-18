@@ -23,6 +23,16 @@
           </router-link>
         </li>
         <li class="nav-item">
+          <router-link :to="{ name: 'ArtworkSettings'}">
+            <font-awesome-icon icon="image" class="fa-fw" /> Artwork
+          </router-link>
+        </li>
+        <li class="nav-item">
+          <router-link :to="{ name: 'FederationSettings'}">
+            <font-awesome-icon icon="globe" class="fa-fw" /> Federation
+          </router-link>
+        </li>
+        <li class="nav-item">
           <router-link :to="{ name: 'SettingsSets'}">
             <font-awesome-icon icon="tags" class="fa-fw" /> Sets
           </router-link>
