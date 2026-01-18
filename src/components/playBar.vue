@@ -32,82 +32,86 @@
         />
       </div>
 
-      <span
-        v-if="playing.type === 'episode'"
-        class="seriesid"
-        @click="viewShow"
-      > {{ playing.entity.Series.seriesName }} S{{ playing.entity.airedSeason }}E{{ playing.entity.airedEpisodeNumber }}: </span>
-      <span class="title">{{ playing.title }}</span>
-
-      <div class="right">
-        <span
-          v-if="showVideo"
-          class="time"
-        >
-          {{ PlayTimeDisplayValue }} / {{ DurationDisplayValue }}
-        </span>
-
-        <div
-          v-if="qualityPopUp"
-          class="quality-selector"
-        >
-          <ul>
-            <li
-              v-for="(FileIterator, index) in playing.entity.Files"
-              :key="FileIterator.id"
-              :class="{selected: index === PlayingFileID}"
-              @click="changeFileId(index)"
-            >
-              {{ FileIterator.name }} <span class="badge">{{ FileIterator.extension }}</span>
-            </li>
-          </ul>
+      <div class="bar-content">
+        <div class="meta">
+          <span
+            v-if="playing.type === 'episode'"
+            class="seriesid"
+            @click="viewShow"
+          > {{ playing.entity.Series.seriesName }} S{{ playing.entity.airedSeason }}E{{ playing.entity.airedEpisodeNumber }}: </span>
+          <span class="title">{{ playing.title }}</span>
         </div>
 
-        <span
-          v-if="showVideo"
-          class="toggle-button"
-          @click="qualityPopUp = !qualityPopUp"
-        >
-          <FontAwesomeIcon :icon="iconCog" />
-        </span>
+        <div class="controls">
+          <span
+            v-if="showVideo"
+            class="time"
+          >
+            {{ PlayTimeDisplayValue }} / {{ DurationDisplayValue }}
+          </span>
 
-        <span
-          v-if="showVideo"
-          class="toggle-button"
-          @click="stopPlaying"
-        >
-          <FontAwesomeIcon :icon="iconStop" />
-        </span>
+          <div
+            v-if="qualityPopUp"
+            class="quality-selector"
+          >
+            <ul>
+              <li
+                v-for="(FileIterator, index) in playing.entity.Files"
+                :key="FileIterator.id"
+                :class="{selected: index === PlayingFileID}"
+                @click="changeFileId(index)"
+              >
+                {{ FileIterator.name }} <span class="badge">{{ FileIterator.extension }}</span>
+              </li>
+            </ul>
+          </div>
 
-        <span
-          v-if="showVideo"
-          class="toggle-button"
-          @click="playPause"
-        >
-          <FontAwesomeIcon :icon="paused? iconPlay : iconPause" />
-        </span>
+          <span
+            v-if="showVideo"
+            class="toggle-button"
+            @click="qualityPopUp = !qualityPopUp"
+          >
+            <FontAwesomeIcon :icon="iconCog" />
+          </span>
 
-        <span
-          v-if="showVideo && fullscreenEnabled"
-          class="toggle-button"
-          @click="toggleFullScreen"
-        >
-          <FontAwesomeIcon :icon="playSizeFormat === 3? iconDeFullscreen: iconFullscreen" />
-        </span>
+          <span
+            v-if="showVideo"
+            class="toggle-button"
+            @click="stopPlaying"
+          >
+            <FontAwesomeIcon :icon="iconStop" />
+          </span>
 
-        <span
-          v-if="showVideo && playSizeFormat !== 3"
-          class="toggle-button"
-          @click="setPlaySizeFormat((playSizeFormat % 2) + 1)"
-        >
-          <FontAwesomeIcon :icon="playSizeFormat === 1 ? iconDown : iconUp" />
-        </span>
+          <span
+            v-if="showVideo"
+            class="toggle-button"
+            @click="playPause"
+          >
+            <FontAwesomeIcon :icon="paused? iconPlay : iconPause" />
+          </span>
 
-        <a
-          v-if="progress > 0.9 & playing.type === 'episode'"
-          class="nextepisode"
-          @click="playNext"
-        >Next Episode</a>
+          <span
+            v-if="showVideo && fullscreenEnabled"
+            class="toggle-button"
+            @click="toggleFullScreen"
+          >
+            <FontAwesomeIcon :icon="playSizeFormat === 3? iconDeFullscreen: iconFullscreen" />
+          </span>
+
+          <span
+            v-if="showVideo && playSizeFormat !== 3"
+            class="toggle-button"
+            @click="setPlaySizeFormat((playSizeFormat % 2) + 1)"
+          >
+            <FontAwesomeIcon :icon="playSizeFormat === 1 ? iconDown : iconUp" />
+          </span>
+
+          <a
+            v-if="progress > 0.9 & playing.type === 'episode'"
+            class="nextepisode"
+            @click="playNext"
+          >Next Episode</a>
+        </div>
       </div>
     </div>
   </div>
@@ -555,40 +559,66 @@
     .bar
       position: fixed
       bottom: 0
+      left: 0
 
-      transition: bottom 0.2s
+      transition: transform 0.2s, opacity 0.2s
 
-      padding: 20px
-      padding-top: 25px
+      padding: 18px 24px 16px
       width: 100%
 
       color: var(--color-text)
 
       z-index: 1000
 
-      background: linear-gradient(135deg, rgba(49, 43, 47, 0.98), rgba(33, 29, 34, 0.96))
+      background: linear-gradient(180deg, rgba(46, 38, 42, 0.95), rgba(30, 26, 30, 0.98))
       border-top: 1px solid var(--color-border)
-      box-shadow: 0 -12px 30px rgba(12, 10, 12, 0.45)
+      box-shadow: var(--shadow-strong)
+      backdrop-filter: blur(14px)
+
+      .bar-content
+        display: flex
+        align-items: center
+        justify-content: space-between
+        gap: 20px
+
+      .meta
+        display: flex
+        align-items: center
+        gap: 8px
+        min-width: 0
+        font-family: var(--font-body)
+        letter-spacing: 0.02em
+
+      .title
+        font-weight: 600
+        color: var(--color-text)
+        white-space: nowrap
+        overflow: hidden
+        text-overflow: ellipsis
 
       .seriesid
         color: var(--color-text-faint)
+        cursor: pointer
 
       .nextepisode
         cursor: pointer
 
-        background-color: rgba(255, 255, 255, 0.08)
-        box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.08)
+        background: linear-gradient(120deg, rgba(217, 129, 60, 0.18), rgba(217, 129, 60, 0.35))
+        box-shadow: inset 0 0 0 1px rgba(217, 129, 60, 0.35)
         color: var(--color-text)
 
-        transition: background-color 0.1s, box-shadow 0.1s
+        transition: background-color 0.2s, box-shadow 0.2s, transform 0.2s
 
-        padding: 6px 12px
-        margin-left: 10px
+        padding: 7px 14px
         border-radius: 999px
+        font-size: 0.85rem
+        letter-spacing: 0.02em
+        white-space: nowrap
 
       .nextepisode:hover
-        background-color: rgba(255, 255, 255, 0.18)
-        box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.16)
+        background: linear-gradient(120deg, rgba(217, 129, 60, 0.3), rgba(217, 129, 60, 0.5))
+        box-shadow: inset 0 0 0 1px rgba(217, 129, 60, 0.6)
+        transform: translateY(-1px)
 
     .player
       position: fixed
@@ -624,22 +654,52 @@
     .hidden
       top: 100%
 
-    .right
-      float: right
+    .controls
+      display: flex
+      align-items: center
+      gap: 10px
+      flex-wrap: wrap
+      justify-content: flex-end
 
     .toggle-button
       cursor: pointer
+      display: inline-flex
+      align-items: center
+      justify-content: center
+      width: 34px
+      height: 34px
+      border-radius: 50%
+      background: rgba(255, 255, 255, 0.06)
+      box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.1)
+      color: var(--color-text)
+      transition: transform 0.2s, background-color 0.2s, box-shadow 0.2s
+
+    .toggle-button:hover
+      background: rgba(255, 255, 255, 0.12)
+      box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.16)
+      transform: translateY(-1px)
+
+    .time
+      padding: 6px 12px
+      border-radius: 999px
+      background: rgba(255, 255, 255, 0.08)
+      color: var(--color-text-muted)
+      font-size: 0.85rem
+      letter-spacing: 0.03em
 
   .progressbarContainer
-    height: 10px
+    height: 8px
     position: absolute
     top: 0
     left: 0
     width: 100%
 
-    background-color: rgba(0, 0, 0, 0.35)
+    background-color: rgba(18, 14, 17, 0.55)
 
-    box-shadow: inset 0 0 8px rgba(0, 0, 0, 0.5)
+    box-shadow: inset 0 0 8px rgba(0, 0, 0, 0.6)
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08)
+    border-radius: 0 0 999px 999px
+    overflow: hidden
 
     cursor: pointer
 
@@ -648,11 +708,11 @@
       top: 0
       left: 0
       height: 100%
-      background-color: var(--color-accent)
+      background: linear-gradient(90deg, var(--color-accent), var(--color-accent-strong))
 
       z-index: 4
 
-      box-shadow: 0 0 10px rgba(16, 12, 14, 0.6)
+      box-shadow: 0 0 12px rgba(16, 12, 14, 0.6)
 
     .progressbarload
       position: absolute
@@ -684,28 +744,56 @@
     bottom: 50px
     right: 10px
     width: auto
-    background: rgba(32, 27, 31, 0.95)
+    background: rgba(40, 33, 37, 0.95)
     border: 1px solid var(--color-border)
-    border-radius: var(--radius-sm)
+    border-radius: var(--radius-md)
     box-shadow: var(--shadow-soft)
-    backdrop-filter: blur(10px)
+    backdrop-filter: blur(12px)
 
     ul
       list-style: none
-      border-radius: 3px
+      border-radius: var(--radius-md)
       li
-        padding: 20px
+        padding: 12px 18px
         cursor: pointer
+        color: var(--color-text)
+        font-size: 0.9rem
       li.selected
         background-color: rgba(255, 255, 255, 0.08)
       li:hover
         background-color: rgba(255, 255, 255, 0.12)
 
+  .badge
+    margin-left: 6px
+    padding: 2px 8px
+    border-radius: 999px
+    font-size: 0.7rem
+    letter-spacing: 0.04em
+    background: rgba(255, 255, 255, 0.1)
+    color: var(--color-text-faint)
 
 
   .hiddenBar
     cursor: none
     .bar
-      bottom: -70px
+      opacity: 0
+      transform: translateY(80px)
+
+  @media only screen and (max-width: 720px)
+    .playBar
+      .bar
+        padding: 16px 16px 14px
+
+        .bar-content
+          flex-direction: column
+          align-items: flex-start
+          gap: 12px
+
+        .controls
+          width: 100%
+          justify-content: space-between
+
+        .title
+          max-width: 100%
 
 </style>
