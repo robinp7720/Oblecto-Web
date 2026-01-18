@@ -16,6 +16,7 @@ import Sets from '@/components/settings/Sets'
 import IndexerSettings from '@/components/settings/IndexerSettings'
 import ArtworkSettings from '@/components/settings/ArtworkSettings'
 import FederationSettings from '@/components/settings/FederationSettings'
+import SeedboxSettings from '@/components/settings/SeedboxSettings'
 import ProblematicFiles from '@/components/settings/ProblematicFiles'
 
 import VueAxios from 'vue-axios'
@@ -116,6 +117,11 @@ const router = new Router({
           name: 'FederationSettings',
           path: 'federation',
           component: FederationSettings
+        },
+        {
+          name: 'SeedboxSettings',
+          path: 'seedboxes',
+          component: SeedboxSettings
         },
         {
           name: 'ProblematicFiles',
