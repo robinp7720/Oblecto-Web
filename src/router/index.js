@@ -14,6 +14,8 @@ import UserManager from '@/components/settings/UserManager'
 import Libraries from '@/components/settings/Libraries'
 import Sets from '@/components/settings/Sets'
 import IndexerSettings from '@/components/settings/IndexerSettings'
+import ArtworkSettings from '@/components/settings/ArtworkSettings'
+import FederationSettings from '@/components/settings/FederationSettings'
 
 import VueAxios from 'vue-axios'
 import axios from 'axios'
@@ -103,6 +105,16 @@ const router = new Router({
           name: 'IndexerSettings',
           path: 'indexer',
           component: IndexerSettings
+        },
+        {
+          name: 'ArtworkSettings',
+          path: 'artwork',
+          component: ArtworkSettings
+        },
+        {
+          name: 'FederationSettings',
+          path: 'federation',
+          component: FederationSettings
         }
       ]
     }
