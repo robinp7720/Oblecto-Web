@@ -108,6 +108,39 @@
     </div>
 
     <div class="settings-card">
+      <h2 class="settings-section-title">Manual Import</h2>
+      <p class="settings-description">
+        Trigger a one-time import from a specific seedbox or all seedboxes.
+      </p>
+      <div class="resize-grid import-grid">
+        <div class="form-group">
+          <label>Source</label>
+          <select v-model="importSource">
+            <option value="all">All seedboxes</option>
+            <option
+              v-for="(seedbox, index) in seedboxes"
+              :key="`import-${seedbox.name || seedbox.storageDriverOptions.host || index}`"
+              :value="seedbox.name || String(index)"
+            >
+              {{ seedbox.name || seedbox.storageDriverOptions.host || `Seedbox ${index + 1}` }}
+            </option>
+          </select>
+        </div>
+        <div class="form-group import-actions">
+          <label>Import Type</label>
+          <div class="actions-group">
+            <button class="btn" @click="triggerImport('movies')">
+              Import Movies
+            </button>
+            <button class="btn" @click="triggerImport('tvshows')">
+              Import TV Shows
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="settings-card">
       <h2 class="settings-section-title">Configured Seedboxes</h2>
 
       <div class="settings-table-scroll">
@@ -189,7 +222,8 @@
       return {
         seedboxes: [],
         seedboxForm: emptySeedbox(),
-        editingIndex: null
+        editingIndex: null,
+        importSource: 'all'
       }
     },
     computed: {
@@ -285,6 +319,26 @@
       resetForm () {
         this.seedboxForm = emptySeedbox()
         this.editingIndex = null
+      },
+      async triggerImport (type) {
+        try {
+          await oblectoClient.system.triggerImport(this.importSource, type)
+          const sourceLabel = this.importSource === 'all' ? 'all seedboxes' : this.importSource
+          this.$notify({
+            group: 'system',
+            title: 'Import started',
+            text: `Importing ${type} from ${sourceLabel}.`,
+            type: 'success'
+          })
+        } catch (e) {
+          console.error('Failed to trigger import', e)
+          this.$notify({
+            group: 'system',
+            title: 'Error',
+            text: 'Failed to start seedbox import.',
+            type: 'error'
+          })
+        }
       }
     }
   }
@@ -309,6 +363,20 @@
 
   .form-group
     flex: 1
+
+.import-grid
+  align-items: flex-end
+
+.actions-group
+  display: flex
+  flex-wrap: wrap
+  gap: 10px
+
+  button
+    margin: 0 !important
+    display: inline-flex
+    align-items: center
+    gap: 8px
 
 .form-actions
   display: flex
