@@ -58,7 +58,7 @@
       },
       async addLibrary () {
         try {
-          await this.axios.put(`/sources/${this.libraryType}`, {
+          await this.axios.post(`/api/v1/libraries/${this.libraryType}/paths`, {
             path: this.path
           })
 

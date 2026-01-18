@@ -1,44 +1,50 @@
 <template>
   <div class="wrapper">
-    <h2>Video Filetypes</h2>
-    <table>
-      <thead>
-        <tr>
-          <th>#</th>
-          <th>Filetype</th>
-          <th>Actions</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr v-for="(filetype, index) in videoFiletypes">
-          <td class="id">
-            {{ index + 1 }}
-          </td>
-          <td>
-            {{ filetype }}
-          </td>
-          <td class="actions">
-            <a
-              title="Remove filetype"
-              @click="deleteSeriesLibrary(filetype)"
-            >
-              <FontAwesomeIcon :icon="deleteIcon" />
-            </a>
-          </td>
-        </tr>
-      </tbody>
-    </table>
-    <a
-      class="button"
-      @click="filetypeAdd('video')"
-    >Add Filetype</a>
+    <div class="settings-card">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; border-bottom: 1px solid #444; padding-bottom: 10px;">
+        <h2 style="margin: 0; border: none; padding: 0;">Video Filetypes</h2>
+        <a class="btn" @click="filetypeAdd('video')">
+          <font-awesome-icon icon="plus" /> Add Filetype
+        </a>
+      </div>
+      <table class="settings-table">
+        <thead>
+          <tr>
+            <th width="50">#</th>
+            <th>Filetype</th>
+            <th width="100">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr v-if="videoFiletypes.length === 0">
+            <td colspan="3" style="text-align: center; color: #999;">No video filetypes configured.</td>
+          </tr>
+          <tr v-for="(filetype, index) in videoFiletypes" :key="index">
+            <td class="id">{{ index + 1 }}</td>
+            <td>{{ filetype }}</td>
+            <td class="actions">
+              <a
+                title="Remove filetype"
+                @click="deleteFiletype(filetype, 'video')"
+              >
+                <FontAwesomeIcon :icon="deleteIcon" />
+              </a>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
   </div>
 </template>
 
 <script>
   import FontAwesomeIcon from '@fortawesome/vue-fontawesome'
   import faTrash from '@fortawesome/fontawesome-free-solid/faTrash'
+  import faPlus from '@fortawesome/fontawesome-free-solid/faPlus'
+  import fontawesome from '@fortawesome/fontawesome'
   import oblectoClient from '@/oblectoClient'
+
+  fontawesome.library.add(faPlus, faTrash)
 
   export default {
     name: 'IndexerSettings',
@@ -56,94 +62,43 @@
       }
     },
     async created () {
-      let filetypes = (await oblectoClient.axios.get(`/settings/fileExtensions`)).data
-
-      this.videoFiletypes = filetypes.video
+      this.refresh()
     },
     methods: {
+      async refresh () {
+        let config = (await oblectoClient.axios.get(`/api/v1/settings/fileExtensions`)).data
+        this.videoFiletypes = config.video || []
+      },
       async filetypeAdd (type) {
-
+        // TODO: Replace with a proper modal later
+        const ext = prompt("Enter new file extension (e.g. .mkv):")
+        if (ext) {
+          let currentList = [...this.videoFiletypes]
+          if (!currentList.includes(ext)) {
+             currentList.push(ext)
+             await this.updateConfig(currentList)
+             this.$notify({ type: 'success', title: 'Success', text: 'Filetype added' })
+          }
+        }
+      },
+      async deleteFiletype (filetype, type) {
+        if(confirm(`Are you sure you want to remove ${filetype}?`)) {
+           let currentList = this.videoFiletypes.filter(f => f !== filetype)
+           await this.updateConfig(currentList)
+           this.$notify({ type: 'success', title: 'Success', text: 'Filetype removed' })
+        }
+      },
+      async updateConfig(videoList) {
+          // Update the specific section
+          await oblectoClient.axios.patch(`/api/v1/settings/fileExtensions`, {
+             video: videoList
+          })
+          this.refresh()
       }
     }
   }
 </script>
 
 <style scoped lang="sass">
-  @use "sass:color"
-
-  .button
-    background-color: rgba(0,0,0,0.5)
-    border: rgba(0,0,0,0.8) 1px solid
-    color: rgba(255,255,255,0.5)
-
-    padding: 10px
-    -webkit-border-radius: 3px
-    -moz-border-radius: 3px
-    border-radius: 3px
-    cursor: pointer
-
-    display: block
-    width: 100%
-
-    max-width: 200px
-
-    margin: 5px 0
-
-    text-align: center
-
-  h2
-    padding-left: 40px
-
-  table
-    background: #696060
-    box-shadow: 0 0 5px 2px rgba(color.adjust(#696060, $lightness: -20%), 0.75)
-
-    border-spacing: 0
-
-    width: 100%
-
-    thead
-      background-color: #444042
-      box-shadow: 0 0 5px 2px rgba(color.adjust(#696060, $lightness: -20%), 0.75)
-
-      th
-        padding: 10px
-
-        margin: 0
-        border: 0
-
-        outline: 0
-    tr:nth-child(even)
-      background-color: color.adjust(#696060, $lightness: -2%)
-
-    td
-      padding: 10px
-
-    .id
-      text-align: right
-
-    .actions
-      text-align: center
-
-
-    .button
-      background-color: rgba(0,0,0,0.5)
-      border: rgba(0,0,0,0.8) 1px solid
-      color: rgba(255,255,255,0.5)
-
-      padding: 10px
-      -webkit-border-radius: 3px
-      -moz-border-radius: 3px
-      border-radius: 3px
-      cursor: pointer
-
-      display: block
-      width: 100%
-
-      max-width: 200px
-
-      margin: 5px 0
-
-      text-align: center
-
+@use "@/assets/sass/settings.sass"
 </style>

@@ -16,17 +16,17 @@ const actions = {
     dispatch('updateTVShows')
   },
   async updateMovies ({ commit }) {
-    let { data: movies } = await Vue.axios.get(`/sources/movies`)
+    let { data: movies } = await Vue.axios.get(`/api/v1/libraries/movies`)
 
     commit(types.RECIEVE_LIBRARIES_MOVIES, movies)
   },
   async updateTVShows ({ commit }) {
-    let { data: shows } = await Vue.axios.get(`/sources/tvshows`)
+    let { data: shows } = await Vue.axios.get(`/api/v1/libraries/tvshows`)
 
     commit(types.RECIEVE_LIBRARIES_SHOWS, shows)
   },
   async deleteMovieLibrary ({ dispatch }, path) {
-    await Vue.axios.delete(`/sources/movies`, {
+    await Vue.axios.delete(`/api/v1/libraries/movies/paths`, {
       data: {
         path
       }
@@ -35,7 +35,7 @@ const actions = {
     dispatch('updateAll')
   },
   async deleteSeriesLibrary ({ dispatch }, path) {
-    await Vue.axios.delete(`/sources/tvshows`, {
+    await Vue.axios.delete(`/api/v1/libraries/tvshows/paths`, {
       data: {
         path
       }
