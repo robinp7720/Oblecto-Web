@@ -1,10 +1,16 @@
 <template>
-  <modal name="ChangeRemoteDialog" @before-open="beforeOpen" :adaptive=true>
-      <h3>Choose Playback device</h3>
+  <modal
+    name="ChangeRemoteDialog"
+    :adaptive="true"
+    @before-open="beforeOpen"
+  >
+    <h3>Choose Playback device</h3>
     <ul>
-      <li v-for="(remote, index) in remotes"
-          v-bind:key="index">
-        <span v-on:click="setRemote(remote.clientId)">{{ remote.clientName }}</span>
+      <li
+        v-for="(remote, index) in remotes"
+        :key="index"
+      >
+        <span @click="setRemote(remote.clientId)">{{ remote.clientName }}</span>
       </li>
     </ul>
   </modal>
@@ -37,6 +43,7 @@
 </script>
 
 <style scoped lang="sass">
+  @use "sass:color"
   .container
     padding: 10px
 
@@ -49,7 +56,7 @@
 
     background-color: rgba(0,0,0,0.3)
 
-    box-shadow: 0 0 5px 2px rgba(darken(#696060, 20), 0.75)
+    box-shadow: 0 0 5px 2px rgba(color.adjust(#696060, $lightness: -20%), 0.75)
 
   ul
     list-style: none
@@ -72,6 +79,6 @@
         transition: background-color 0.1s
       span:hover
         background-color: rgba(0,0,0,0.1)
-        box-shadow: 0 0 2px 2px rgba(darken(#696060, 20), 0.2)
+        box-shadow: 0 0 2px 2px rgba(color.adjust(#696060, $lightness: -20%), 0.2)
 
 </style>

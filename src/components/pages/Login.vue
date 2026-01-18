@@ -1,16 +1,38 @@
 <template>
   <div class="container">
-    <div class="form" @keyup.enter="submit">
+    <div
+      class="form"
+      @keyup.enter="submit"
+    >
       <div class="logo">
-        <img v-bind:src="host + '/web/logo.png'" alt="">
+        <img
+          :src="host + '/web/logo.png'"
+          alt=""
+        >
       </div>
       <label for="username">Username</label>
-      <input type="text" id="username" v-model="credentials.username">
+      <input
+        id="username"
+        v-model="credentials.username"
+        type="text"
+      >
       <label for="password">Password</label>
-      <input id="password" type="password" v-model="credentials.password">
+      <input
+        id="password"
+        v-model="credentials.password"
+        type="password"
+      >
       <div class="bottom">
-        <span class="server-indicator">{{ host }} <a v-on:click="changeHost" class="nav-link">Change</a></span>
-        <button type="submit" @click="submit">Login</button>
+        <span class="server-indicator">{{ host }} <a
+          class="nav-link"
+          @click="changeHost"
+        >Change</a></span>
+        <button
+          type="submit"
+          @click="submit"
+        >
+          Login
+        </button>
       </div>
     </div>
   </div>
@@ -77,6 +99,7 @@
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style scoped lang="sass">
+  @use "sass:color"
   .container
     position: fixed
     top: 0
@@ -88,7 +111,7 @@
     align-items: center
     justify-content: center
     .form
-      box-shadow: 0 0 5px 2px rgba(darken(#696060, 20), 0.75)
+      box-shadow: 0 0 5px 2px rgba(color.adjust(#696060, $lightness: -20%), 0.75)
 
       width: 100%
       max-width: 500px

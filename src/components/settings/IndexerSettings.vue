@@ -3,29 +3,35 @@
     <h2>Video Filetypes</h2>
     <table>
       <thead>
-      <tr>
-        <th>#</th>
-        <th>Filetype</th>
-        <th>Actions</th>
-      </tr>
+        <tr>
+          <th>#</th>
+          <th>Filetype</th>
+          <th>Actions</th>
+        </tr>
       </thead>
       <tbody>
-      <tr v-for="(filetype, index) in videoFiletypes">
-        <td class="id">
-          {{ index + 1 }}
-        </td>
-        <td>
-          {{ filetype }}
-        </td>
-        <td class="actions">
-          <a title="Remove filetype" v-on:click="deleteSeriesLibrary(filetype)">
-            <FontAwesomeIcon :icon="deleteIcon"/>
-          </a>
-        </td>
-      </tr>
+        <tr v-for="(filetype, index) in videoFiletypes">
+          <td class="id">
+            {{ index + 1 }}
+          </td>
+          <td>
+            {{ filetype }}
+          </td>
+          <td class="actions">
+            <a
+              title="Remove filetype"
+              @click="deleteSeriesLibrary(filetype)"
+            >
+              <FontAwesomeIcon :icon="deleteIcon" />
+            </a>
+          </td>
+        </tr>
       </tbody>
     </table>
-    <a class="button" v-on:click="filetypeAdd('video')">Add Filetype</a>
+    <a
+      class="button"
+      @click="filetypeAdd('video')"
+    >Add Filetype</a>
   </div>
 </template>
 
@@ -39,14 +45,14 @@
     components: {
       FontAwesomeIcon
     },
-    computed: {
-      deleteIcon () {
-        return faTrash
-      }
-    },
     data () {
       return {
         videoFiletypes: []
+      }
+    },
+    computed: {
+      deleteIcon () {
+        return faTrash
       }
     },
     async created () {
@@ -63,6 +69,7 @@
 </script>
 
 <style scoped lang="sass">
+  @use "sass:color"
 
   .button
     background-color: rgba(0,0,0,0.5)
@@ -89,7 +96,7 @@
 
   table
     background: #696060
-    box-shadow: 0 0 5px 2px rgba(darken(#696060, 20), 0.75)
+    box-shadow: 0 0 5px 2px rgba(color.adjust(#696060, $lightness: -20%), 0.75)
 
     border-spacing: 0
 
@@ -97,7 +104,7 @@
 
     thead
       background-color: #444042
-      box-shadow: 0 0 5px 2px rgba(darken(#696060, 20), 0.75)
+      box-shadow: 0 0 5px 2px rgba(color.adjust(#696060, $lightness: -20%), 0.75)
 
       th
         padding: 10px
@@ -107,7 +114,7 @@
 
         outline: 0
     tr:nth-child(even)
-      background-color: darken(#696060, 2)
+      background-color: color.adjust(#696060, $lightness: -2%)
 
     td
       padding: 10px

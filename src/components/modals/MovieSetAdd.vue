@@ -1,15 +1,29 @@
 <template>
-  <modal name="MovieSetAdd" @before-open="beforeOpen" height="auto">
+  <modal
+    name="MovieSetAdd"
+    height="auto"
+    @before-open="beforeOpen"
+  >
     <div class="container">
       <div class="heading">
-      <h3>Add Movie Set</h3>
+        <h3>Add Movie Set</h3>
       </div>
       <div class="body">
         <label for="name">Name:</label>
-        <input type="text" id="name" v-model="name" v-bind:class="{invalid: name === ''}">
+        <input
+          id="name"
+          v-model="name"
+          type="text"
+          :class="{invalid: name === ''}"
+        >
       </div>
       <div class="footer">
-        <button class="success" v-on:click="addSet">Add user</button>
+        <button
+          class="success"
+          @click="addSet"
+        >
+          Add user
+        </button>
       </div>
     </div>
   </modal>
@@ -58,6 +72,7 @@
 </script>
 
 <style scoped lang="sass">
+  @use "sass:color"
 
   .body
     padding: 10px
@@ -71,7 +86,7 @@
 
     background-color: rgba(0,0,0,0.3)
 
-    box-shadow: 0 0 5px 2px rgba(darken(#696060, 20), 0.75)
+    box-shadow: 0 0 5px 2px rgba(color.adjust(#696060, $lightness: -20%), 0.75)
 
   label
     display: block
@@ -90,7 +105,7 @@
   .footer
     background-color: rgba(0,0,0,0.3)
 
-    box-shadow: 0 0 5px 2px rgba(darken(#696060, 20), 0.75)
+    box-shadow: 0 0 5px 2px rgba(color.adjust(#696060, $lightness: -20%), 0.75)
     padding: 10px
 
     overflow: hidden

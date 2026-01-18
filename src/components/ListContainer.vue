@@ -1,11 +1,19 @@
 <template>
   <div class="list-container">
-    <div class="titlebar" v-if="title">
-      <h3 class="title">{{ title }} <span class="badge" v-if="badge !== undefined">{{ badge }}</span></h3>
+    <div
+      v-if="title"
+      class="titlebar"
+    >
+      <h3 class="title">
+        {{ title }} <span
+          v-if="badge !== undefined"
+          class="badge"
+        >{{ badge }}</span>
+      </h3>
     </div>
     <div class="list-inner">
       <Scroller>
-        <slot></slot>
+        <slot />
       </Scroller>
     </div>
   </div>
@@ -18,8 +26,8 @@ import Scroller from '@/components/Scroller'
 
 export default {
   name: 'ListContainer',
-  props: { 'title': String, 'badge': Number },
-  components: { FontAwesomeIcon, Scroller }
+  components: { FontAwesomeIcon, Scroller },
+  props: { 'title': String, 'badge': Number }
 }
 </script>
 

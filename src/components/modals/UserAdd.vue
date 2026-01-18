@@ -1,21 +1,50 @@
 <template>
-  <modal name="UserAdd" @before-open="beforeOpen" height="auto">
+  <modal
+    name="UserAdd"
+    height="auto"
+    @before-open="beforeOpen"
+  >
     <div class="container">
       <div class="heading">
-      <h3>Add user</h3>
+        <h3>Add user</h3>
       </div>
       <div class="body">
         <label for="name">Name:</label>
-        <input type="text" id="name" v-model="name" v-bind:class="{invalid: name === ''}">
+        <input
+          id="name"
+          v-model="name"
+          type="text"
+          :class="{invalid: name === ''}"
+        >
         <label for="username">Username:</label>
-        <input type="text" id="username" v-model="username" v-bind:class="{invalid: username === ''}">
+        <input
+          id="username"
+          v-model="username"
+          type="text"
+          :class="{invalid: username === ''}"
+        >
         <label for="email">Email:</label>
-          <input type="text" id="email" v-model="email" v-bind:class="{invalid: email === ''}">
+        <input
+          id="email"
+          v-model="email"
+          type="text"
+          :class="{invalid: email === ''}"
+        >
         <label for="password">Password:</label>
-          <input id="password" type="password" v-model="password" v-bind:class="{invalid: password === ''}">
+        <input
+          id="password"
+          v-model="password"
+          type="password"
+          :class="{invalid: password === ''}"
+        >
       </div>
       <div class="footer">
-        <button class="success" v-on:click="addUser">Add user</button>
+        <button
+          class="success"
+          @click="addUser"
+        >
+          Add user
+        </button>
       </div>
     </div>
   </modal>
@@ -64,6 +93,7 @@
 </script>
 
 <style scoped lang="sass">
+  @use "sass:color"
 
   .body
     padding: 10px
@@ -77,7 +107,7 @@
 
     background-color: rgba(0,0,0,0.3)
 
-    box-shadow: 0 0 5px 2px rgba(darken(#696060, 20), 0.75)
+    box-shadow: 0 0 5px 2px rgba(color.adjust(#696060, $lightness: -20%), 0.75)
 
   label
     display: block
@@ -96,7 +126,7 @@
   .footer
     background-color: rgba(0,0,0,0.3)
 
-    box-shadow: 0 0 5px 2px rgba(darken(#696060, 20), 0.75)
+    box-shadow: 0 0 5px 2px rgba(color.adjust(#696060, $lightness: -20%), 0.75)
     padding: 10px
 
     overflow: hidden

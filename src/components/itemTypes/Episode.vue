@@ -1,22 +1,68 @@
 <template>
-  <transition name="slide-fade" appear>
+  <transition
+    name="slide-fade"
+    appear
+  >
     <div class="episode">
-      <div class="episode-poster"
-           :style="{ backgroundImage: 'url(' + bannerUrl + ')' }">
-        <a class="play" v-on:click="playEpisode"><i class="fa fa-play" aria-hidden="true"></i></a>
-        <div :title="episode.episodeName" class="title" v-if="inside">{{ episode.episodeName }}</div>
-        <div v-if="progress" class="progress" :style="{ width: progress * 100 + '%' }"></div>
+      <div
+        class="episode-poster"
+        :style="{ backgroundImage: 'url(' + bannerUrl + ')' }"
+      >
+        <a
+          class="play"
+          @click="playEpisode"
+        ><i
+          class="fa fa-play"
+          aria-hidden="true"
+        /></a>
+        <div
+          v-if="inside"
+          :title="episode.episodeName"
+          class="title"
+        >
+          {{ episode.episodeName }}
+        </div>
+        <div
+          v-if="progress"
+          class="progress"
+          :style="{ width: progress * 100 + '%' }"
+        />
         <div class="actions">
-          <a class="action-item" v-on:click="openEpisodeDialog" title="Options">
-            <i class="fa fa-info" aria-hidden="true"></i>
+          <a
+            class="action-item"
+            title="Options"
+            @click="openEpisodeDialog"
+          >
+            <i
+              class="fa fa-info"
+              aria-hidden="true"
+            />
           </a>
-          <a class="action-item" v-on:click="viewEpisodeInfo" title="Info">
-            <i class="fa fa-eye" aria-hidden="true"></i>
+          <a
+            class="action-item"
+            title="Info"
+            @click="viewEpisodeInfo"
+          >
+            <i
+              class="fa fa-eye"
+              aria-hidden="true"
+            />
           </a>
         </div>
       </div>
-      <div :title="episode.episodeName" class="title" v-if="!inside">{{ episode.episodeName }}</div>
-      <div class="subtitle" v-if="subtitle && !inside">{{ subtitle }}</div>
+      <div
+        v-if="!inside"
+        :title="episode.episodeName"
+        class="title"
+      >
+        {{ episode.episodeName }}
+      </div>
+      <div
+        v-if="subtitle && !inside"
+        class="subtitle"
+      >
+        {{ subtitle }}
+      </div>
     </div>
   </transition>
 </template>
@@ -27,6 +73,36 @@
 
   export default {
     name: 'Episode',
+    props: {
+      'subtitle': {
+        type: String,
+        required: false
+      },
+      'inside': {
+        type: Boolean,
+        required: false,
+        default: false
+      },
+      'episode': {
+        required: true,
+        default: false
+      }
+    },
+    data () {
+      return {
+        progress: 0,
+        loaded: false,
+        bannerUrl: '',
+        bannerLoaded: false
+      }
+    },
+    watch: {
+      episode: async function (newState, oldState) {
+        if (this.episode.TrackEpisodes[0]) {
+          this.progress = this.episode.TrackEpisodes[0].progress
+        }
+      }
+    },
     created () {
       if (this.episode.TrackEpisodes[0]) {
         this.progress = this.episode.TrackEpisodes[0].progress
@@ -49,38 +125,8 @@
     mounted () {
 
     },
-    beforeDestroy () {
+    beforeUnmount () {
       getSocket().off('client-episode-progress', this.handleEpisodeProgress)
-    },
-    watch: {
-      episode: async function (newState, oldState) {
-        if (this.episode.TrackEpisodes[0]) {
-          this.progress = this.episode.TrackEpisodes[0].progress
-        }
-      }
-    },
-    data () {
-      return {
-        progress: 0,
-        loaded: false,
-        bannerUrl: '',
-        bannerLoaded: false
-      }
-    },
-    props: {
-      'subtitle': {
-        type: String,
-        required: false
-      },
-      'inside': {
-        type: Boolean,
-        required: false,
-        default: false
-      },
-      'episode': {
-        required: true,
-        default: false
-      }
     },
     computed: {
       ...mapState([

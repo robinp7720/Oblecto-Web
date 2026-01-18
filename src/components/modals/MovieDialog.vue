@@ -1,19 +1,22 @@
 <template>
-  <modal name="MovieDialog" @before-open="beforeOpen">
-      <h3>{{ movie.movieName }}</h3>
-      <tabs :options="{ useUrlFragment: false }">
-        <tab name="Data">
-
-        </tab>
-        <tab name="Files">
-          <ul>
-            <li v-for="(file, index) in movie.Files"
-                        v-bind:key="file.id">
-              <span>{{ file.path }}</span>
-            </li>
-          </ul>
-        </tab>
-      </tabs>
+  <modal
+    name="MovieDialog"
+    @before-open="beforeOpen"
+  >
+    <h3>{{ movie.movieName }}</h3>
+    <tabs :options="{ useUrlFragment: false }">
+      <tab name="Data" />
+      <tab name="Files">
+        <ul>
+          <li
+            v-for="(file, index) in movie.Files"
+            :key="file.id"
+          >
+            <span>{{ file.path }}</span>
+          </li>
+        </ul>
+      </tab>
+    </tabs>
   </modal>
 </template>
 
@@ -36,6 +39,7 @@
 </script>
 
 <style scoped lang="sass">
+  @use "sass:color"
   .container
     padding: 10px
 
@@ -47,7 +51,7 @@
 
     background-color: rgba(0,0,0,0.3)
 
-    box-shadow: 0 0 5px 2px rgba(darken(#696060, 20), 0.75)
+    box-shadow: 0 0 5px 2px rgba(color.adjust(#696060, $lightness: -20%), 0.75)
 
   ul
     list-style: none
@@ -68,6 +72,6 @@
         transition: background-color 0.1s
       span:hover
         background-color: rgba(0,0,0,0.1)
-        box-shadow: 0 0 2px 2px rgba(darken(#696060, 20), 0.2)
+        box-shadow: 0 0 2px 2px rgba(color.adjust(#696060, $lightness: -20%), 0.2)
 
 </style>

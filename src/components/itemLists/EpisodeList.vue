@@ -1,9 +1,14 @@
 <template>
-  <ListContainer :title="title" :badge="badge">
-    <Episode v-for="(episode, index) in episodes"
-             :subtitle="`S${episode.airedSeason}E${episode.airedEpisodeNumber} - ${episode.Series.seriesName}`"
-             :key="episode.id"
-             :episode="episode"/>
+  <ListContainer
+    :title="title"
+    :badge="badge"
+  >
+    <Episode
+      v-for="(episode, index) in episodes"
+      :key="episode.id"
+      :subtitle="`S${episode.airedSeason}E${episode.airedEpisodeNumber} - ${episode.Series.seriesName}`"
+      :episode="episode"
+    />
   </ListContainer>
 </template>
 

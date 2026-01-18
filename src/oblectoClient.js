@@ -1,4 +1,4 @@
-import OblectoClient from 'oblectoclient'
+import OblectoClient from './oblecto-client/src'
 
 let host = window.location.protocol + '//' + window.location.hostname
 

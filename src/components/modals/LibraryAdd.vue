@@ -1,15 +1,32 @@
 <template>
-  <modal name="LibraryAdd" @before-open="beforeOpen" @opened="opened" height="auto">
+  <modal
+    name="LibraryAdd"
+    height="auto"
+    @before-open="beforeOpen"
+    @opened="opened"
+  >
     <div class="container">
       <div class="heading">
-      <h3>Add {{ libraryType }} library</h3>
+        <h3>Add {{ libraryType }} library</h3>
       </div>
       <div class="body">
         <label for="name">Path:</label>
-        <input type="text" id="name" v-model="path" v-on:keyup.enter="addLibrary" ref="pathInput" v-bind:class="{invalid: path === ''}">
+        <input
+          id="name"
+          ref="pathInput"
+          v-model="path"
+          type="text"
+          :class="{invalid: path === ''}"
+          @keyup.enter="addLibrary"
+        >
       </div>
       <div class="footer">
-        <button class="success" v-on:click="addLibrary">Add library</button>
+        <button
+          class="success"
+          @click="addLibrary"
+        >
+          Add library
+        </button>
       </div>
     </div>
   </modal>
@@ -70,6 +87,7 @@
 </script>
 
 <style scoped lang="sass">
+  @use "sass:color"
 
   .body
     padding: 10px
@@ -83,7 +101,7 @@
 
     background-color: rgba(0,0,0,0.3)
 
-    box-shadow: 0 0 5px 2px rgba(darken(#696060, 20), 0.75)
+    box-shadow: 0 0 5px 2px rgba(color.adjust(#696060, $lightness: -20%), 0.75)
 
   label
     display: block
@@ -102,7 +120,7 @@
   .footer
     background-color: rgba(0,0,0,0.3)
 
-    box-shadow: 0 0 5px 2px rgba(darken(#696060, 20), 0.75)
+    box-shadow: 0 0 5px 2px rgba(color.adjust(#696060, $lightness: -20%), 0.75)
     padding: 10px
 
     overflow: hidden

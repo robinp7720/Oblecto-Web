@@ -1,15 +1,15 @@
 <template>
   <transition-group
+    ref="scroller"
     name="staggered-fade"
     tag="ul"
     class="scroller"
-    ref="scroller"
-    v-bind:css="true"
-    v-on:before-enter="beforeEnter"
-    v-on:enter="enter"
-    v-on:leave="leave"
+    :css="true"
+    @before-enter="beforeEnter"
+    @enter="enter"
+    @leave="leave"
   >
-    <slot></slot>
+    <slot />
   </transition-group>
 </template>
 

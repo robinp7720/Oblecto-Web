@@ -1,11 +1,16 @@
 <template>
-  <ListContainer :title="title" :badge="badge">
-    <Movie v-for="(movie, index) in movies"
-           :title="movie.movieName"
-           :movieId="movie.id"
-           :subtitle="'Released: ' + movie.releaseDate"
-           :movie="movie"
-           :key="movie.id" />
+  <ListContainer
+    :title="title"
+    :badge="badge"
+  >
+    <Movie
+      v-for="(movie, index) in movies"
+      :key="movie.id"
+      :title="movie.movieName"
+      :movie-id="movie.id"
+      :subtitle="'Released: ' + movie.releaseDate"
+      :movie="movie"
+    />
   </ListContainer>
 </template>
 

@@ -20,8 +20,8 @@ Vue.use(VueAxios, axios)
 
 store.dispatch('updateHost', oblectoClient.axios.defaults.baseURL)
 
-Vue.component('tabs', Tabs)
-Vue.component('tab', Tab)
+Vue.component('Tabs', Tabs)
+Vue.component('Tab', Tab)
 
 Vue.config.productionTip = false
 
@@ -30,8 +30,7 @@ export const instance = new Vue({
   el: '#app',
   store,
   router,
-  template: '<App/>',
-  components: { App }
+  render: h => h(App)
 })
 
 initSocket(instance)

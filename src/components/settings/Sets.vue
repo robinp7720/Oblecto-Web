@@ -1,7 +1,8 @@
 <template>
   <div class="sets">
-  <button @click="newMovieSet">New Movie Set</button>
-
+    <button @click="newMovieSet">
+      New Movie Set
+    </button>
   </div>
 </template>
 

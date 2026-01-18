@@ -1,59 +1,113 @@
 <template>
-  <div class="playBar" ref="playbar" v-on:mousemove="playbarTimeout = 0" v-bind:class="{hiddenBar: !(playbarTimeout < 20 || playSizeFormat === 2)}">
-
-    <div class="player" v-bind:class="{ small: playSizeFormat === 2, hidden: (!showVideo || (playSizeFormat === 2 && browserSupportsPiP))}">
-      <video ref="videoPlayer"></video>
+  <div
+    ref="playbar"
+    class="playBar"
+    :class="{hiddenBar: !(playbarTimeout < 20 || playSizeFormat === 2)}"
+    @mousemove="playbarTimeout = 0"
+  >
+    <div
+      class="player"
+      :class="{ small: playSizeFormat === 2, hidden: (!showVideo || (playSizeFormat === 2 && browserSupportsPiP))}"
+    >
+      <video ref="videoPlayer" />
     </div>
 
-    <div class="bar" ref="bar">
-
-      <div class="progressbarContainer" v-on:click="seek">
-        <div v-bind:class="{loading}" class="progressbar" v-bind:style="{ width: progress * 100 + '%' }"></div>
-        <div class="progressbarload" v-bind:style="{ width: (initialProgress + $refs.videoPlayer.buffered.end($refs.videoPlayer.buffered.length - 1)) / playing.entity.Files[PlayingFileID].duration * 100 + '%' }" v-if="$refs.videoPlayer && $refs.videoPlayer.buffered.length > 0"></div>
+    <div
+      ref="bar"
+      class="bar"
+    >
+      <div
+        class="progressbarContainer"
+        @click="seek"
+      >
+        <div
+          :class="{loading}"
+          class="progressbar"
+          :style="{ width: progress * 100 + '%' }"
+        />
+        <div
+          v-if="$refs.videoPlayer && $refs.videoPlayer.buffered.length > 0"
+          class="progressbarload"
+          :style="{ width: (initialProgress + $refs.videoPlayer.buffered.end($refs.videoPlayer.buffered.length - 1)) / playing.entity.Files[PlayingFileID].duration * 100 + '%' }"
+        />
       </div>
 
-      <span class="seriesid" v-if="playing.type === 'episode'" v-on:click="viewShow"> {{ playing.entity.Series.seriesName }} S{{ playing.entity.airedSeason }}E{{ playing.entity.airedEpisodeNumber }}: </span>
+      <span
+        v-if="playing.type === 'episode'"
+        class="seriesid"
+        @click="viewShow"
+      > {{ playing.entity.Series.seriesName }} S{{ playing.entity.airedSeason }}E{{ playing.entity.airedEpisodeNumber }}: </span>
       <span class="title">{{ playing.title }}</span>
 
       <div class="right">
-        <span class="time" v-if="showVideo">
+        <span
+          v-if="showVideo"
+          class="time"
+        >
           {{ PlayTimeDisplayValue }} / {{ DurationDisplayValue }}
         </span>
 
-        <div class="quality-selector" v-if="qualityPopUp">
+        <div
+          v-if="qualityPopUp"
+          class="quality-selector"
+        >
           <ul>
             <li
               v-for="(FileIterator, index) in playing.entity.Files"
-              v-bind:key="FileIterator.id"
-              v-on:click="changeFileId(index)"
-              v-bind:class="{selected: index === PlayingFileID}"
+              :key="FileIterator.id"
+              :class="{selected: index === PlayingFileID}"
+              @click="changeFileId(index)"
             >
               {{ FileIterator.name }} <span class="badge">{{ FileIterator.extension }}</span>
             </li>
           </ul>
         </div>
 
-        <span v-on:click="qualityPopUp = !qualityPopUp" v-if="showVideo" class="toggle-button">
-          <FontAwesomeIcon :icon="iconCog"/>
+        <span
+          v-if="showVideo"
+          class="toggle-button"
+          @click="qualityPopUp = !qualityPopUp"
+        >
+          <FontAwesomeIcon :icon="iconCog" />
         </span>
 
-        <span v-on:click="stopPlaying" v-if="showVideo" class="toggle-button">
-          <FontAwesomeIcon :icon="iconStop"/>
+        <span
+          v-if="showVideo"
+          class="toggle-button"
+          @click="stopPlaying"
+        >
+          <FontAwesomeIcon :icon="iconStop" />
         </span>
 
-        <span v-on:click="playPause" class="toggle-button" v-if="showVideo">
-          <FontAwesomeIcon :icon="paused? iconPlay : iconPause"/>
+        <span
+          v-if="showVideo"
+          class="toggle-button"
+          @click="playPause"
+        >
+          <FontAwesomeIcon :icon="paused? iconPlay : iconPause" />
         </span>
 
-        <span v-on:click="toggleFullScreen" class="toggle-button" v-if="showVideo && fullscreenEnabled">
-          <FontAwesomeIcon :icon="playSizeFormat === 3? iconDeFullscreen: iconFullscreen"/>
+        <span
+          v-if="showVideo && fullscreenEnabled"
+          class="toggle-button"
+          @click="toggleFullScreen"
+        >
+          <FontAwesomeIcon :icon="playSizeFormat === 3? iconDeFullscreen: iconFullscreen" />
         </span>
 
-        <span v-on:click="setPlaySizeFormat((playSizeFormat % 2) + 1)" class="toggle-button" v-if="showVideo && playSizeFormat !== 3">
-          <FontAwesomeIcon :icon="playSizeFormat === 1 ? iconDown : iconUp"/>
+        <span
+          v-if="showVideo && playSizeFormat !== 3"
+          class="toggle-button"
+          @click="setPlaySizeFormat((playSizeFormat % 2) + 1)"
+        >
+          <FontAwesomeIcon :icon="playSizeFormat === 1 ? iconDown : iconUp" />
         </span>
 
-        <a v-on:click="playNext" v-if="progress > 0.9 & playing.type === 'episode'" class="nextepisode">Next Episode</a>
+        <a
+          v-if="progress > 0.9 & playing.type === 'episode'"
+          class="nextepisode"
+          @click="playNext"
+        >Next Episode</a>
       </div>
     </div>
   </div>
@@ -79,10 +133,10 @@
   let IGNORE_RESTORE_PROGRESS_THRESHOLD = 0.9
 
   export default {
+    name: 'PlayBar',
     components: {
       FontAwesomeIcon
     },
-    name: 'play-bar',
     data () {
       return {
         paused: true,

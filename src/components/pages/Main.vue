@@ -1,28 +1,36 @@
 <template>
   <div class="container">
-    <EpisodeList title="Recently aired"
-                 v-bind:episodes="episodes.firstAired"
+    <EpisodeList
+      title="Recently aired"
+      :episodes="episodes.firstAired"
     />
-    <SeriesList title="Recently added series"
-              v-bind:series="series.createdAt"
+    <SeriesList
+      title="Recently added series"
+      :series="series.createdAt"
     />
-    <EpisodeList title="Recently added episodes"
-                 v-bind:episodes="episodes.createdAt"
+    <EpisodeList
+      title="Recently added episodes"
+      :episodes="episodes.createdAt"
     />
-    <MovieList title="Recently added movies"
-               v-bind:movies="movies.createdAt"
+    <MovieList
+      title="Recently added movies"
+      :movies="movies.createdAt"
     />
-    <SeriesList title="Shows watched by others"
-              v-bind:series="series.siteRatingCount"
+    <SeriesList
+      title="Shows watched by others"
+      :series="series.siteRatingCount"
     />
-    <MovieList title="Popular movies"
-               v-bind:movies="movies.popularity"
+    <MovieList
+      title="Popular movies"
+      :movies="movies.popularity"
     />
-    <SeriesList title="Best rated series"
-              v-bind:series="series.siteRating"
+    <SeriesList
+      title="Best rated series"
+      :series="series.siteRating"
     />
-    <MovieList title="Recently released movies"
-               v-bind:movies="movies.releaseDate"
+    <MovieList
+      title="Recently released movies"
+      :movies="movies.releaseDate"
     />
   </div>
 </template>

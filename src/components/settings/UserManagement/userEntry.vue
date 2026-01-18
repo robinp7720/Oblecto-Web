@@ -1,17 +1,27 @@
 <template>
   <tr>
-    <td class="id">{{ user.id }} </td>
+    <td class="id">
+      {{ user.id }}
+    </td>
     <td>{{ user.name }}</td>
     <td>{{ user.username }}</td>
     <td>{{ user.email }}</td>
     <td>{{ user.group }}</td>
-    <td><a  v-on:click="changePassword" class="action">Change Password</a> <a href="#" class="action">Change Group</a></td>
+    <td>
+      <a
+        class="action"
+        @click="changePassword"
+      >Change Password</a> <a
+        href="#"
+        class="action"
+      >Change Group</a>
+    </td>
   </tr>
 </template>
 
 <script>
   export default {
-    name: 'userEntry',
+    name: 'UserEntry',
     props: ['user'],
     methods: {
       changePassword () {
@@ -22,8 +32,9 @@
 </script>
 
 <style scoped lang="sass">
+  @use "sass:color"
   tr:nth-child(even)
-    background-color: darken(#696060, 2)
+    background-color: color.adjust(#696060, $lightness: -2%)
 
   td
     padding: 10px

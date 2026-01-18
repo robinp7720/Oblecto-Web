@@ -1,15 +1,41 @@
 <template>
   <li class="show">
-    <div class="show-poster" v-bind:style="{ backgroundImage: 'url(' + host + '/series/' + series.id + '/poster)' }">
-      <a class="play" v-on:click="viewEpisodes"><i class="fa fa-eye" aria-hidden="true"></i></a>
+    <div
+      class="show-poster"
+      :style="{ backgroundImage: 'url(' + host + '/series/' + series.id + '/poster)' }"
+    >
+      <a
+        class="play"
+        @click="viewEpisodes"
+      ><i
+        class="fa fa-eye"
+        aria-hidden="true"
+      /></a>
       <div class="actions">
-        <a class="action-item" v-on:click="openModal" title="Options">
-          <i class="fa fa-info" aria-hidden="true"></i>
+        <a
+          class="action-item"
+          title="Options"
+          @click="openModal"
+        >
+          <i
+            class="fa fa-info"
+            aria-hidden="true"
+          />
         </a>
       </div>
     </div>
-    <div :title="title" class="title">{{ title }}</div>
-    <div class="subtitle" v-if="subtitle">{{ subtitle }}</div>
+    <div
+      :title="title"
+      class="title"
+    >
+      {{ title }}
+    </div>
+    <div
+      v-if="subtitle"
+      class="subtitle"
+    >
+      {{ subtitle }}
+    </div>
   </li>
 </template>
 

@@ -1,6 +1,9 @@
 <template>
   <div class="file-list-container">
-    <ul class="file-list" v-if="files.length > 0">
+    <ul
+      v-if="files.length > 0"
+      class="file-list"
+    >
       <li
         v-for="(FileIterator, index) in files"
         :key="FileIterator.id"
@@ -8,12 +11,18 @@
       >
         {{ FileIterator.name }} <span class="badge">{{ FileIterator.extension }}</span>
         <div class="file-item-right">
-          <span class="copy" v-on:click="copyUrl(FileIterator.id)"><FontAwesomeIcon :icon="iconCopy"/></span>
+          <span
+            class="copy"
+            @click="copyUrl(FileIterator.id)"
+          ><FontAwesomeIcon :icon="iconCopy" /></span>
         </div>
       </li>
     </ul>
 
-    <div class="error" v-if="files.length === 0">
+    <div
+      v-if="files.length === 0"
+      class="error"
+    >
       <span class="msg">No files linked</span>
     </div>
   </div>
@@ -44,12 +53,13 @@ export default {
 </script>
 
 <style scoped lang="sass">
+@use "sass:color"
 .file-list-container
   padding: 0 10px
 
 .file-list
   background: #696060
-  box-shadow: 0 0 2px 2px rgba(darken(#696060, 20), 0.75)
+  box-shadow: 0 0 2px 2px rgba(color.adjust(#696060, $lightness: -20%), 0.75)
 
   border-spacing: 0
 
@@ -64,7 +74,7 @@ export default {
   padding: 10px 30px
 
 .file-list-item:nth-child(even)
-  background-color: darken(#696060, 2)
+  background-color: color.adjust(#696060, $lightness: -2%)
 
 .file-item-right
   float: right

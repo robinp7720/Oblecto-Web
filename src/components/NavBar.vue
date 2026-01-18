@@ -3,35 +3,75 @@
     <div class="container">
       <div class="nav-left">
         <div class="brand">
-          <router-link :to="{ name: 'Main'}" class="brand-link"><img v-bind:src="host + '/web/logo.png'" alt="">
+          <router-link
+            :to="{ name: 'Main'}"
+            class="brand-link"
+          >
+            <img
+              :src="host + '/web/logo.png'"
+              alt=""
+            >
           </router-link>
         </div>
         <div class="links">
-          <router-link :to="{ name: 'Series'}" class="nav-link">Series</router-link>
-          <router-link :to="{ name: 'Movies'}" class="nav-link">Movies</router-link>
+          <router-link
+            :to="{ name: 'Series'}"
+            class="nav-link"
+          >
+            Series
+          </router-link>
+          <router-link
+            :to="{ name: 'Movies'}"
+            class="nav-link"
+          >
+            Movies
+          </router-link>
         </div>
       </div>
       <div class="search">
-        <form action="" class="search" id="search-form" v-on:submit.prevent="search">
-          <input type="text" id="search-input" class="input-text" v-model="searchText">
+        <form
+          id="search-form"
+          action=""
+          class="search"
+          @submit.prevent="search"
+        >
+          <input
+            id="search-input"
+            v-model="searchText"
+            type="text"
+            class="input-text"
+          >
           <button type="submit">
             <FontAwesomeIcon
-              :icon="iconSearch"/>
+              :icon="iconSearch"
+            />
           </button>
         </form>
       </div>
       <div class="nav-right">
-        <router-link :to="{ name: 'SettingsHome'}" class="nav-link">
+        <router-link
+          :to="{ name: 'SettingsHome'}"
+          class="nav-link"
+        >
           <FontAwesomeIcon
-            :icon="iconSettings"/>
+            :icon="iconSettings"
+          />
         </router-link>
-        <a v-on:click="changeRemote" class="nav-link">
+        <a
+          class="nav-link"
+          @click="changeRemote"
+        >
           <FontAwesomeIcon
-            :icon="iconRemote"/>
+            :icon="iconRemote"
+          />
         </a>
-        <a v-on:click="logout" class="nav-link">
+        <a
+          class="nav-link"
+          @click="logout"
+        >
           <FontAwesomeIcon
-            :icon="iconLogout"/>
+            :icon="iconLogout"
+          />
         </a>
       </div>
     </div>
@@ -93,6 +133,7 @@ export default {
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style scoped lang="sass">
+@use "sass:color"
 .nav-bar
   top: 0
   height: 50px
@@ -101,8 +142,8 @@ export default {
 
   z-index: 3
 
-  background-color: darken(#696060, 20)
-  box-shadow: 0 0 5px 2px rgba(darken(#696060, 20), 0.75)
+  background-color: color.adjust(#696060, $lightness: -20%)
+  box-shadow: 0 0 5px 2px rgba(color.adjust(#696060, $lightness: -20%), 0.75)
 
   .search
     @media screen and (max-width: 800px)

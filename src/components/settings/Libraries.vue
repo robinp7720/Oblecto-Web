@@ -3,55 +3,67 @@
     <h2>Movies</h2>
     <table>
       <thead>
-      <tr>
-        <th>#</th>
-        <th>Path</th>
-        <th>Actions</th>
-      </tr>
+        <tr>
+          <th>#</th>
+          <th>Path</th>
+          <th>Actions</th>
+        </tr>
       </thead>
       <tbody>
-      <tr v-for="(library, index) in movies">
-        <td class="id">
-          {{ index + 1 }}
-        </td>
-        <td>
-          {{ library.path }}
-        </td>
-        <td class="actions">
-          <a title="Delete library path" v-on:click="deleteMovieLibrary(library.path)">
-            <FontAwesomeIcon :icon="deleteIcon"/>
-          </a>
-        </td>
-      </tr>
+        <tr v-for="(library, index) in movies">
+          <td class="id">
+            {{ index + 1 }}
+          </td>
+          <td>
+            {{ library.path }}
+          </td>
+          <td class="actions">
+            <a
+              title="Delete library path"
+              @click="deleteMovieLibrary(library.path)"
+            >
+              <FontAwesomeIcon :icon="deleteIcon" />
+            </a>
+          </td>
+        </tr>
       </tbody>
     </table>
-    <a class="button" v-on:click="libraryAdd('movies')">Add movie library</a>
+    <a
+      class="button"
+      @click="libraryAdd('movies')"
+    >Add movie library</a>
     <h2>TV Shows</h2>
     <table>
       <thead>
-      <tr>
-        <th>#</th>
-        <th>Path</th>
-        <th>Actions</th>
-      </tr>
+        <tr>
+          <th>#</th>
+          <th>Path</th>
+          <th>Actions</th>
+        </tr>
       </thead>
       <tbody>
-      <tr v-for="(library, index) in shows">
-        <td class="id">
-          {{ index + 1 }}
-        </td>
-        <td>
-          {{ library.path }}
-        </td>
-        <td class="actions">
-          <a title="Delete library path" v-on:click="deleteSeriesLibrary(library.path)">
-            <FontAwesomeIcon :icon="deleteIcon"/>
-          </a>
-        </td>
-      </tr>
+        <tr v-for="(library, index) in shows">
+          <td class="id">
+            {{ index + 1 }}
+          </td>
+          <td>
+            {{ library.path }}
+          </td>
+          <td class="actions">
+            <a
+              title="Delete library path"
+              @click="deleteSeriesLibrary(library.path)"
+            >
+              <FontAwesomeIcon :icon="deleteIcon" />
+            </a>
+          </td>
+        </tr>
       </tbody>
     </table>
-    <a class="button" v-on:click="libraryAdd('tvshows')">Add TV show library</a>
+    <a
+      class="button"
+      @click="libraryAdd('tvshows')"
+    >Add TV show library</a>
   </div>
 </template>
 
@@ -100,6 +112,7 @@
 </script>
 
 <style scoped lang="sass">
+  @use "sass:color"
 
   .button
     background-color: rgba(0,0,0,0.5)
@@ -126,7 +139,7 @@
 
   table
     background: #696060
-    box-shadow: 0 0 5px 2px rgba(darken(#696060, 20), 0.75)
+    box-shadow: 0 0 5px 2px rgba(color.adjust(#696060, $lightness: -20%), 0.75)
 
     border-spacing: 0
 
@@ -134,7 +147,7 @@
 
     thead
       background-color: #444042
-      box-shadow: 0 0 5px 2px rgba(darken(#696060, 20), 0.75)
+      box-shadow: 0 0 5px 2px rgba(color.adjust(#696060, $lightness: -20%), 0.75)
 
       th
         padding: 10px
@@ -144,7 +157,7 @@
 
         outline: 0
     tr:nth-child(even)
-      background-color: darken(#696060, 2)
+      background-color: color.adjust(#696060, $lightness: -2%)
 
     td
       padding: 10px

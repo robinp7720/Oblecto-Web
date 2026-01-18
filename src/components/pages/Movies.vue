@@ -1,17 +1,24 @@
 <template>
   <div class="container">
-    <MovieList title="Recently Added"
-               v-bind:movies="movies.createdAt"/>
-    <MovieList title="Popular movies"
-               v-bind:movies="movies.popularity"/>
-    <MovieList title="Recently released movies"
-               v-bind:movies="movies.releaseDate"/>
+    <MovieList
+      title="Recently Added"
+      :movies="movies.createdAt"
+    />
+    <MovieList
+      title="Popular movies"
+      :movies="movies.popularity"
+    />
+    <MovieList
+      title="Recently released movies"
+      :movies="movies.releaseDate"
+    />
 
-    <MovieList v-for="(set, index) in sets"
-             v-bind:title="set.setName"
-             v-bind:key="set.id"
-             v-bind:movies="set.movies"
-    ></MovieList>
+    <MovieList
+      v-for="(set, index) in sets"
+      :key="set.id"
+      :title="set.setName"
+      :movies="set.movies"
+    />
   </div>
 </template>
 

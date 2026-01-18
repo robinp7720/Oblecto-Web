@@ -1,23 +1,49 @@
 <template>
   <div class="maintenance">
-  <button @click="index('all')">Full re-index</button>
-  <button @click="index('series')">Re-index series</button>
-  <button @click="index('movies')">Re-index movies</button>
-  <hr>
-  <button>Full cleanup</button>
-  <button @click="clean('files')">Clean up files database</button>
-  <button @click="clean('episodes')">Cleanup episodes without linked files</button>
-  <button @click="clean('movies')">Cleanup movies without linked files</button>
-  <button @click="clean('series')">Remove Series without episodes</button>
-  <hr>
-  <button>Download new artwork</button>
-  <button @click="DownloadTVShowArt">Download artwork for TV Shows and Episodes</button>
-  <button @click="DownloadMovieArt">Download artwork for Movies</button>
+    <button @click="index('all')">
+      Full re-index
+    </button>
+    <button @click="index('series')">
+      Re-index series
+    </button>
+    <button @click="index('movies')">
+      Re-index movies
+    </button>
     <hr>
-    <button @click="update('episodes')">Update episode entries</button>
-    <button @click="update('movies')">Update movie entries</button>
-    <button @click="update('series')">Update series entries</button>
-    <button @click="update('files')">Update file entries</button>
+    <button>Full cleanup</button>
+    <button @click="clean('files')">
+      Clean up files database
+    </button>
+    <button @click="clean('episodes')">
+      Cleanup episodes without linked files
+    </button>
+    <button @click="clean('movies')">
+      Cleanup movies without linked files
+    </button>
+    <button @click="clean('series')">
+      Remove Series without episodes
+    </button>
+    <hr>
+    <button>Download new artwork</button>
+    <button @click="DownloadTVShowArt">
+      Download artwork for TV Shows and Episodes
+    </button>
+    <button @click="DownloadMovieArt">
+      Download artwork for Movies
+    </button>
+    <hr>
+    <button @click="update('episodes')">
+      Update episode entries
+    </button>
+    <button @click="update('movies')">
+      Update movie entries
+    </button>
+    <button @click="update('series')">
+      Update series entries
+    </button>
+    <button @click="update('files')">
+      Update file entries
+    </button>
   </div>
 </template>
 

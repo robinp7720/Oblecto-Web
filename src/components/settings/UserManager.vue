@@ -2,23 +2,27 @@
   <div class="UserManager">
     <table>
       <thead>
-      <tr>
-        <th>User ID</th>
-        <th>Name</th>
-        <th>Username</th>
-        <th>Email</th>
-        <th>Group</th>
-        <th>Actions</th>
-      </tr>
+        <tr>
+          <th>User ID</th>
+          <th>Name</th>
+          <th>Username</th>
+          <th>Email</th>
+          <th>Group</th>
+          <th>Actions</th>
+        </tr>
       </thead>
       <tbody>
-      <user-entry v-for="(user, index) in users"
-            v-bind:user="user"
-            v-bind:key="user.id"
-      ></user-entry>
+        <user-entry
+          v-for="(user, index) in users"
+          :key="user.id"
+          :user="user"
+        />
       </tbody>
     </table>
-  <a class="button" v-on:click="userAdd">Add user</a>
+    <a
+      class="button"
+      @click="userAdd"
+    >Add user</a>
   </div>
 </template>
 
@@ -45,9 +49,10 @@
 </script>
 
 <style scoped lang="sass">
+  @use "sass:color"
   table
     background: #696060
-    box-shadow: 0 0 5px 2px rgba(darken(#696060, 20), 0.75)
+    box-shadow: 0 0 5px 2px rgba(color.adjust(#696060, $lightness: -20%), 0.75)
 
     border-spacing: 0
 
@@ -55,7 +60,7 @@
 
   thead
     background-color: #444042
-    box-shadow: 0 0 5px 2px rgba(darken(#696060, 20), 0.75)
+    box-shadow: 0 0 5px 2px rgba(color.adjust(#696060, $lightness: -20%), 0.75)
 
     th
       padding: 10px

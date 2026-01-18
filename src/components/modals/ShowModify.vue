@@ -1,11 +1,18 @@
 <template>
-  <modal name="ShowModify" @before-open="beforeOpen" height="auto">
+  <modal
+    name="ShowModify"
+    height="auto"
+    @before-open="beforeOpen"
+  >
     <div class="container">
       <h3>{{ show.seriesName }}</h3>
       <div class="wrapper">
         <div class="half">
           <div class="poster">
-            <img :src="host + '/series/' + show.id + '/poster'" alt="">
+            <img
+              :src="host + '/series/' + show.id + '/poster'"
+              alt=""
+            >
           </div>
         </div>
       </div>
@@ -35,6 +42,7 @@
 </script>
 
 <style scoped lang="sass">
+  @use "sass:color"
 
   h3
     width: 100%
@@ -45,7 +53,7 @@
 
     background-color: rgba(0,0,0,0.3)
 
-    box-shadow: 0 0 5px 2px rgba(darken(#696060, 20), 0.75)
+    box-shadow: 0 0 5px 2px rgba(color.adjust(#696060, $lightness: -20%), 0.75)
 
   .wrapper
     width: 100%
@@ -56,7 +64,7 @@
       padding: 10px
 
     .poster
-      width:
+      width: 100%
       img
         width: 100%
 </style>

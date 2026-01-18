@@ -1,29 +1,40 @@
 <template>
   <div id="app">
-    <ShowDialogModal/>
-    <ShowModifyModal/>
-    <UserAddModal/>
-    <MovieDialogModal/>
-    <EpisodeDialogModal/>
-    <LibraryAdd/>
-    <NewMovieSet/>
-    <PasswordChange/>
-    <CopyText/>
+    <ShowDialogModal />
+    <ShowModifyModal />
+    <UserAddModal />
+    <MovieDialogModal />
+    <EpisodeDialogModal />
+    <LibraryAdd />
+    <NewMovieSet />
+    <PasswordChange />
+    <CopyText />
     <ChangeRemoteDialog />
 
-    <notifications group="system" classes="system-notification" position="bottom center" />
+    <notifications
+      group="system"
+      classes="system-notification"
+      position="bottom center"
+    />
 
-    <NavBar v-if="$router.history.current.name !== 'login' && loaded"/>
+    <NavBar v-if="$router.history.current.name !== 'login' && loaded" />
 
-    <WatchPanel  v-if="$router.history.current.name !== 'login' && loaded"/>
+    <WatchPanel v-if="$router.history.current.name !== 'login' && loaded" />
 
-    <playBar v-if="$router.history.current.name !== 'login' && loaded"/>
+    <playBar v-if="$router.history.current.name !== 'login' && loaded" />
 
-    <transition name="long-fade" mode="out">
-      <LoadingPage v-if="$router.history.current.name !== 'login' && !loaded"></LoadingPage>
+    <transition
+      name="long-fade"
+      mode="out"
+    >
+      <LoadingPage v-if="$router.history.current.name !== 'login' && !loaded" />
     </transition>
 
-    <transition name="fade" mode="out-in" v-if="$router.history.current.name === 'login' || loaded">
+    <transition
+      v-if="$router.history.current.name === 'login' || loaded"
+      name="fade"
+      mode="out-in"
+    >
       <router-view />
     </transition>
   </div>
@@ -52,7 +63,7 @@
   import ChangeRemoteDialog from '@/components/modals/ChangeRemoteDialog'
 
   export default {
-    name: 'app',
+    name: 'App',
     components: {
       ChangeRemoteDialog,
       WatchPanel: WatchPanel,

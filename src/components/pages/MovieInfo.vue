@@ -1,14 +1,28 @@
 <template>
   <div class="container">
     <div class="movie">
-      <div ref="infoContainer"
-           class="info-container"
-           v-if="movieData.id"
-           :style="{ backgroundImage: 'linear-gradient(to bottom, rgba(255,255,255, 0) 40%, ' + endGradient + ' 80%), url(' + host + '/movie/' + movieData.id + '/fanart)' }">
-        <div class="info" v-if="posterLoaded">
+      <div
+        v-if="movieData.id"
+        ref="infoContainer"
+        class="info-container"
+        :style="{ backgroundImage: 'linear-gradient(to bottom, rgba(255,255,255, 0) 40%, ' + endGradient + ' 80%), url(' + host + '/movie/' + movieData.id + '/fanart)' }"
+      >
+        <div
+          v-if="posterLoaded"
+          class="info"
+        >
           <div class="poster">
-            <img :src="posterUrl" alt="">
-            <a class="play" v-on:click="playMovie"><i class="fa fa-play" aria-hidden="true"></i></a>
+            <img
+              :src="posterUrl"
+              alt=""
+            >
+            <a
+              class="play"
+              @click="playMovie"
+            ><i
+              class="fa fa-play"
+              aria-hidden="true"
+            /></a>
           </div>
           <div class="right">
             <h2>{{ movieData.movieName }}</h2>
@@ -17,19 +31,25 @@
               {{ movieData.overview }}
             </p>
             <ul class="genres">
-              <li class="genre" v-for="genre in movieData.genre">{{ genre }}</li>
+              <li
+                v-for="genre in movieData.genre"
+                class="genre"
+              >
+                {{ genre }}
+              </li>
             </ul>
           </div>
         </div>
       </div>
 
-      <FileList :files="movieData.Files"></FileList>
+      <FileList :files="movieData.Files" />
 
-      <MovieList v-for="(set, index) in sets"
-                 v-bind:title="set.setName"
-                 v-bind:key="set.id"
-                 v-bind:movies="set.movies"
-      ></MovieList>
+      <MovieList
+        v-for="(set, index) in sets"
+        :key="set.id"
+        :title="set.setName"
+        :movies="set.movies"
+      />
     </div>
   </div>
 </template>
@@ -58,6 +78,28 @@ export default {
     ...mapState([
       'host'
     ])
+  },
+  watch: {
+    async '$route' (to, from) {
+      await this.update()
+    }
+  },
+  async mounted () {
+    this.updateGradient()
+  },
+
+  async updated () {
+    this.updateGradient()
+  },
+
+  async created () {
+    await this.update()
+    window.addEventListener('resize', this.updateGradient)
+    window.addEventListener('scroll', this.updateGradient)
+  },
+  async beforeUnmount () {
+    window.removeEventListener('resize', this.updateGradient)
+    window.removeEventListener('scroll', this.updateGradient)
   },
   methods: {
     playMovie: function (event) {
@@ -117,33 +159,12 @@ export default {
       let g = this.gradientColor()
       this.endGradient = `rgb(${g[0]}, ${g[1]}, ${g[2]})`
     }
-  },
-  async mounted () {
-    this.updateGradient()
-  },
-
-  async updated () {
-    this.updateGradient()
-  },
-
-  async created () {
-    await this.update()
-    window.addEventListener('resize', this.updateGradient)
-    window.addEventListener('scroll', this.updateGradient)
-  },
-  async beforeDestroy () {
-    window.removeEventListener('resize', this.updateGradient)
-    window.removeEventListener('scroll', this.updateGradient)
-  },
-  watch: {
-    async '$route' (to, from) {
-      await this.update()
-    }
   }
 }
 </script>
 
 <style scoped lang="sass">
+@use "sass:color"
 .info-container
   margin-top: -20px
 
@@ -160,7 +181,7 @@ export default {
   font-size: 1em
   border-radius: 3px
   background: #696060
-  box-shadow: 0 2px 5px 2px rgba(darken(#696060, 20), 0.75)
+  box-shadow: 0 2px 5px 2px rgba(color.adjust(#696060, $lightness: -20%), 0.75)
   padding-bottom: 40px
 
   min-height: 270px
@@ -170,7 +191,7 @@ export default {
 
     height: 300px
     float: left
-    box-shadow: 0 2px 5px 2px rgba(darken(#696060, 20), 0.75)
+    box-shadow: 0 2px 5px 2px rgba(color.adjust(#696060, $lightness: -20%), 0.75)
     border-radius: 3px
     overflow: hidden
 
@@ -256,7 +277,7 @@ a.play:hover
 
 .error
   background: #694040
-  box-shadow: 0 0 2px 2px rgba(darken(#694040, 20), 0.75)
+  box-shadow: 0 0 2px 2px rgba(color.adjust(#694040, $lightness: -20%), 0.75)
 
   padding: 10px
 

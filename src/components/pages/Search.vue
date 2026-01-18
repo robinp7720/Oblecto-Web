@@ -1,17 +1,23 @@
 <template>
   <div class="container">
-    <MovieList title="Movie Results"
-               :badge="`${searchResults.movies.length}`"
-               :movies="searchResults.movies"
-               v-if="searchResults.movies.length > 0"/>
-    <EpisodeList title="Episode Results"
-                 :badge="`${searchResults.episodes.length}`"
-                 :episodes="searchResults.episodes"
-                 v-if="searchResults.episodes.length > 0"/>
-    <SeriesList title="TV Show Results"
-                :badge="`${searchResults.series.length}`"
-                :series="searchResults.series"
-                v-if="searchResults.series.length > 0"/>
+    <MovieList
+      v-if="searchResults.movies.length > 0"
+      title="Movie Results"
+      :badge="`${searchResults.movies.length}`"
+      :movies="searchResults.movies"
+    />
+    <EpisodeList
+      v-if="searchResults.episodes.length > 0"
+      title="Episode Results"
+      :badge="`${searchResults.episodes.length}`"
+      :episodes="searchResults.episodes"
+    />
+    <SeriesList
+      v-if="searchResults.series.length > 0"
+      title="TV Show Results"
+      :badge="`${searchResults.series.length}`"
+      :series="searchResults.series"
+    />
   </div>
 </template>
 
@@ -37,6 +43,16 @@
       }
     },
 
+    watch: {
+      async '$route' (to, from) {
+        this.search(to.params.search)
+      }
+    },
+
+    async created () {
+      this.search(this.$route.params.search)
+    },
+
     methods: {
       async search (query) {
         let { data: episodes } = await this.axios.get(`/episodes/search/${query}`)
@@ -47,16 +63,6 @@
           episodes, movies, series
         }
       }
-    },
-
-    watch: {
-      async '$route' (to, from) {
-        this.search(to.params.search)
-      }
-    },
-
-    async created () {
-      this.search(this.$route.params.search)
     }
   }
 </script>

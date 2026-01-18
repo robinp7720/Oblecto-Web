@@ -1,14 +1,23 @@
 <template>
   <div class="watching">
     <tabs :options="{ useUrlFragment: false }">
-      <tab name="Tracked episodes" v-bind:suffix="'<span class=badge>' + watchingEpisodes.length + '</span>'">
-        <EpisodeList v-bind:episodes="watchingEpisodes"></EpisodeList>
+      <tab
+        name="Tracked episodes"
+        :suffix="'<span class=badge>' + watchingEpisodes.length + '</span>'"
+      >
+        <EpisodeList :episodes="watchingEpisodes" />
       </tab>
-      <tab name="Tracked movies" v-bind:suffix="'<span class=badge>' + watchingMovies.length + '</span>'">
-        <MovieList v-bind:movies="watchingMovies"></MovieList>
+      <tab
+        name="Tracked movies"
+        :suffix="'<span class=badge>' + watchingMovies.length + '</span>'"
+      >
+        <MovieList :movies="watchingMovies" />
       </tab>
-      <tab name="next up" v-bind:suffix="'<span class=badge>' + nextEpisodes.length + '</span>'">
-        <EpisodeList v-bind:episodes="nextEpisodes"></EpisodeList>
+      <tab
+        name="next up"
+        :suffix="'<span class=badge>' + nextEpisodes.length + '</span>'"
+      >
+        <EpisodeList :episodes="nextEpisodes" />
       </tab>
     </tabs>
   </div>
@@ -21,7 +30,7 @@
   import { mapState } from 'vuex'
 
   export default {
-    name: 'watchPanel',
+    name: 'WatchPanel',
     components: {
       SeriesList,
       EpisodeList,

@@ -1,30 +1,104 @@
 <template>
-  <transition name="slide-fade" appear>
-    <li class="movie-horizontal" v-if="horizontal">
-      <div class="movie-poster" v-bind:style="{ backgroundImage: 'url(' + host + '/movie/' + movieId + '/banner)' }">
-        <a class="play" v-on:click="playMovie"><i class="fa fa-play" aria-hidden="true"></i></a>
-        <div :title="title" class="title" v-if="inside">{{ title }}</div>
-        <div class="progress" v-bind:style="{ width: progress * 100 + '%' }"></div>
+  <transition
+    name="slide-fade"
+    appear
+  >
+    <li
+      v-if="horizontal"
+      class="movie-horizontal"
+    >
+      <div
+        class="movie-poster"
+        :style="{ backgroundImage: 'url(' + host + '/movie/' + movieId + '/banner)' }"
+      >
+        <a
+          class="play"
+          @click="playMovie"
+        ><i
+          class="fa fa-play"
+          aria-hidden="true"
+        /></a>
+        <div
+          v-if="inside"
+          :title="title"
+          class="title"
+        >
+          {{ title }}
+        </div>
+        <div
+          class="progress"
+          :style="{ width: progress * 100 + '%' }"
+        />
       </div>
-      <div :title="title" class="title" v-if="!inside">{{ title }}</div>
-      <div class="subtitle" v-if="subtitle && !inside">{{ subtitle }}</div>
+      <div
+        v-if="!inside"
+        :title="title"
+        class="title"
+      >
+        {{ title }}
+      </div>
+      <div
+        v-if="subtitle && !inside"
+        class="subtitle"
+      >
+        {{ subtitle }}
+      </div>
     </li>
 
-    <li class="movie-vertical" v-if="!horizontal">
-      <div class="movie-poster" v-bind:style="{ backgroundImage: 'url(' + host + '/movie/' + movieId + '/poster)' }">
-        <a class="play" v-on:click="playMovie"><i class="fa fa-play" aria-hidden="true"></i></a>
+    <li
+      v-if="!horizontal"
+      class="movie-vertical"
+    >
+      <div
+        class="movie-poster"
+        :style="{ backgroundImage: 'url(' + host + '/movie/' + movieId + '/poster)' }"
+      >
+        <a
+          class="play"
+          @click="playMovie"
+        ><i
+          class="fa fa-play"
+          aria-hidden="true"
+        /></a>
         <div class="actions">
-          <a class="action-item" v-on:click="openModal" title="Options">
-            <i class="fa fa-info" aria-hidden="true"></i>
+          <a
+            class="action-item"
+            title="Options"
+            @click="openModal"
+          >
+            <i
+              class="fa fa-info"
+              aria-hidden="true"
+            />
           </a>
-          <a class="action-item" v-on:click="viewMovieInfo" title="Info">
-            <i class="fa fa-eye" aria-hidden="true"></i>
+          <a
+            class="action-item"
+            title="Info"
+            @click="viewMovieInfo"
+          >
+            <i
+              class="fa fa-eye"
+              aria-hidden="true"
+            />
           </a>
         </div>
-        <div class="progress" v-bind:style="{ width: progress * 100 + '%' }"></div>
-        </div>
-      <div :title="title" class="title">{{ title }}</div>
-      <div class="subtitle" v-if="subtitle">{{ subtitle }}</div>
+        <div
+          class="progress"
+          :style="{ width: progress * 100 + '%' }"
+        />
+      </div>
+      <div
+        :title="title"
+        class="title"
+      >
+        {{ title }}
+      </div>
+      <div
+        v-if="subtitle"
+        class="subtitle"
+      >
+        {{ subtitle }}
+      </div>
     </li>
   </transition>
 </template>
@@ -50,7 +124,7 @@
         progress: 0
       }
     },
-    beforeDestroy () {
+    beforeUnmount () {
       getSocket().off('client-movie-progress', this.handleMovieProgress)
     },
     methods: {

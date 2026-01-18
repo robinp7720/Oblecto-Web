@@ -1,10 +1,16 @@
 <template>
   <div class="container">
-    <div class="show" v-if="showData && posterLoaded">
+    <div
+      v-if="showData && posterLoaded"
+      class="show"
+    >
       <div class="info-container">
         <div class="info">
           <div class="poster">
-            <img :src="posterUrl" alt="">
+            <img
+              :src="posterUrl"
+              alt=""
+            >
           </div>
           <div class="right">
             <h2>{{ showData.seriesName }}</h2>
@@ -13,7 +19,12 @@
               {{ showData.overview }}
             </p>
             <ul class="genres">
-              <li class="genre" v-for="genre in showData.genre">{{ genre }}</li>
+              <li
+                v-for="genre in showData.genre"
+                class="genre"
+              >
+                {{ genre }}
+              </li>
             </ul>
           </div>
         </div>
@@ -21,11 +32,11 @@
       <div class="episodes">
         <EpisodeList
           v-for="(episodes, index) in series"
+          :key="index"
           :episodes="episodes"
           :show="showData"
-          :key="index"
-          :title="index">
-        </EpisodeList>
+          :title="index"
+        />
       </div>
     </div>
   </div>
@@ -51,6 +62,12 @@ export default {
   computed: mapState([
     'host'
   ]),
+  watch: {
+    '$route' (to, from) {
+      this.loadInfo()
+      this.loadEpisodes()
+    }
+  },
   async created () {
     this.loadInfo()
     this.loadEpisodes()
@@ -94,18 +111,13 @@ export default {
 
       this.series = temp
     }
-  },
-  watch: {
-    '$route' (to, from) {
-      this.loadInfo()
-      this.loadEpisodes()
-    }
   }
 }
 </script>
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style scoped lang="sass">
+@use "sass:color"
 
 .info-container
   padding: 50px 10px 0
@@ -114,7 +126,7 @@ export default {
   font-size: 1em
   border-radius: 3px
   background: #696060
-  box-shadow: 0 2px 5px 2px rgba(darken(#696060, 20), 0.75)
+  box-shadow: 0 2px 5px 2px rgba(color.adjust(#696060, $lightness: -20%), 0.75)
   padding-bottom: 40px
 
   min-height: 270px
@@ -124,7 +136,7 @@ export default {
     width: 204px
 
     float: left
-    box-shadow: 0 2px 5px 2px rgba(darken(#696060, 20), 0.75)
+    box-shadow: 0 2px 5px 2px rgba(color.adjust(#696060, $lightness: -20%), 0.75)
     border-radius: 3px
     overflow: hidden
 

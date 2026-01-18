@@ -1,13 +1,22 @@
 <template>
-  <modal name="ShowDialog" @before-open="beforeOpen">
+  <modal
+    name="ShowDialog"
+    @before-open="beforeOpen"
+  >
     <div class="container">
       <h3>{{ show.seriesName }}</h3>
       <ul>
         <li>
-          <a href="#" v-on:click="indexShow">Re-index show</a>
+          <a
+            href="#"
+            @click="indexShow"
+          >Re-index show</a>
         </li>
         <li>
-          <a href="#" v-on:click="modifyShow">Edit show data</a>
+          <a
+            href="#"
+            @click="modifyShow"
+          >Edit show data</a>
         </li>
       </ul>
     </div>
@@ -47,6 +56,7 @@
 </script>
 
 <style scoped lang="sass">
+  @use "sass:color"
 
   h3
     width: 100%
@@ -57,7 +67,7 @@
 
     background-color: rgba(0,0,0,0.3)
 
-    box-shadow: 0 0 5px 2px rgba(darken(#696060, 20), 0.75)
+    box-shadow: 0 0 5px 2px rgba(color.adjust(#696060, $lightness: -20%), 0.75)
 
   ul
     list-style: none
@@ -78,6 +88,6 @@
         transition: background-color 0.1s
       a:hover
         background-color: rgba(0,0,0,0.1)
-        box-shadow: 0 0 2px 2px rgba(darken(#696060, 20), 0.2)
+        box-shadow: 0 0 2px 2px rgba(color.adjust(#696060, $lightness: -20%), 0.2)
 
 </style>
