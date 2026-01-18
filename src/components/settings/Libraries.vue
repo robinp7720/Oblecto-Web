@@ -61,6 +61,7 @@
       </table>
     </div>
 
+    <!-- TV SHOWS SECTION -->
     <div class="settings-card">
       <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; border-bottom: 1px solid #444; padding-bottom: 10px;">
         <h2 style="margin: 0; border: none; padding: 0;">TV Shows</h2>
@@ -68,6 +69,53 @@
           <font-awesome-icon icon="plus" /> Add TV show library
         </a>
       </div>
+
+      <!-- Configuration -->
+      <div style="margin-bottom: 20px;">
+          <div class="setting-row">
+            <label class="checkbox-container">
+              Re-index on Startup
+              <input type="checkbox" v-model="tvConfig.doReIndex" @change="saveTvConfig">
+              <span class="checkmark"></span>
+            </label>
+          </div>
+          <div class="setting-row">
+            <label class="checkbox-container">
+              Index Broken Files
+              <input type="checkbox" v-model="tvConfig.indexBroken" @change="saveTvConfig">
+              <span class="checkmark"></span>
+            </label>
+          </div>
+           <div class="setting-row">
+            <label class="checkbox-container">
+              Ignore Series Mismatch
+              <input type="checkbox" v-model="tvConfig.ignoreSeriesMismatch" @change="saveTvConfig">
+              <span class="checkmark"></span>
+            </label>
+          </div>
+          
+          <div class="resize-grid">
+              <div class="form-group">
+                <label>Series Identifiers</label>
+                <input type="text" v-model="tvConfig.seriesIdentifiersInput" @change="saveTvConfig" placeholder="tmdb">
+              </div>
+              <div class="form-group">
+                 <label>Episode Identifiers</label>
+                 <input type="text" v-model="tvConfig.episodeIdentifiersInput" @change="saveTvConfig" placeholder="tmdb">
+              </div>
+          </div>
+          <div class="resize-grid">
+              <div class="form-group">
+                <label>Series Updaters</label>
+                <input type="text" v-model="tvConfig.seriesUpdatersInput" @change="saveTvConfig" placeholder="tmdb, tvdb">
+              </div>
+              <div class="form-group">
+                 <label>Episode Updaters</label>
+                 <input type="text" v-model="tvConfig.episodeUpdatersInput" @change="saveTvConfig" placeholder="tmdb, tvdb">
+              </div>
+          </div>
+      </div>
+
       <table class="settings-table">
         <thead>
           <tr>
@@ -128,6 +176,15 @@
             movieIdentifiersInput: '',
             movieUpdatersInput: ''
         },
+        tvConfig: {
+            doReIndex: false,
+            indexBroken: false,
+            ignoreSeriesMismatch: true,
+            seriesIdentifiersInput: '',
+            episodeIdentifiersInput: '',
+            seriesUpdatersInput: '',
+            episodeUpdatersInput: ''
+        }
       }
     },
     async created () {
@@ -182,6 +239,21 @@
           }
       },
       async saveTvConfig() {
+           const payload = {
+              doReIndex: this.tvConfig.doReIndex,
+              indexBroken: this.tvConfig.indexBroken,
+              ignoreSeriesMismatch: this.tvConfig.ignoreSeriesMismatch,
+              seriesIdentifiers: this.tvConfig.seriesIdentifiersInput.split(',').map(s => s.trim()).filter(s => s),
+              episodeIdentifiers: this.tvConfig.episodeIdentifiersInput.split(',').map(s => s.trim()).filter(s => s),
+              seriesUpdaters: this.tvConfig.seriesUpdatersInput.split(',').map(s => s.trim()).filter(s => s),
+              episodeUpdaters: this.tvConfig.episodeUpdatersInput.split(',').map(s => s.trim()).filter(s => s)
+          }
+          try {
+              await oblectoClient.axios.patch('/api/v1/settings/tvshows', payload)
+              this.$notify({ type: 'success', title: 'Saved', text: 'TV settings saved' })
+          } catch(e) {
+              this.$notify({ type: 'error', title: 'Error', text: 'Failed to save TV settings' })
+          }
       }
     }
   }
