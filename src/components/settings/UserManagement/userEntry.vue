@@ -27,6 +27,7 @@
   import faTrash from '@fortawesome/fontawesome-free-solid/faTrash'
   import faEdit from '@fortawesome/fontawesome-free-solid/faEdit'
   import fontawesome from '@fortawesome/fontawesome'
+  import oblectoClient from '@/oblectoClient'
 
   fontawesome.library.add(faTrash, faEdit)
 
@@ -44,7 +45,7 @@
     methods: {
       async deleteUser () {
         if (confirm(`Are you sure you want to delete user ${this.user.username}?`)) {
-          await this.axios.delete(`/users/${this.user.id}`)
+          await oblectoClient.userManager.deleteUser(this.user.id)
           // Ideally emit event to parent to refresh list
           this.$parent.created() 
         }

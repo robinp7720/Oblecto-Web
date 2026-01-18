@@ -30,6 +30,8 @@
 </template>
 
 <script>
+  import oblectoClient from '@/oblectoClient'
+
   export default {
     name: 'UserAdd',
     data () {
@@ -45,23 +47,20 @@
       },
       async addSet () {
         try {
-          await this.axios.post('/user', {
-            name: this.name,
-            username: this.username,
-            email: this.email,
-            password: this.password
+          await oblectoClient.sets.createMovieSet({
+            name: this.name
           })
 
           this.$notify({
             group: 'system',
-            title: 'User has been created successfully',
-            text: 'You can now login with the username: ' + this.name,
+            title: 'Set has been created successfully',
+            text: '',
             type: 'success'
           })
         } catch (e) {
           this.$notify({
             group: 'system',
-            title: 'User could not be created',
+            title: 'Set could not be created',
             text: 'Maybe not all fields are filled?',
             type: 'error'
           })

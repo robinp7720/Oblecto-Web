@@ -37,6 +37,8 @@
 </template>
 
 <script>
+  import oblectoClient from '@/oblectoClient'
+
   export default {
     name: 'NewMovieSet',
     data () {
@@ -51,7 +53,7 @@
       },
       async addSet () {
         try {
-          await this.axios.post('/set/movie', {
+          await oblectoClient.sets.createMovieSet({
             name: this.name,
             overview: this.overview,
             public: this.public

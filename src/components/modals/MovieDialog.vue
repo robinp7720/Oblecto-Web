@@ -21,6 +21,8 @@
 </template>
 
 <script>
+  import oblectoClient from '@/oblectoClient'
+
   export default {
     name: 'MovieDialog',
     data () {
@@ -31,7 +33,7 @@
     methods: {
       async beforeOpen (event) {
         this.movie = {}
-        this.movie = (await this.axios.get('/movie/' + event.params.movie.id + `/info`)).data
+        this.movie = await oblectoClient.movieLibrary.getInfo(event.params.movie.id)
         console.log(this.movie)
       }
     }

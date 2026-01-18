@@ -211,10 +211,10 @@
       async loadConfig() {
           try {
               // Load capabilities
-              this.capabilities = (await oblectoClient.axios.get('/api/v1/system/capabilities')).data
+              this.capabilities = await oblectoClient.system.getCapabilities()
 
-              const movies = (await oblectoClient.axios.get('/api/v1/settings/movies')).data
-              const tv = (await oblectoClient.axios.get('/api/v1/settings/tvshows')).data
+              const movies = await oblectoClient.settings.getSection('movies')
+              const tv = await oblectoClient.settings.getSection('tvshows')
               
               this.moviesConfig = {
                   ...movies,
@@ -241,7 +241,7 @@
               movieUpdaters: this.moviesConfig.movieUpdaters
           }
           try {
-              await oblectoClient.axios.patch('/api/v1/settings/movies', payload)
+              await oblectoClient.settings.updateSection('movies', payload)
               this.$notify({ type: 'success', title: 'Saved', text: 'Movie settings saved' })
           } catch(e) {
               this.$notify({ type: 'error', title: 'Error', text: 'Failed to save movie settings' })
@@ -258,7 +258,7 @@
               episodeUpdaters: this.tvConfig.episodeUpdaters
           }
           try {
-              await oblectoClient.axios.patch('/api/v1/settings/tvshows', payload)
+              await oblectoClient.settings.updateSection('tvshows', payload)
               this.$notify({ type: 'success', title: 'Saved', text: 'TV settings saved' })
           } catch(e) {
               this.$notify({ type: 'error', title: 'Error', text: 'Failed to save TV settings' })

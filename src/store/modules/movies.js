@@ -17,7 +17,7 @@ const actions = {
     commit(types.RECEIVE_MOVIES, { movies, sort })
   },
   async getMovieSets ({ commit, state }) {
-    let { data: sets } = await oblectoClient.movieLibrary.getSets()
+    let sets = await oblectoClient.movieLibrary.getSets()
 
     commit(types.RECEIVE_MOVIES_SETS, sets)
   }

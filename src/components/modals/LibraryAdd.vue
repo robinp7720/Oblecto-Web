@@ -34,6 +34,7 @@
 
 <script>
   import { mapActions } from 'vuex'
+  import oblectoClient from '@/oblectoClient'
 
   export default {
     name: 'UserAdd',
@@ -58,9 +59,7 @@
       },
       async addLibrary () {
         try {
-          await this.axios.post(`/api/v1/libraries/${this.libraryType}/paths`, {
-            path: this.path
-          })
+          await oblectoClient.libraries.addPath(this.libraryType, this.path)
 
           this.$notify({
             group: 'system',

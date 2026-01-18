@@ -128,6 +128,7 @@
   import { ScreenFormats } from '@/enums/ScreenFormats'
 
   import { mapMutations, mapState } from 'vuex'
+  import oblectoClient from '@/oblectoClient'
 
   let AUTOPLAY_TIME_LEFT_THRESHOLD = 5
   let IGNORE_RESTORE_PROGRESS_THRESHOLD = 0.9
@@ -242,7 +243,7 @@
         this.setURL()
       },
       updateSession: async function () {
-        this.playbackSession = (await this.axios.get(`/session/create/${this.playing.entity.Files[this.PlayingFileID].id}`)).data
+        this.playbackSession = await oblectoClient.sessions.create(this.playing.entity.Files[this.PlayingFileID].id)
       },
       updateURL: async function () {
         await this.updateSession()
@@ -252,9 +253,9 @@
         let token = this.playbackSession.sessionId
 
         if (this.playbackSession.seeking === 'server') {
-          this.player.src = `${this.axios.defaults.baseURL}/session/stream/${token}?offset=${this.initialProgress}`
+          this.player.src = oblectoClient.sessions.getStreamUrl(token, { offset: this.initialProgress })
         } else {
-          this.player.src = `${this.axios.defaults.baseURL}/session/stream/${token}`
+          this.player.src = oblectoClient.sessions.getStreamUrl(token)
         }
       },
       seek: function (event) {
@@ -424,7 +425,7 @@
         }
 
         if (this.playing.type === 'episode') {
-          this.nextepisode = (await this.axios.get(`/episode/${this.playing.entity.id}/next`)).data
+          this.nextepisode = await oblectoClient.episodeLibrary.getNext(this.playing.entity.id)
         }
       },
       paused: async function (newState, oldState) {

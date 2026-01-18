@@ -137,12 +137,12 @@
     methods: {
       async refresh() {
         try {
-          const [movies, series] = await Promise.all([
-             oblectoClient.axios.get('/movies/sets'),
-             oblectoClient.axios.get('/series/sets')
+          const [movieSets, seriesSets] = await Promise.all([
+             oblectoClient.movieLibrary.getSets(),
+             oblectoClient.seriesLibrary.getSets()
           ])
-          this.movieSets = movies.data
-          this.seriesSets = series.data
+          this.movieSets = movieSets
+          this.seriesSets = seriesSets
         } catch (e) {
           console.error("Failed to fetch sets", e)
           this.$notify({ type: 'error', title: 'Error', text: 'Failed to load sets' })
@@ -163,12 +163,16 @@
         }
 
         try {
-          const endpoint = this.modalType === 'movie' ? '/set/movie' : '/set/series'
-          await oblectoClient.axios.post(endpoint, {
+          const payload = {
              name: this.newSet.name,
              overview: this.newSet.overview,
              public: this.newSet.public
-          })
+          }
+          if (this.modalType === 'movie') {
+            await oblectoClient.sets.createMovieSet(payload)
+          } else {
+            await oblectoClient.sets.createSeriesSet(payload)
+          }
           
           this.$notify({ type: 'success', title: 'Success', text: 'Set created' })
           this.closeModal()
@@ -182,8 +186,11 @@
         if (!confirm('Are you sure you want to delete this set?')) return
 
         try {
-          const endpoint = type === 'movie' ? `/set/movie/${id}` : `/set/series/${id}`
-          await oblectoClient.axios.delete(endpoint)
+          if (type === 'movie') {
+            await oblectoClient.sets.deleteMovieSet(id)
+          } else {
+            await oblectoClient.sets.deleteSeriesSet(id)
+          }
           this.$notify({ type: 'success', title: 'Success', text: 'Set deleted' })
           this.refresh()
         } catch (e) {

@@ -134,7 +134,7 @@
     methods: {
       async refresh () {
         try {
-          const config = (await oblectoClient.axios.get(`/api/v1/settings`)).data
+          const config = await oblectoClient.settings.getAll()
           this.assets = config.assets || this.assets
           this.artwork = config.artwork || this.artwork
           this.tmdb = config.themoviedb || { key: '' }
@@ -147,7 +147,7 @@
       },
       async saveSettings () {
          try {
-           await oblectoClient.axios.patch(`/api/v1/settings`, {
+           await oblectoClient.settings.update({
               assets: this.assets,
               artwork: this.artwork,
               themoviedb: this.tmdb,

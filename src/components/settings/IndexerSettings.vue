@@ -101,7 +101,7 @@
     methods: {
       async refresh () {
         try {
-          const config = (await oblectoClient.axios.get(`/api/v1/settings`)).data
+          const config = await oblectoClient.settings.getAll()
           this.videoFiletypes = config.fileExtensions?.video || []
           this.indexer = config.indexer || { runAtBoot: false }
           this.cleaner = config.cleaner || { runAtBoot: false }
@@ -113,7 +113,7 @@
       },
       async saveSettings () {
          try {
-           await oblectoClient.axios.patch(`/api/v1/settings`, {
+           await oblectoClient.settings.update({
               indexer: this.indexer,
               cleaner: this.cleaner,
               files: this.files
@@ -145,7 +145,7 @@
       },
       async updateFiletypes(videoList) {
           // Update the specific section
-          await oblectoClient.axios.patch(`/api/v1/settings/fileExtensions`, {
+          await oblectoClient.settings.updateSection('fileExtensions', {
              video: videoList
           })
           this.refresh()

@@ -25,6 +25,7 @@
   import MovieList from '@/components/itemLists/MovieList'
   import EpisodeList from '@/components/itemLists/EpisodeList'
   import SeriesList from '@/components/itemLists/SeriesList'
+  import oblectoClient from '@/oblectoClient'
 
   export default {
     name: 'Search',
@@ -55,9 +56,11 @@
 
     methods: {
       async search (query) {
-        let { data: episodes } = await this.axios.get(`/episodes/search/${query}`)
-        let { data: movies } = await this.axios.get(`/movies/search/${query}`)
-        let { data: series } = await this.axios.get(`/shows/search/${query}`)
+        let [episodes, movies, series] = await Promise.all([
+          oblectoClient.episodeLibrary.search(query),
+          oblectoClient.movieLibrary.search(query),
+          oblectoClient.seriesLibrary.search(query)
+        ])
 
         this.searchResults = {
           episodes, movies, series

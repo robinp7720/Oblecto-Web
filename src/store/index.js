@@ -89,8 +89,8 @@ export default new Vuex.Store({
       router.push({ name: 'login' })
     },
     updateWatching: async function ({ commit, dispatch }) {
-      let { data: episodes } = await Vue.axios.get(`/episodes/watching`)
-      let { data: movies } = await Vue.axios.get(`/movies/watching`)
+      let episodes = await oblectoClient.episodeLibrary.getWatching()
+      let movies = await oblectoClient.movieLibrary.getWatching()
 
       try {
         await dispatch('updateNext')
@@ -102,7 +102,7 @@ export default new Vuex.Store({
       commit('saveWatchingMovies', movies)
     },
     updateNext: async function (state) {
-      let { data: nextEpisodes } = await Vue.axios.get(`/episodes/next`)
+      let nextEpisodes = await oblectoClient.episodeLibrary.getNextUp()
       state.commit('saveNextEpisodes', nextEpisodes)
     },
     updateHost: function (state, host) {
@@ -118,7 +118,7 @@ export default new Vuex.Store({
     playEpisodeLocal: async function ({ commit, dispatch }, id) {
       await dispatch('clearPlaying')
 
-      let { data: episode } = await Vue.axios.get(`/episode/${id}/info`)
+      let episode = await oblectoClient.episodeLibrary.getInfo(id)
 
       commit('setPlaying', {
         title: episode.episodeName,
@@ -128,11 +128,7 @@ export default new Vuex.Store({
     },
     playEpisode: async function ({ state, commit, dispatch }, id) {
       if (state.playbackRemote !== 'local') {
-        await Vue.axios.post(`/client/${state.playbackRemote}/playback`, {
-          id,
-          clientId: state.playbackRemote,
-          type: 'episode'
-        })
+        await oblectoClient.remotes.playback(state.playbackRemote, 'episode', id)
         return
       }
 
@@ -141,7 +137,7 @@ export default new Vuex.Store({
     playMovieLocal: async function ({ commit, dispatch }, id) {
       await dispatch('clearPlaying')
 
-      let { data: movie } = await Vue.axios.get(`/movie/${id}/info`)
+      let movie = await oblectoClient.movieLibrary.getInfo(id)
 
       commit('setPlaying', {
         title: movie.movieName,
@@ -151,11 +147,7 @@ export default new Vuex.Store({
     },
     playMovie: async function ({ state, commit, dispatch }, id) {
       if (state.playbackRemote !== 'local') {
-        await Vue.axios.post(`/client/${state.playbackRemote}/playback`, {
-          id,
-          clientId: state.playbackRemote,
-          type: 'movie'
-        })
+        await oblectoClient.remotes.playback(state.playbackRemote, 'movie', id)
         return
       }
 

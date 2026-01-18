@@ -31,6 +31,7 @@
 <script>
 import FontAwesomeIcon from '@fortawesome/vue-fontawesome'
 import faCopy from '@fortawesome/fontawesome-free-solid/faCopy'
+import oblectoClient from '@/oblectoClient'
 
 export default {
   name: 'FileList',
@@ -41,9 +42,9 @@ export default {
   },
   methods: {
     getUrl: async function (fileId) {
-      let token = (await this.axios.get(`/session/create/${fileId}?noremux=true`)).data.sessionId
+      let session = await oblectoClient.sessions.create(fileId, { noremux: true })
 
-      return `${this.axios.defaults.baseURL}/session/stream/${token}`
+      return oblectoClient.sessions.getStreamUrl(session.sessionId)
     },
     copyUrl: async function (fileId) {
       this.$modal.show('CopyText', { title: 'Copy URL', text: await this.getUrl(fileId) })

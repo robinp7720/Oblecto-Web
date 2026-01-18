@@ -35,6 +35,7 @@
   import FontAwesomeIcon from '@fortawesome/vue-fontawesome'
   import faPlus from '@fortawesome/fontawesome-free-solid/faPlus'
   import fontawesome from '@fortawesome/fontawesome'
+  import oblectoClient from '@/oblectoClient'
 
   fontawesome.library.add(faPlus)
 
@@ -50,7 +51,7 @@
       }
     },
     async created () {
-      this.users = (await this.axios.get(`/users`)).data
+      this.users = await oblectoClient.userManager.getUsers()
     },
     methods: {
       async userAdd () {

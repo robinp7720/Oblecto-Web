@@ -1,5 +1,5 @@
 import * as types from '../mutation-types'
-import Vue from 'vue'
+import oblectoClient from '@/oblectoClient'
 
 const state = {
   shows: [],
@@ -16,30 +16,22 @@ const actions = {
     dispatch('updateTVShows')
   },
   async updateMovies ({ commit }) {
-    let { data: movies } = await Vue.axios.get(`/api/v1/libraries/movies`)
+    let movies = await oblectoClient.libraries.getLibraryPaths('movies')
 
     commit(types.RECIEVE_LIBRARIES_MOVIES, movies)
   },
   async updateTVShows ({ commit }) {
-    let { data: shows } = await Vue.axios.get(`/api/v1/libraries/tvshows`)
+    let shows = await oblectoClient.libraries.getLibraryPaths('tvshows')
 
     commit(types.RECIEVE_LIBRARIES_SHOWS, shows)
   },
   async deleteMovieLibrary ({ dispatch }, path) {
-    await Vue.axios.delete(`/api/v1/libraries/movies/paths`, {
-      data: {
-        path
-      }
-    })
+    await oblectoClient.libraries.removePath('movies', path)
 
     dispatch('updateAll')
   },
   async deleteSeriesLibrary ({ dispatch }, path) {
-    await Vue.axios.delete(`/api/v1/libraries/tvshows/paths`, {
-      data: {
-        path
-      }
-    })
+    await oblectoClient.libraries.removePath('tvshows', path)
 
     dispatch('updateAll')
   }

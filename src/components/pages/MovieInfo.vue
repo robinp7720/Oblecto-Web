@@ -59,7 +59,7 @@ import MovieList from '@/components/itemLists/MovieList'
 import FileList from '@/components/files/FileList'
 
 import { mapState } from 'vuex'
-import axios from 'axios'
+import oblectoClient from '@/oblectoClient'
 
 export default {
   name: 'MovieInfo',
@@ -110,8 +110,8 @@ export default {
       this.$modal.show('MovieDialog', { movie: this.movieData })
     },
     update: async function () {
-      this.movieData = (await axios.get('/movie/' + this.$route.params.movieId + `/info`)).data
-      this.sets = (await axios.get(`/movie/${this.$route.params.movieId}/sets`)).data
+      this.movieData = await oblectoClient.movieLibrary.getInfo(this.$route.params.movieId)
+      this.sets = await oblectoClient.movieLibrary.getMovieSets(this.$route.params.movieId)
 
       const posterImage = new Image()
       posterImage.src = this.host + '/movie/' + this.movieData.id + '/poster'

@@ -51,6 +51,8 @@
 </template>
 
 <script>
+  import oblectoClient from '@/oblectoClient'
+
   export default {
     name: 'UserAdd',
     data () {
@@ -66,12 +68,7 @@
       },
       async addUser () {
         try {
-          await this.axios.post('/user', {
-            name: this.name,
-            username: this.username,
-            email: this.email,
-            password: this.password
-          })
+          await oblectoClient.userManager.createUser(this.username, this.password, this.name, this.email)
 
           this.$notify({
             group: 'system',

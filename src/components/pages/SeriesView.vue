@@ -46,7 +46,7 @@
 import WatchPanel from '@/components/WatchPanel'
 import EpisodeList from '@/components/itemLists/EpisodeList'
 import { mapState } from 'vuex'
-import axios from 'axios'
+import oblectoClient from '@/oblectoClient'
 
 export default {
   name: 'SeriesView',
@@ -74,9 +74,7 @@ export default {
   },
   methods: {
     async loadInfo () {
-      let { data } = await axios.get('/series/' + this.$route.params.seriesId + `/info`)
-
-      this.showData = data
+      this.showData = await oblectoClient.seriesLibrary.getInfo(this.$route.params.seriesId)
 
       const img = new Image()
       img.src = this.host + '/series/' + this.showData.id + '/poster'
@@ -91,7 +89,7 @@ export default {
       }
     },
     async loadEpisodes () {
-      let { data } = await axios.get('/series/' + this.$route.params.seriesId + `/episodes`)
+      let data = await oblectoClient.seriesLibrary.getEpisodes(this.$route.params.seriesId)
 
       let unsorted = []
 

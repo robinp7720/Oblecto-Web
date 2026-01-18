@@ -56,7 +56,7 @@
     methods: {
       async refresh () {
         try {
-          const config = (await oblectoClient.axios.get(`/api/v1/settings`)).data
+          const config = await oblectoClient.settings.getAll()
           this.federation = config.federation || this.federation
         } catch (e) {
           console.error('Failed to load settings', e)
@@ -65,7 +65,7 @@
       },
       async saveSettings () {
          try {
-           await oblectoClient.axios.patch(`/api/v1/settings`, {
+           await oblectoClient.settings.update({
               federation: this.federation
            })
            this.$notify({ type: 'success', title: 'Saved', text: 'Settings saved successfully' })

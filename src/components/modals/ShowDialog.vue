@@ -24,6 +24,8 @@
 </template>
 
 <script>
+  import oblectoClient from '@/oblectoClient'
+
   export default {
     name: 'ShowDialog',
     data () {
@@ -40,7 +42,7 @@
         this.$modal.hide('ShowDialog')
       },
       indexShow: function () {
-        this.axios.get('/series/' + this.show.id + '/index')
+        oblectoClient.seriesLibrary.indexSeries(this.show.id)
           .then(response => {
             this.$notify({
               group: 'system',

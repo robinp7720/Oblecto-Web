@@ -73,6 +73,7 @@
   import faBroom from '@fortawesome/fontawesome-free-solid/faBroom'
   import faImage from '@fortawesome/fontawesome-free-solid/faImage'
   import fontawesome from '@fortawesome/fontawesome'
+  import oblectoClient from '@/oblectoClient'
 
   fontawesome.library.add(faSync, faTv, faFilm, faBroom, faImage)
 
@@ -83,10 +84,7 @@
     },
     methods: {
       async triggerMaintenance (action, target) {
-        await this.axios.post('/api/v1/system/maintenance', {
-          action,
-          target
-        })
+        await oblectoClient.system.triggerMaintenance(action, target)
         this.$notify({
           group: 'system',
           title: 'Maintenance task started',

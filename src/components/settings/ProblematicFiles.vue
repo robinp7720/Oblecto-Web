@@ -56,8 +56,8 @@ export default {
   methods: {
     async refresh() {
       try {
-        const res = await oblectoClient.axios.get('/files/problematic')
-        this.files = res.data.map(f => ({...f, retrying: false}))
+        const files = await oblectoClient.files.getProblematic()
+        this.files = files.map(f => ({...f, retrying: false}))
       } catch (e) {
         console.error('Failed to load problematic files', e)
         this.$notify({ type: 'error', title: 'Error', text: 'Failed to load files' })
@@ -68,7 +68,7 @@ export default {
       
       file.retrying = true;
       try {
-        await oblectoClient.axios.post(`/files/${file.id}/retry`);
+        await oblectoClient.files.retryFile(file.id);
         this.$notify({ type: 'success', title: 'Success', text: 'Retry scheduled' });
         
         // Remove from list

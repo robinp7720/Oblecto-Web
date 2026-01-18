@@ -21,6 +21,8 @@
 </template>
 
 <script>
+  import oblectoClient from '@/oblectoClient'
+
   export default {
     name: 'EpisodeDialog',
     data () {
@@ -31,7 +33,7 @@
     methods: {
       async beforeOpen (event) {
         this.episode = {}
-        this.episode = (await this.axios.get('/episode/' + event.params.episode.id + `/info`)).data
+        this.episode = await oblectoClient.episodeLibrary.getInfo(event.params.episode.id)
       }
     }
   }

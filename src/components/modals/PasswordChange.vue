@@ -30,6 +30,8 @@
 </template>
 
 <script>
+  import oblectoClient from '@/oblectoClient'
+
   export default {
     name: 'PasswordChange',
     data () {
@@ -55,9 +57,7 @@
         }
 
         try {
-          await this.axios.put(`/user/${this.userid}`, {
-            password: this.password
-          })
+          await oblectoClient.userManager.updateUser(this.userid, { password: this.password })
 
           this.$notify({
             group: 'system',
