@@ -37,6 +37,11 @@
             <font-awesome-icon icon="tags" class="fa-fw" /> Sets
           </router-link>
         </li>
+        <li class="nav-item">
+          <router-link :to="{ name: 'ProblematicFiles'}">
+            <font-awesome-icon icon="exclamation-triangle" class="fa-fw" /> Problematic Files
+          </router-link>
+        </li>
       </ul>
     </aside>
     <main class="settings-content">
@@ -54,9 +59,10 @@
   import faTags from '@fortawesome/fontawesome-free-solid/faTags'
   import faImage from '@fortawesome/fontawesome-free-solid/faImage'
   import faGlobe from '@fortawesome/fontawesome-free-solid/faGlobe'
+  import faExclamationTriangle from '@fortawesome/fontawesome-free-solid/faExclamationTriangle'
   import fontawesome from '@fortawesome/fontawesome'
 
-  fontawesome.library.add(faWrench, faUsers, faFolderOpen, faFileVideo, faTags, faImage, faGlobe)
+  fontawesome.library.add(faWrench, faUsers, faFolderOpen, faFileVideo, faTags, faImage, faGlobe, faExclamationTriangle)
 
   export default {
     name: 'Settings',
