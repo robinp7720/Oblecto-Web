@@ -1,0 +1,3 @@
+[submodule "src/oblecto-client"]
+	path = src/oblecto-client
+	url = https://github.com/robinp7720/OblectoClient
