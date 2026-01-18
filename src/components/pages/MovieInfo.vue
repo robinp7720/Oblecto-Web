@@ -42,13 +42,13 @@
         </div>
       </div>
 
-      <FileList :files="movieData.Files" />
+      <FileList :files="movieData.Files || []" />
 
       <MovieList
         v-for="(set, index) in sets"
         :key="set.id"
         :title="set.setName"
-        :movies="set.movies"
+        :movies="set.Movies"
       />
     </div>
   </div>
@@ -86,6 +86,8 @@ export default {
   },
   async mounted () {
     this.updateGradient()
+    window.addEventListener('resize', this.updateGradient)
+    window.addEventListener('scroll', this.updateGradient)
   },
 
   async updated () {
@@ -94,8 +96,6 @@ export default {
 
   async created () {
     await this.update()
-    window.addEventListener('resize', this.updateGradient)
-    window.addEventListener('scroll', this.updateGradient)
   },
   async beforeUnmount () {
     window.removeEventListener('resize', this.updateGradient)
@@ -126,6 +126,8 @@ export default {
       }
     },
     gradientColor: function () {
+      if (!this.$refs.infoContainer) return [0, 0, 0]
+
       let infoBottom = this.$refs.infoContainer.getBoundingClientRect().bottom
 
       let wh = window.innerHeight
