@@ -632,24 +632,34 @@
       transition: top 0.2s, height 0.2s, width 0.2s
 
     .small
-      height: 200px
-      width: auto
-      bottom: 74px
-      right: 10px
+      width: clamp(220px, 30vw, 360px)
+      height: auto
+      max-height: clamp(160px, 26vw, 260px)
+      bottom: 88px
+      right: 18px
       border-radius: var(--radius-md)
       overflow: hidden
-      box-shadow: 0 0 5px 0 rgba(0, 0, 0, 0.75)
+      border: 1px solid rgba(255, 255, 255, 0.12)
+      box-shadow: 0 16px 30px rgba(10, 8, 10, 0.55)
+      background: rgba(20, 16, 18, 0.9)
 
       video
-        width: auto
+        display: block
+        width: 100%
+        height: auto
+        object-fit: contain
 
       @media only screen and (max-width: 600px)
-        height: 100px
-        top: calc(100% - 169px)
+        width: clamp(180px, 55vw, 260px)
+        max-height: clamp(140px, 35vw, 210px)
+        bottom: 96px
+        right: 12px
 
       @media only screen and (max-height: 600px)
-        height: 100px
-        top: calc(100% - 169px)
+        width: clamp(180px, 45vw, 240px)
+        max-height: clamp(120px, 30vw, 180px)
+        bottom: 78px
+        right: 12px
 
     .hidden
       top: 100%
