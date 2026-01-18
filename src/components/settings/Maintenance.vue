@@ -1,129 +1,130 @@
 <template>
   <div class="maintenance">
-    <button @click="index('all')">
-      Full re-index
-    </button>
-    <button @click="index('series')">
-      Re-index series
-    </button>
-    <button @click="index('movies')">
-      Re-index movies
-    </button>
-    <hr>
-    <button>Full cleanup</button>
-    <button @click="clean('files')">
-      Clean up files database
-    </button>
-    <button @click="clean('episodes')">
-      Cleanup episodes without linked files
-    </button>
-    <button @click="clean('movies')">
-      Cleanup movies without linked files
-    </button>
-    <button @click="clean('series')">
-      Remove Series without episodes
-    </button>
-    <hr>
-    <button>Download new artwork</button>
-    <button @click="DownloadTVShowArt">
-      Download artwork for TV Shows and Episodes
-    </button>
-    <button @click="DownloadMovieArt">
-      Download artwork for Movies
-    </button>
-    <hr>
-    <button @click="update('episodes')">
-      Update episode entries
-    </button>
-    <button @click="update('movies')">
-      Update movie entries
-    </button>
-    <button @click="update('series')">
-      Update series entries
-    </button>
-    <button @click="update('files')">
-      Update file entries
-    </button>
+    <div class="settings-card">
+      <h3>Library Indexing</h3>
+      <div class="actions-group">
+        <button class="btn" @click="index('all')">
+          <font-awesome-icon icon="sync" /> Full re-index
+        </button>
+        <button class="btn" @click="index('series')">
+          <font-awesome-icon icon="tv" /> Re-index series
+        </button>
+        <button class="btn" @click="index('movies')">
+          <font-awesome-icon icon="film" /> Re-index movies
+        </button>
+      </div>
+    </div>
+
+    <div class="settings-card">
+      <h3>Library Cleanup</h3>
+      <div class="actions-group">
+        <button class="btn btn-secondary" @click="clean('files')">
+          <font-awesome-icon icon="broom" /> Clean up files database
+        </button>
+        <button class="btn btn-secondary" @click="clean('episodes')">
+          <font-awesome-icon icon="broom" /> Cleanup episodes without linked files
+        </button>
+        <button class="btn btn-secondary" @click="clean('movies')">
+          <font-awesome-icon icon="broom" /> Cleanup movies without linked files
+        </button>
+        <button class="btn btn-secondary" @click="clean('series')">
+          <font-awesome-icon icon="broom" /> Remove Series without episodes
+        </button>
+      </div>
+    </div>
+
+    <div class="settings-card">
+      <h3>Artwork</h3>
+      <div class="actions-group">
+        <button class="btn" @click="DownloadTVShowArt">
+          <font-awesome-icon icon="image" /> Download artwork for TV Shows and Episodes
+        </button>
+        <button class="btn" @click="DownloadMovieArt">
+          <font-awesome-icon icon="image" /> Download artwork for Movies
+        </button>
+      </div>
+    </div>
+
+    <div class="settings-card">
+      <h3>Metadata Updates</h3>
+      <div class="actions-group">
+        <button class="btn" @click="update('episodes')">
+          <font-awesome-icon icon="sync" /> Update episode entries
+        </button>
+        <button class="btn" @click="update('movies')">
+          <font-awesome-icon icon="sync" /> Update movie entries
+        </button>
+        <button class="btn" @click="update('series')">
+          <font-awesome-icon icon="sync" /> Update series entries
+        </button>
+        <button class="btn" @click="update('files')">
+          <font-awesome-icon icon="sync" /> Update file entries
+        </button>
+      </div>
+    </div>
   </div>
 </template>
 
 <script>
+  import FontAwesomeIcon from '@fortawesome/vue-fontawesome'
+  import faSync from '@fortawesome/fontawesome-free-solid/faSync'
+  import faTv from '@fortawesome/fontawesome-free-solid/faTv'
+  import faFilm from '@fortawesome/fontawesome-free-solid/faFilm'
+  import faBroom from '@fortawesome/fontawesome-free-solid/faBroom'
+  import faImage from '@fortawesome/fontawesome-free-solid/faImage'
+  import fontawesome from '@fortawesome/fontawesome'
+
+  fontawesome.library.add(faSync, faTv, faFilm, faBroom, faImage)
+
   export default {
     name: 'Maintenance',
+    components: {
+      FontAwesomeIcon
+    },
     methods: {
-      async DownloadTVShowArt () {
-        await this.axios.get('/settings/maintenance/series/download/art')
+      async triggerMaintenance (action, target) {
+        await this.axios.post('/api/v1/system/maintenance', {
+          action,
+          target
+        })
         this.$notify({
           group: 'system',
-          title: 'A TV Show artwork update has been requested',
-          text: 'Missing artwork will be downloaded',
-          type: 'warning'
+          title: 'Maintenance task started',
+          text: `Action: ${action}, Target: ${target}`,
+          type: 'success'
         })
+      },
+      async DownloadTVShowArt () {
+        await this.triggerMaintenance('update_artwork', 'series')
       },
 
       async DownloadMovieArt () {
-        await this.axios.get('/settings/maintenance/movies/download/art')
-        this.$notify({
-          group: 'system',
-          title: 'A movie artwork update has been requested',
-          text: 'Missing artwork will be downloaded',
-          type: 'warning'
-        })
+        await this.triggerMaintenance('update_artwork', 'movies')
       },
       async index (type) {
-        await this.axios.get('/settings/maintenance/index/' + type)
-        this.$notify({
-          group: 'system',
-          title: 'Library update requested successfully',
-          text: 'A library index update has been started',
-          type: 'warning'
-        })
+        await this.triggerMaintenance('scan', type)
       },
       async clean (type) {
-        await this.axios.get('/settings/maintenance/clean/' + type)
-        this.$notify({
-          group: 'system',
-          title: 'Library cleansing requested successfully',
-          text: 'A library cleansing has been started',
-          type: 'warning'
-        })
+        await this.triggerMaintenance('clean', type)
       },
       async update (type) {
-        await this.axios.get('/settings/maintenance/update/' + type)
-        this.$notify({
-          group: 'system',
-          title: 'A library update has been requested',
-          text: 'A library update has been started',
-          type: 'warning'
-        })
+        await this.triggerMaintenance('update_metadata', type)
       }
     }
   }
 </script>
 
 <style scoped lang="sass">
-  hr
-    border-color: rgba(0,0,0,0.5)
-    width: 100%
-    display: block
-    float: left
+@use "@/assets/sass/settings.sass"
+
+.actions-group
+  display: flex
+  flex-wrap: wrap
+  gap: 10px
 
   button
-    background-color: rgba(0,0,0,0.5)
-    border: rgba(0,0,0,0.8) 1px solid
-    color: rgba(255,255,255,0.5)
-
-    display: block
-    float: left
-
-    padding: 10px
-    margin: 2px
-
-    -webkit-border-radius: 3px
-    -moz-border-radius: 3px
-    border-radius: 3px
-    cursor: pointer
-
-  button:hover
-    background-color: rgba(0,0,0,0.9)
+    margin: 0 !important
+    display: flex
+    align-items: center
+    gap: 8px
 </style>

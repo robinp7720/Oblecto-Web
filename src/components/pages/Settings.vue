@@ -1,87 +1,59 @@
 <template>
-  <div class="settings">
-    <ul class="settings-nav">
-      <li class="settings-nav-item">
-        <router-link
-          :to="{ name: 'SettingsMaintenance'}"
-          class="nav-link"
-        >
-          Maintenance
-        </router-link>
-      </li>
-      <li class="settings-nav-item">
-        <router-link
-          :to="{ name: 'SettingsUsers'}"
-          class="nav-link"
-        >
-          Users
-        </router-link>
-      </li>
-      <li class="settings-nav-item">
-        <router-link
-          :to="{ name: 'SettingsLibraries'}"
-          class="nav-link"
-        >
-          Libraries
-        </router-link>
-      </li>
-      <li class="settings-nav-item">
-        <router-link
-          :to="{ name: 'IndexerSettings'}"
-          class="nav-link"
-        >
-          Indexer Settings
-        </router-link>
-      </li>
-      <li class="settings-nav-item">
-        <router-link
-          :to="{ name: 'SettingsSets'}"
-          class="nav-link"
-        >
-          Sets
-        </router-link>
-      </li>
-    </ul>
-    <div class="container">
+  <div class="settings-layout">
+    <aside class="settings-sidebar">
+      <ul class="nav-list">
+        <li class="nav-item">
+          <router-link :to="{ name: 'SettingsMaintenance'}">
+            <font-awesome-icon icon="wrench" class="fa-fw" /> Maintenance
+          </router-link>
+        </li>
+        <li class="nav-item">
+          <router-link :to="{ name: 'SettingsUsers'}">
+            <font-awesome-icon icon="users" class="fa-fw" /> Users
+          </router-link>
+        </li>
+        <li class="nav-item">
+          <router-link :to="{ name: 'SettingsLibraries'}">
+            <font-awesome-icon icon="folder-open" class="fa-fw" /> Libraries
+          </router-link>
+        </li>
+        <li class="nav-item">
+          <router-link :to="{ name: 'IndexerSettings'}">
+            <font-awesome-icon icon="file-video" class="fa-fw" /> Indexer Settings
+          </router-link>
+        </li>
+        <li class="nav-item">
+          <router-link :to="{ name: 'SettingsSets'}">
+            <font-awesome-icon icon="tags" class="fa-fw" /> Sets
+          </router-link>
+        </li>
+      </ul>
+    </aside>
+    <main class="settings-content">
       <router-view />
-    </div>
+    </main>
   </div>
 </template>
 
 <script>
+  import FontAwesomeIcon from '@fortawesome/vue-fontawesome'
+  import faWrench from '@fortawesome/fontawesome-free-solid/faWrench'
+  import faUsers from '@fortawesome/fontawesome-free-solid/faUsers'
+  import faFolderOpen from '@fortawesome/fontawesome-free-solid/faFolderOpen'
+  import faFileVideo from '@fortawesome/fontawesome-free-solid/faFileVideo'
+  import faTags from '@fortawesome/fontawesome-free-solid/faTags'
+  import fontawesome from '@fortawesome/fontawesome'
+
+  fontawesome.library.add(faWrench, faUsers, faFolderOpen, faFileVideo, faTags)
+
   export default {
-    name: 'Settings'
+    name: 'Settings',
+    components: {
+      FontAwesomeIcon
+    }
   }
 </script>
 
 <style scoped lang="sass">
-.container
-  padding: 10px
-
-.settings-nav
-  list-style: none
-  margin-top: 0
-  margin-bottom: 15px
-  position: relative
-
-  overflow-x: auto
-
-  white-space: nowrap
-
-  .settings-nav-item
-    display: inline-block
-    a
-      color: #999
-      display: block
-      text-decoration: none
-      padding: 10px 20px
-      font-family: Roboto
-      font-size: 20px
-      text-transform: capitalize
-      font-weight: bold
-
-    a.router-link-active
-      color: #eee
-
-
+@use "@/assets/sass/settings.sass"
 </style>

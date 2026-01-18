@@ -1,37 +1,49 @@
 <template>
   <div class="UserManager">
-    <table>
-      <thead>
-        <tr>
-          <th>User ID</th>
-          <th>Name</th>
-          <th>Username</th>
-          <th>Email</th>
-          <th>Group</th>
-          <th>Actions</th>
-        </tr>
-      </thead>
-      <tbody>
-        <user-entry
-          v-for="(user, index) in users"
-          :key="user.id"
-          :user="user"
-        />
-      </tbody>
-    </table>
-    <a
-      class="button"
-      @click="userAdd"
-    >Add user</a>
+    <div class="settings-card">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; border-bottom: 1px solid #444; padding-bottom: 10px;">
+        <h2 style="margin: 0; border: none; padding: 0;">Users</h2>
+        <a class="btn" @click="userAdd">
+          <font-awesome-icon icon="plus" /> Add user
+        </a>
+      </div>
+      <table class="settings-table">
+        <thead>
+          <tr>
+            <th>User ID</th>
+            <th>Name</th>
+            <th>Username</th>
+            <th>Email</th>
+            <th>Group</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <user-entry
+            v-for="(user, index) in users"
+            :key="user.id"
+            :user="user"
+          />
+        </tbody>
+      </table>
+    </div>
   </div>
 </template>
 
 <script>
   import userEntry from '@/components/settings/UserManagement/userEntry'
+  import FontAwesomeIcon from '@fortawesome/vue-fontawesome'
+  import faPlus from '@fortawesome/fontawesome-free-solid/faPlus'
+  import fontawesome from '@fortawesome/fontawesome'
+
+  fontawesome.library.add(faPlus)
 
   export default {
     name: 'UserManager',
-    components: { userEntry },
+    components: { 
+      userEntry,
+      FontAwesomeIcon
+    },
     data () {
       return {
         users: {}
@@ -49,45 +61,5 @@
 </script>
 
 <style scoped lang="sass">
-  @use "sass:color"
-  table
-    background: #696060
-    box-shadow: 0 0 5px 2px rgba(color.adjust(#696060, $lightness: -20%), 0.75)
-
-    border-spacing: 0
-
-    width: 100%
-
-  thead
-    background-color: #444042
-    box-shadow: 0 0 5px 2px rgba(color.adjust(#696060, $lightness: -20%), 0.75)
-
-    th
-      padding: 10px
-
-      margin: 0
-      border: 0
-
-      outline: 0
-
-  .button
-    background-color: rgba(0,0,0,0.5)
-    border: rgba(0,0,0,0.8) 1px solid
-    color: rgba(255,255,255,0.5)
-
-    padding: 10px
-    -webkit-border-radius: 3px
-    -moz-border-radius: 3px
-    border-radius: 3px
-    cursor: pointer
-
-    display: block
-    width: 100%
-
-    max-width: 200px
-
-    margin: 5px 0
-
-    text-align: center
-
+@use "@/assets/sass/settings.sass"
 </style>

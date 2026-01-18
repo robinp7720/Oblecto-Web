@@ -1,44 +1,62 @@
 <template>
   <tr>
-    <td class="id">
-      {{ user.id }}
-    </td>
+    <td>{{ user.id }}</td>
     <td>{{ user.name }}</td>
     <td>{{ user.username }}</td>
     <td>{{ user.email }}</td>
     <td>{{ user.group }}</td>
-    <td>
+    <td class="actions">
       <a
-        class="action"
-        @click="changePassword"
-      >Change Password</a> <a
-        href="#"
-        class="action"
-      >Change Group</a>
+        class="edit"
+        @click="editUser"
+      >
+        <font-awesome-icon icon="edit" />
+      </a>
+      <a
+        class="delete"
+        @click="deleteUser"
+      >
+        <font-awesome-icon icon="trash" />
+      </a>
     </td>
   </tr>
 </template>
 
 <script>
+  import FontAwesomeIcon from '@fortawesome/vue-fontawesome'
+  import faTrash from '@fortawesome/fontawesome-free-solid/faTrash'
+  import faEdit from '@fortawesome/fontawesome-free-solid/faEdit'
+  import fontawesome from '@fortawesome/fontawesome'
+
+  fontawesome.library.add(faTrash, faEdit)
+
   export default {
-    name: 'UserEntry',
-    props: ['user'],
+    name: 'userEntry',
+    components: {
+      FontAwesomeIcon
+    },
+    props: {
+      user: {
+        type: Object,
+        required: true
+      }
+    },
     methods: {
-      changePassword () {
-        this.$modal.show('PasswordChange', this.user)
+      async deleteUser () {
+        if (confirm(`Are you sure you want to delete user ${this.user.username}?`)) {
+          await this.axios.delete(`/users/${this.user.id}`)
+          // Ideally emit event to parent to refresh list
+          this.$parent.created() 
+        }
+      },
+      editUser () {
+        // Placeholder for edit functionality
+        // this.$modal.show('UserEdit', { user: this.user })
       }
     }
   }
 </script>
 
 <style scoped lang="sass">
-  @use "sass:color"
-  tr:nth-child(even)
-    background-color: color.adjust(#696060, $lightness: -2%)
-
-  td
-    padding: 10px
-
-  .id
-    text-align: right
+@use "@/assets/sass/settings.sass"
 </style>

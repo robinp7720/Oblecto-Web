@@ -1,69 +1,68 @@
 <template>
   <div class="Libraries">
-    <h2>Movies</h2>
-    <table>
-      <thead>
-        <tr>
-          <th>#</th>
-          <th>Path</th>
-          <th>Actions</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr v-for="(library, index) in movies">
-          <td class="id">
-            {{ index + 1 }}
-          </td>
-          <td>
-            {{ library.path }}
-          </td>
-          <td class="actions">
-            <a
-              title="Delete library path"
-              @click="deleteMovieLibrary(library.path)"
-            >
-              <FontAwesomeIcon :icon="deleteIcon" />
-            </a>
-          </td>
-        </tr>
-      </tbody>
-    </table>
-    <a
-      class="button"
-      @click="libraryAdd('movies')"
-    >Add movie library</a>
-    <h2>TV Shows</h2>
-    <table>
-      <thead>
-        <tr>
-          <th>#</th>
-          <th>Path</th>
-          <th>Actions</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr v-for="(library, index) in shows">
-          <td class="id">
-            {{ index + 1 }}
-          </td>
-          <td>
-            {{ library.path }}
-          </td>
-          <td class="actions">
-            <a
-              title="Delete library path"
-              @click="deleteSeriesLibrary(library.path)"
-            >
-              <FontAwesomeIcon :icon="deleteIcon" />
-            </a>
-          </td>
-        </tr>
-      </tbody>
-    </table>
-    <a
-      class="button"
-      @click="libraryAdd('tvshows')"
-    >Add TV show library</a>
+    <div class="settings-card">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; border-bottom: 1px solid #444; padding-bottom: 10px;">
+        <h2 style="margin: 0; border: none; padding: 0;">Movies</h2>
+        <a class="btn" @click="libraryAdd('movies')">
+          <font-awesome-icon icon="plus" /> Add movie library
+        </a>
+      </div>
+      <table class="settings-table">
+        <thead>
+          <tr>
+            <th width="50">#</th>
+            <th>Path</th>
+            <th width="100">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr v-if="movies.length === 0">
+            <td colspan="3" style="text-align: center; color: #999;">No movie libraries configured.</td>
+          </tr>
+          <tr v-for="(library, index) in movies" :key="index">
+            <td class="id">{{ index + 1 }}</td>
+            <td>{{ library.path }}</td>
+            <td class="actions">
+              <a title="Delete library path" @click="deleteMovieLibrary(library.path)">
+                <font-awesome-icon :icon="deleteIcon" />
+              </a>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="settings-card">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; border-bottom: 1px solid #444; padding-bottom: 10px;">
+        <h2 style="margin: 0; border: none; padding: 0;">TV Shows</h2>
+        <a class="btn" @click="libraryAdd('tvshows')">
+          <font-awesome-icon icon="plus" /> Add TV show library
+        </a>
+      </div>
+      <table class="settings-table">
+        <thead>
+          <tr>
+            <th width="50">#</th>
+            <th>Path</th>
+            <th width="100">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr v-if="shows.length === 0">
+            <td colspan="3" style="text-align: center; color: #999;">No TV show libraries configured.</td>
+          </tr>
+          <tr v-for="(library, index) in shows" :key="index">
+            <td class="id">{{ index + 1 }}</td>
+            <td>{{ library.path }}</td>
+            <td class="actions">
+              <a title="Delete library path" @click="deleteSeriesLibrary(library.path)">
+                <font-awesome-icon :icon="deleteIcon" />
+              </a>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
   </div>
 </template>
 
@@ -72,6 +71,10 @@
 
   import FontAwesomeIcon from '@fortawesome/vue-fontawesome'
   import faTrash from '@fortawesome/fontawesome-free-solid/faTrash'
+  import faPlus from '@fortawesome/fontawesome-free-solid/faPlus'
+  import fontawesome from '@fortawesome/fontawesome'
+
+  fontawesome.library.add(faTrash, faPlus)
 
   export default {
     name: 'Libraries',
@@ -112,81 +115,5 @@
 </script>
 
 <style scoped lang="sass">
-  @use "sass:color"
-
-  .button
-    background-color: rgba(0,0,0,0.5)
-    border: rgba(0,0,0,0.8) 1px solid
-    color: rgba(255,255,255,0.5)
-
-    padding: 10px
-    -webkit-border-radius: 3px
-    -moz-border-radius: 3px
-    border-radius: 3px
-    cursor: pointer
-
-    display: block
-    width: 100%
-
-    max-width: 200px
-
-    margin: 5px 0
-
-    text-align: center
-
-  h2
-    padding-left: 40px
-
-  table
-    background: #696060
-    box-shadow: 0 0 5px 2px rgba(color.adjust(#696060, $lightness: -20%), 0.75)
-
-    border-spacing: 0
-
-    width: 100%
-
-    thead
-      background-color: #444042
-      box-shadow: 0 0 5px 2px rgba(color.adjust(#696060, $lightness: -20%), 0.75)
-
-      th
-        padding: 10px
-
-        margin: 0
-        border: 0
-
-        outline: 0
-    tr:nth-child(even)
-      background-color: color.adjust(#696060, $lightness: -2%)
-
-    td
-      padding: 10px
-
-    .id
-      text-align: right
-
-    .actions
-      text-align: center
-
-
-    .button
-      background-color: rgba(0,0,0,0.5)
-      border: rgba(0,0,0,0.8) 1px solid
-      color: rgba(255,255,255,0.5)
-
-      padding: 10px
-      -webkit-border-radius: 3px
-      -moz-border-radius: 3px
-      border-radius: 3px
-      cursor: pointer
-
-      display: block
-      width: 100%
-
-      max-width: 200px
-
-      margin: 5px 0
-
-      text-align: center
-
+@use "@/assets/sass/settings.sass"
 </style>
