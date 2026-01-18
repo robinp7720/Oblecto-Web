@@ -261,4 +261,63 @@
 
 <style scoped lang="sass">
 @use "@/assets/sass/settings.sass"
+
+.setting-row
+  margin-bottom: 15px
+
+.resize-grid
+  display: flex
+  gap: 20px
+  
+  .form-group
+    flex: 1
+
+.checkbox-container
+  display: block
+  position: relative
+  padding-left: 30px
+  margin-bottom: 5px
+  cursor: pointer
+  font-size: 14px
+  user-select: none
+  color: #ddd
+
+  input
+    position: absolute
+    opacity: 0
+    cursor: pointer
+    height: 0
+    width: 0
+
+  .checkmark
+    position: absolute
+    top: 0
+    left: 0
+    height: 18px
+    width: 18px
+    background-color: #333
+    border: 1px solid #555
+    border-radius: 3px
+
+  &:hover input ~ .checkmark
+    background-color: #444
+
+  input:checked ~ .checkmark
+    background-color: #2196F3
+    border-color: #2196F3
+
+  input:checked ~ .checkmark:after
+    display: block
+
+  .checkmark:after
+    content: ""
+    position: absolute
+    display: none
+    left: 6px
+    top: 2px
+    width: 3px
+    height: 8px
+    border: solid white
+    border-width: 0 2px 2px 0
+    transform: rotate(45deg)
 </style>
