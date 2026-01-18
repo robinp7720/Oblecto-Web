@@ -52,9 +52,11 @@
   import faFolderOpen from '@fortawesome/fontawesome-free-solid/faFolderOpen'
   import faFileVideo from '@fortawesome/fontawesome-free-solid/faFileVideo'
   import faTags from '@fortawesome/fontawesome-free-solid/faTags'
+  import faImage from '@fortawesome/fontawesome-free-solid/faImage'
+  import faGlobe from '@fortawesome/fontawesome-free-solid/faGlobe'
   import fontawesome from '@fortawesome/fontawesome'
 
-  fontawesome.library.add(faWrench, faUsers, faFolderOpen, faFileVideo, faTags)
+  fontawesome.library.add(faWrench, faUsers, faFolderOpen, faFileVideo, faTags, faImage, faGlobe)
 
   export default {
     name: 'Settings',
