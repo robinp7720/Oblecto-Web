@@ -119,6 +119,7 @@
 
 <script>
   import FontAwesomeIcon from '@fortawesome/vue-fontawesome'
+  import Hls from 'hls.js'
 
   import faDown from '@fortawesome/fontawesome-free-solid/faAngleDown'
   import faUp from '@fortawesome/fontawesome-free-solid/faAngleUp'
@@ -164,7 +165,9 @@
 
         shouldPreSeek: true,
 
-        playbackSession: {}
+        playbackSession: {},
+        hls: null,
+        streamType: 'hls'
       }
     },
     computed: {
@@ -217,6 +220,119 @@
     },
     methods: {
       ...mapMutations(['setPlaySizeFormat']),
+      getBaseUrl: function () {
+        return oblectoClient?.axios?.defaults?.baseURL || window.location.origin
+      },
+      getHlsAuthHeader: function () {
+        if (!oblectoClient || !oblectoClient.accessToken) return null
+
+        return `bearer ${oblectoClient.accessToken}`
+      },
+      normalizeHlsUrl: function (url) {
+        if (!url) return url
+
+        let baseUrl = this.getBaseUrl().replace(/\/+$/, '')
+        let sessionId = this.playbackSession?.sessionId
+        let uuidMatch = url.match(/\/([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})$/i)
+
+        if (url.includes('/session/stream/')) {
+          return url
+        }
+
+        if (sessionId && url.startsWith(baseUrl + '/') && uuidMatch && !url.includes('/HLS/')) {
+          return `${baseUrl}/HLS/${sessionId}/segment/${uuidMatch[1]}`
+        }
+
+        return url
+      },
+      buildHlsConfig: function () {
+        let authHeader = this.getHlsAuthHeader()
+        let getFixedUrl = (url) => this.normalizeHlsUrl(url)
+
+        return {
+          enableWorker: true,
+          lowLatencyMode: false,
+          xhrSetup: (xhr, url) => {
+            let nextUrl = getFixedUrl(url)
+
+            if (nextUrl && nextUrl !== url) {
+              xhr.open('GET', nextUrl, true)
+            }
+            if (authHeader) {
+              xhr.setRequestHeader('Authorization', authHeader)
+            }
+          },
+          fetchSetup: (context, init) => {
+            let nextInit = init || {}
+            let nextUrl = getFixedUrl(context.url)
+
+            if (authHeader) {
+              nextInit.headers = {
+                ...(nextInit.headers || {}),
+                Authorization: authHeader
+              }
+            }
+
+            return new Request(nextUrl, nextInit)
+          }
+        }
+      },
+      destroyHls: function () {
+        if (!this.hls) return
+
+        this.hls.stopLoad()
+        this.hls.detachMedia()
+        this.hls.destroy()
+        this.hls = null
+      },
+      attachHlsStream: function (url) {
+        this.destroyHls()
+
+        if (Hls.isSupported()) {
+          this.hls = new Hls(this.buildHlsConfig())
+          this.hls.on(Hls.Events.MEDIA_ATTACHED, () => {
+            console.log('[hls] media attached')
+          })
+          this.hls.on(Hls.Events.MANIFEST_LOADING, (event, data) => {
+            console.log('[hls] manifest loading', data?.url)
+          })
+          this.hls.on(Hls.Events.MANIFEST_LOADED, (event, data) => {
+            console.log('[hls] manifest loaded', data)
+          })
+          this.hls.on(Hls.Events.LEVEL_LOADED, (event, data) => {
+            console.log('[hls] level loaded', { startSN: data?.details?.startSN, endSN: data?.details?.endSN, live: data?.details?.live })
+          })
+          this.hls.on(Hls.Events.FRAG_LOADED, (event, data) => {
+            console.log('[hls] frag loaded', { sn: data?.frag?.sn, level: data?.frag?.level, url: data?.frag?.url })
+          })
+          this.hls.on(Hls.Events.FRAG_CHANGED, (event, data) => {
+            console.log('[hls] frag changed', { sn: data?.frag?.sn, level: data?.frag?.level })
+          })
+          this.hls.on(Hls.Events.ERROR, (event, data) => {
+            console.warn('[hls] error', data)
+            if (!data || !data.fatal) return
+
+            switch (data.type) {
+              case Hls.ErrorTypes.NETWORK_ERROR:
+                this.hls.startLoad()
+                break
+              case Hls.ErrorTypes.MEDIA_ERROR:
+                this.hls.recoverMediaError()
+                break
+              default:
+                this.destroyHls()
+            }
+          })
+          this.hls.loadSource(url)
+          this.hls.attachMedia(this.player)
+        } else if (this.player.canPlayType('application/vnd.apple.mpegurl')) {
+          this.player.src = url
+          this.player.load()
+        } else {
+          this.player.src = url
+          this.player.load()
+        }
+      },
       viewShow: function () {
         if (this.playing.type === 'episode') {
           this.$router.push({ name: 'SeriesView', params: { seriesId: this.playing.entity.Series.id } })
@@ -227,12 +343,11 @@
         this.updateLocalTracker()
 
         let tracking = this.playing.entity.TrackMovies || this.playing.entity.TrackEpisodes
+        let usesServerSeeking = this.streamType === 'hls' || this.playbackSession.seeking === 'server'
 
         this.PlayingFileID = id
 
-        await this.updateSession()
-
-        if (this.playbackSession.seeking === 'server') {
+        if (usesServerSeeking) {
           if (tracking[0] !== undefined) {
             this.initialProgress = tracking[0].time
           }
@@ -241,26 +356,37 @@
           this.shouldPreSeek = true
         }
 
+        await this.updateSession(this.initialProgress)
+
         this.qualityPopUp = false
 
         this.loading = true
         this.setURL()
       },
-      updateSession: async function () {
-        this.playbackSession = await oblectoClient.sessions.create(this.playing.entity.Files[this.PlayingFileID].id)
+      updateSession: async function (offset = null) {
+        let params = { type: this.streamType }
+
+        if (this.streamType === 'hls') {
+          params.formats = 'mp4'
+          params.videoCodecs = 'h264'
+          params.audioCodec = 'aac'
+        }
+
+        if (typeof offset === 'number') {
+          params.offset = offset
+        }
+
+        this.playbackSession = await oblectoClient.sessions.create(this.playing.entity.Files[this.PlayingFileID].id, params)
       },
-      updateURL: async function () {
-        await this.updateSession()
+      updateURL: async function (offset = null) {
+        await this.updateSession(offset)
         this.setURL()
       },
       setURL: function () {
         let token = this.playbackSession.sessionId
 
-        if (this.playbackSession.seeking === 'server') {
-          this.player.src = oblectoClient.sessions.getStreamUrl(token, { offset: this.initialProgress })
-        } else {
-          this.player.src = oblectoClient.sessions.getStreamUrl(token)
-        }
+        let url = oblectoClient.sessions.getStreamUrl(token)
+        this.attachHlsStream(url)
       },
       seek: function (event) {
         // Calculate the offset in seconds from where the user clicked on the seekbar
@@ -274,7 +400,7 @@
           }
 
           this.initialProgress = position
-          this.updateURL()
+          this.updateURL(this.initialProgress)
         } else {
           this.player.currentTime = position
         }
@@ -287,6 +413,7 @@
         }
       },
       stopPlaying: function () {
+        this.destroyHls()
         this.player.src = ''
 
         this.$store.dispatch('clearPlaying')
@@ -393,17 +520,19 @@
         // If the progress is above 90 percent, we shouldn't seek to the last position since the user probably
         // wants to start from the beginning.
 
-        await this.updateSession()
-
         if (tracking[0]) {
           this.shouldPreSeek = tracking[0].progress < IGNORE_RESTORE_PROGRESS_THRESHOLD
         }
 
-        if (this.playbackSession.seeking === 'server') {
+        let usesServerSeeking = this.streamType === 'hls' || this.playbackSession.seeking === 'server'
+
+        if (usesServerSeeking) {
           if (tracking[0] !== undefined && this.shouldPreSeek) {
             this.initialProgress = tracking[0].time
           }
         }
+
+        await this.updateSession(this.initialProgress)
 
         this.setURL()
 
@@ -456,23 +585,28 @@
 
       this.player.addEventListener('waiting', () => {
         this.loading = true
+        console.log('[player] waiting')
       })
 
       this.player.addEventListener('playing', () => {
         this.paused = false
         this.loading = false
+        console.log('[player] playing')
       })
 
       this.player.addEventListener('pause', () => {
         this.paused = true
+        console.log('[player] pause')
       })
 
       this.player.addEventListener('play', () => {
         this.paused = false
+        console.log('[player] play')
       })
 
       this.player.addEventListener('ended', () => {
         this.$store.dispatch('updateWatching')
+        console.log('[player] ended')
       })
 
       this.player.addEventListener('enterpictureinpicture', () => {
@@ -487,6 +621,7 @@
       })
 
       this.player.addEventListener('loadedmetadata', () => {
+        console.log('[player] loadedmetadata', { duration: this.player.duration })
         let tracking = this.playing.entity.TrackMovies || this.playing.entity.TrackEpisodes
 
         if (tracking[0] && this.shouldPreSeek) {

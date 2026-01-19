@@ -15,6 +15,7 @@
     "@fortawesome/fontawesome-free-solid": "^5.0.13",
     "@fortawesome/vue-fontawesome": "0.0.23",
     "axios": "^1.6.5",
+    "hls.js": "^1.6.15",
     "socket.io-client": "^4.7.4",
     "velocity-animate": "^1.5.2",
     "vue": "^2.7.16",
