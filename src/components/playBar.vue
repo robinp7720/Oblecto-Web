@@ -251,13 +251,7 @@
 
         return {
           enableWorker: true,
-          lowLatencyMode: true,
-          liveSyncDurationCount: 1,
-          liveMaxLatencyDurationCount: 3,
-          maxLiveSyncPlaybackRate: 1.0,
-          maxBufferLength: 10,
-          backBufferLength: 10,
-          startPosition: 0,
+          lowLatencyMode: false,
           xhrSetup: (xhr, url) => {
             let nextUrl = getFixedUrl(url)
 
