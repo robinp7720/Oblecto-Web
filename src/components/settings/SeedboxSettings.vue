@@ -12,6 +12,44 @@
       </p>
     </div>
 
+    <div
+      v-if="status"
+      class="settings-card"
+    >
+      <div class="settings-header-row">
+        <h2 class="settings-title-plain">
+          Import Status
+        </h2>
+        <a
+          class="btn"
+          @click="refreshStatus"
+        >
+          <font-awesome-icon icon="sync" /> Refresh
+        </a>
+      </div>
+
+      <div class="resize-grid">
+        <div class="form-group">
+          <label>Queue State</label>
+          <div class="value">
+            {{ status.queue.idle ? 'Idle' : 'Running' }}
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Items in Queue</label>
+          <div class="value">
+            {{ status.queue.length }}
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Active Imports</label>
+          <div class="value">
+            {{ status.queue.running }}
+          </div>
+        </div>
+      </div>
+    </div>
+
     <div class="settings-card">
       <div class="settings-header-row">
         <h2 class="settings-title-plain">
@@ -282,10 +320,11 @@
   import faTrash from '@fortawesome/fontawesome-free-solid/faTrash'
   import faPlus from '@fortawesome/fontawesome-free-solid/faPlus'
   import faEdit from '@fortawesome/fontawesome-free-solid/faEdit'
+  import faSync from '@fortawesome/fontawesome-free-solid/faSync'
   import fontawesome from '@fortawesome/fontawesome'
   import oblectoClient from '@/oblectoClient'
 
-  fontawesome.library.add(faPlus, faTrash, faEdit)
+  fontawesome.library.add(faPlus, faTrash, faEdit, faSync)
 
   const emptySeedbox = () => ({
     name: '',
@@ -315,7 +354,8 @@
         seedboxes: [],
         seedboxForm: emptySeedbox(),
         editingIndex: null,
-        importSource: 'all'
+        importSource: 'all',
+        status: null
       }
     },
     computed: {
@@ -350,9 +390,18 @@
               ...(seedbox?.mediaImport || {})
             }
           }))
+
+          this.refreshStatus()
         } catch (e) {
           console.error('Failed to load seedbox settings', e)
           this.$notify({ type: 'error', title: 'Error', text: 'Failed to load seedbox settings' })
+        }
+      },
+      async refreshStatus () {
+        try {
+          this.status = await oblectoClient.status.getSeedboxStatus()
+        } catch (e) {
+          console.error('Failed to get seedbox status', e)
         }
       },
       async saveSettings () {
@@ -521,4 +570,9 @@
     border: solid white
     border-width: 0 2px 2px 0
     transform: rotate(45deg)
+
+.value
+  padding: 10px 0
+  color: var(--color-text)
+  font-weight: 500
 </style>
