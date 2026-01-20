@@ -50,160 +50,7 @@
       </div>
     </div>
 
-    <div class="settings-card">
-      <div class="settings-header-row">
-        <h2 class="settings-title-plain">
-          Seedbox Connections
-        </h2>
-        <a
-          class="btn"
-          @click="resetForm"
-        >
-          <font-awesome-icon icon="plus" /> New Seedbox
-        </a>
-      </div>
 
-      <div class="resize-grid">
-        <div class="form-group">
-          <label>Name</label>
-          <input
-            v-model="seedboxForm.name"
-            type="text"
-            placeholder="My Seedbox"
-          >
-        </div>
-        <div class="form-group">
-          <label>Storage Driver</label>
-          <select v-model="seedboxForm.storageDriver">
-            <option value="ssh">
-              SSH
-            </option>
-            <option value="ftp">
-              FTP
-            </option>
-            <option value="ftps">
-              FTPS
-            </option>
-          </select>
-        </div>
-      </div>
-
-      <div class="resize-grid">
-        <div class="form-group">
-          <label>Host</label>
-          <input
-            v-model="seedboxForm.storageDriverOptions.host"
-            type="text"
-            placeholder="seedbox.example.com"
-          >
-        </div>
-        <div class="form-group">
-          <label>Username</label>
-          <input
-            v-model="seedboxForm.storageDriverOptions.username"
-            type="text"
-            placeholder="seeduser"
-          >
-        </div>
-      </div>
-
-      <div class="resize-grid">
-        <div class="form-group">
-          <label>Password</label>
-          <input
-            v-model="seedboxForm.storageDriverOptions.password"
-            type="password"
-            placeholder="••••••••"
-          >
-        </div>
-        <div class="form-group">
-          <label>Secure Connection</label>
-          <label class="checkbox-container">
-            Use Secure Connection
-            <input
-              v-model="seedboxForm.storageDriverOptions.secure"
-              type="checkbox"
-            >
-            <span class="checkmark" />
-          </label>
-        </div>
-      </div>
-
-      <div class="resize-grid">
-        <div class="form-group">
-          <label>Movie Directory</label>
-          <input
-            v-model="seedboxForm.mediaImport.movieDirectory"
-            type="text"
-            placeholder="/downloads/finished/movie"
-          >
-        </div>
-        <div class="form-group">
-          <label>Series Directory</label>
-          <input
-            v-model="seedboxForm.mediaImport.seriesDirectory"
-            type="text"
-            placeholder="/downloads/finished/tv"
-          >
-        </div>
-      </div>
-
-      <div class="resize-grid">
-        <div class="form-group">
-          <label class="checkbox-container">
-            Automatic Import
-            <input
-              v-model="seedboxForm.automaticImport"
-              type="checkbox"
-            >
-            <span class="checkmark" />
-          </label>
-          <p class="description">
-            Automatically import media found in the seedbox directories.
-          </p>
-        </div>
-        <div class="form-group">
-          <label class="checkbox-container">
-            Delete On Import
-            <input
-              v-model="seedboxForm.deleteOnImport"
-              type="checkbox"
-            >
-            <span class="checkmark" />
-          </label>
-          <p class="description">
-            Remove files from the seedbox after import completes.
-          </p>
-        </div>
-      </div>
-
-      <div class="setting-row">
-        <label class="checkbox-container">
-          Enabled
-          <input
-            v-model="seedboxForm.enabled"
-            type="checkbox"
-          >
-          <span class="checkmark" />
-        </label>
-      </div>
-
-      <div class="form-actions">
-        <a
-          class="btn"
-          @click="saveSeedbox"
-        >
-          {{ editingIndex === null ? 'Add Seedbox' : 'Save Changes' }}
-        </a>
-        <a
-          v-if="editingIndex !== null"
-          class="btn btn-secondary"
-          @click="resetForm"
-        >
-          Cancel
-        </a>
-      </div>
-    </div>
 
     <div class="settings-card">
       <h2 class="settings-section-title">
@@ -249,9 +96,17 @@
     </div>
 
     <div class="settings-card">
-      <h2 class="settings-section-title">
-        Configured Seedboxes
-      </h2>
+      <div class="settings-header-row">
+        <h2 class="settings-section-title">
+          Configured Seedboxes
+        </h2>
+        <a
+          class="btn"
+          @click="openDialog()"
+        >
+          <font-awesome-icon icon="plus" /> New Seedbox
+        </a>
+      </div>
 
       <div class="settings-table-scroll">
         <table class="settings-table">
@@ -352,8 +207,6 @@
     data () {
       return {
         seedboxes: [],
-        seedboxForm: emptySeedbox(),
-        editingIndex: null,
         importSource: 'all',
         status: null
       }
@@ -413,41 +266,22 @@
           this.$notify({ type: 'error', title: 'Error', text: 'Failed to save seedbox settings' })
         }
       },
-      async saveSeedbox () {
-        if (!this.seedboxForm.name || !this.seedboxForm.storageDriverOptions.host) {
-          this.$notify({ type: 'error', title: 'Missing info', text: 'Name and host are required.' })
-          return
-        }
-
-        const entry = {
-          ...emptySeedbox(),
-          ...this.seedboxForm,
-          storageDriverOptions: {
-            ...emptySeedbox().storageDriverOptions,
-            ...(this.seedboxForm.storageDriverOptions || {})
-          },
-          mediaImport: {
-            ...emptySeedbox().mediaImport,
-            ...(this.seedboxForm.mediaImport || {})
+      openDialog (index = null) {
+        const seedbox = index !== null ? this.seedboxes[index] : null
+        this.$modal.show('SeedboxDialog', {
+          seedbox,
+          callback: async (newSeedbox) => {
+            if (index !== null) {
+              this.$set(this.seedboxes, index, newSeedbox)
+            } else {
+              this.seedboxes.push(newSeedbox)
+            }
+            await this.saveSettings()
           }
-        }
-
-        if (this.editingIndex === null) {
-          this.seedboxes.push(entry)
-        } else {
-          this.$set(this.seedboxes, this.editingIndex, entry)
-        }
-
-        this.resetForm()
-        await this.saveSettings()
+        })
       },
       editSeedbox (index) {
-        const seedbox = this.seedboxes[index]
-        this.seedboxForm = {
-          ...emptySeedbox(),
-          ...seedbox
-        }
-        this.editingIndex = index
+        this.openDialog(index)
       },
       async deleteSeedbox (index) {
         const seedbox = this.seedboxes[index]
@@ -456,10 +290,6 @@
         }
         this.seedboxes.splice(index, 1)
         await this.saveSettings()
-      },
-      resetForm () {
-        this.seedboxForm = emptySeedbox()
-        this.editingIndex = null
       },
       async triggerImport (type) {
         try {

@@ -10,6 +10,7 @@
     <PasswordChange />
     <CopyText />
     <ChangeRemoteDialog />
+    <SeedboxDialog />
 
     <notifications
       group="system"
@@ -61,6 +62,7 @@
   import PasswordChange from '@/components/modals/PasswordChange'
   import CopyText from '@/components/modals/CopyText'
   import ChangeRemoteDialog from '@/components/modals/ChangeRemoteDialog'
+  import SeedboxDialog from '@/components/modals/SeedboxDialog'
 
   export default {
     name: 'App',
@@ -77,6 +79,7 @@
       CopyText,
       NewMovieSet,
       LibraryAdd,
+      SeedboxDialog,
       playBar,
       LoadingPage
     },
