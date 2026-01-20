@@ -27,12 +27,28 @@
           <div class="right">
             <h2>{{ movieData.movieName }}</h2>
             <span class="year">First released on {{ movieData.releaseDate }}</span>
+            <div
+              v-if="movieMeta.length"
+              class="meta"
+            >
+              <div
+                v-for="item in movieMeta"
+                :key="item.label"
+                class="meta-item"
+              >
+                <span class="meta-label">{{ item.label }}</span>
+                <span class="meta-value">{{ item.value }}</span>
+              </div>
+            </div>
             <p>
               {{ movieData.overview }}
             </p>
-            <ul class="genres">
+            <ul
+              v-if="movieGenres.length"
+              class="genres"
+            >
               <li
-                v-for="genre in movieData.genre"
+                v-for="genre in movieGenres"
                 class="genre"
               >
                 {{ genre }}
@@ -77,7 +93,40 @@ export default {
   computed: {
     ...mapState([
       'host'
-    ])
+    ]),
+    movieGenres () {
+      return this.normalizeGenres(this.movieData.genres || this.movieData.genre)
+    },
+    movieMeta () {
+      if (!this.movieData) return []
+
+      const meta = []
+
+      const runtime = this.formatRuntime(this.movieData.runtime)
+      if (runtime) meta.push({ label: 'Runtime', value: runtime })
+
+      const language = this.formatLanguage(this.movieData.originalLanguage)
+      if (language) meta.push({ label: 'Language', value: language })
+
+      const originalTitle = this.normalizeText(this.movieData.originalName)
+      if (originalTitle && originalTitle !== this.movieData.movieName) {
+        meta.push({ label: 'Original title', value: originalTitle })
+      }
+
+      const tagline = this.normalizeText(this.movieData.tagline)
+      if (tagline) meta.push({ label: 'Tagline', value: tagline })
+
+      const budget = this.formatCurrency(this.movieData.budget)
+      if (budget) meta.push({ label: 'Budget', value: budget })
+
+      const revenue = this.formatCurrency(this.movieData.revenue)
+      if (revenue) meta.push({ label: 'Revenue', value: revenue })
+
+      const popularity = this.formatPopularity(this.movieData.popularity)
+      if (popularity) meta.push({ label: 'Popularity', value: popularity })
+
+      return meta
+    }
   },
   watch: {
     async '$route' (to, from) {
@@ -160,6 +209,65 @@ export default {
     updateGradient: function () {
       let g = this.gradientColor()
       this.endGradient = `rgb(${g[0]}, ${g[1]}, ${g[2]})`
+    },
+    normalizeText (value) {
+      if (value === null || value === undefined) return null
+      const text = String(value).trim()
+      return text.length > 0 ? text : null
+    },
+    normalizeGenres (raw) {
+      if (!raw) return []
+      if (Array.isArray(raw)) {
+        return raw.map(entry => String(entry).trim()).filter(Boolean)
+      }
+      if (typeof raw === 'string') {
+        const trimmed = raw.trim()
+        if (!trimmed) return []
+        try {
+          const parsed = JSON.parse(trimmed)
+          if (Array.isArray(parsed)) {
+            return parsed.map(entry => String(entry).trim()).filter(Boolean)
+          }
+        } catch (e) {
+          // Fall back to comma-separated list.
+        }
+        return trimmed.split(',').map(entry => entry.trim()).filter(Boolean)
+      }
+      return []
+    },
+    formatRuntime (value) {
+      const minutes = Number(value)
+      if (!Number.isFinite(minutes) || minutes <= 0) return null
+      const hours = Math.floor(minutes / 60)
+      const mins = Math.round(minutes % 60)
+      if (hours > 0 && mins > 0) return `${hours}h ${mins}m`
+      if (hours > 0) return `${hours}h`
+      return `${mins}m`
+    },
+    formatLanguage (value) {
+      const text = this.normalizeText(value)
+      if (!text) return null
+      if (text.length <= 3) return text.toUpperCase()
+      return text
+    },
+    formatCurrency (value) {
+      const amount = Number(value)
+      if (!Number.isFinite(amount) || amount <= 0) return null
+      try {
+        return new Intl.NumberFormat('en-US', {
+          style: 'currency',
+          currency: 'USD',
+          maximumFractionDigits: 0
+        }).format(amount)
+      } catch (e) {
+        const rounded = Math.round(amount)
+        return `$${rounded.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',')}`
+      }
+    },
+    formatPopularity (value) {
+      const score = Number(value)
+      if (!Number.isFinite(score) || score <= 0) return null
+      return String(Math.round(score * 10) / 10)
     }
   }
 }
@@ -231,6 +339,28 @@ export default {
       margin: 20px 0 0
 
       max-width: 900px
+
+    .meta
+      display: flex
+      flex-wrap: wrap
+      gap: 8px 20px
+      margin-top: 10px
+      color: var(--color-text-muted)
+
+      .meta-item
+        min-width: 140px
+        display: flex
+        flex-direction: column
+
+      .meta-label
+        text-transform: uppercase
+        letter-spacing: 0.08em
+        font-size: 0.65em
+        color: var(--color-text-faint)
+        margin-bottom: 2px
+
+      .meta-value
+        color: var(--color-text)
 
     .genres
       float: right
