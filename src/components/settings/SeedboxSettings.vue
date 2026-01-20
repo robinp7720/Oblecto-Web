@@ -1,7 +1,9 @@
 <template>
   <div class="wrapper">
     <div class="settings-card">
-      <h2 class="settings-section-title">Seedbox Setup</h2>
+      <h2 class="settings-section-title">
+        Seedbox Setup
+      </h2>
       <p class="settings-description">
         Configure remote seedboxes for automated downloads and media imports.
       </p>
@@ -12,8 +14,13 @@
 
     <div class="settings-card">
       <div class="settings-header-row">
-        <h2 class="settings-title-plain">Seedbox Connections</h2>
-        <a class="btn" @click="resetForm">
+        <h2 class="settings-title-plain">
+          Seedbox Connections
+        </h2>
+        <a
+          class="btn"
+          @click="resetForm"
+        >
           <font-awesome-icon icon="plus" /> New Seedbox
         </a>
       </div>
@@ -21,14 +28,24 @@
       <div class="resize-grid">
         <div class="form-group">
           <label>Name</label>
-          <input type="text" v-model="seedboxForm.name" placeholder="My Seedbox">
+          <input
+            v-model="seedboxForm.name"
+            type="text"
+            placeholder="My Seedbox"
+          >
         </div>
         <div class="form-group">
           <label>Storage Driver</label>
           <select v-model="seedboxForm.storageDriver">
-            <option value="ssh">SSH</option>
-            <option value="ftp">FTP</option>
-            <option value="ftps">FTPS</option>
+            <option value="ssh">
+              SSH
+            </option>
+            <option value="ftp">
+              FTP
+            </option>
+            <option value="ftps">
+              FTPS
+            </option>
           </select>
         </div>
       </div>
@@ -36,25 +53,40 @@
       <div class="resize-grid">
         <div class="form-group">
           <label>Host</label>
-          <input type="text" v-model="seedboxForm.storageDriverOptions.host" placeholder="seedbox.example.com">
+          <input
+            v-model="seedboxForm.storageDriverOptions.host"
+            type="text"
+            placeholder="seedbox.example.com"
+          >
         </div>
         <div class="form-group">
           <label>Username</label>
-          <input type="text" v-model="seedboxForm.storageDriverOptions.username" placeholder="seeduser">
+          <input
+            v-model="seedboxForm.storageDriverOptions.username"
+            type="text"
+            placeholder="seeduser"
+          >
         </div>
       </div>
 
       <div class="resize-grid">
         <div class="form-group">
           <label>Password</label>
-          <input type="password" v-model="seedboxForm.storageDriverOptions.password" placeholder="••••••••">
+          <input
+            v-model="seedboxForm.storageDriverOptions.password"
+            type="password"
+            placeholder="••••••••"
+          >
         </div>
         <div class="form-group">
           <label>Secure Connection</label>
           <label class="checkbox-container">
             Use Secure Connection
-            <input type="checkbox" v-model="seedboxForm.storageDriverOptions.secure">
-            <span class="checkmark"></span>
+            <input
+              v-model="seedboxForm.storageDriverOptions.secure"
+              type="checkbox"
+            >
+            <span class="checkmark" />
           </label>
         </div>
       </div>
@@ -62,11 +94,19 @@
       <div class="resize-grid">
         <div class="form-group">
           <label>Movie Directory</label>
-          <input type="text" v-model="seedboxForm.mediaImport.movieDirectory" placeholder="/downloads/finished/movie">
+          <input
+            v-model="seedboxForm.mediaImport.movieDirectory"
+            type="text"
+            placeholder="/downloads/finished/movie"
+          >
         </div>
         <div class="form-group">
           <label>Series Directory</label>
-          <input type="text" v-model="seedboxForm.mediaImport.seriesDirectory" placeholder="/downloads/finished/tv">
+          <input
+            v-model="seedboxForm.mediaImport.seriesDirectory"
+            type="text"
+            placeholder="/downloads/finished/tv"
+          >
         </div>
       </div>
 
@@ -74,41 +114,63 @@
         <div class="form-group">
           <label class="checkbox-container">
             Automatic Import
-            <input type="checkbox" v-model="seedboxForm.automaticImport">
-            <span class="checkmark"></span>
+            <input
+              v-model="seedboxForm.automaticImport"
+              type="checkbox"
+            >
+            <span class="checkmark" />
           </label>
-          <p class="description">Automatically import media found in the seedbox directories.</p>
+          <p class="description">
+            Automatically import media found in the seedbox directories.
+          </p>
         </div>
         <div class="form-group">
           <label class="checkbox-container">
             Delete On Import
-            <input type="checkbox" v-model="seedboxForm.deleteOnImport">
-            <span class="checkmark"></span>
+            <input
+              v-model="seedboxForm.deleteOnImport"
+              type="checkbox"
+            >
+            <span class="checkmark" />
           </label>
-          <p class="description">Remove files from the seedbox after import completes.</p>
+          <p class="description">
+            Remove files from the seedbox after import completes.
+          </p>
         </div>
       </div>
 
       <div class="setting-row">
         <label class="checkbox-container">
           Enabled
-          <input type="checkbox" v-model="seedboxForm.enabled">
-          <span class="checkmark"></span>
+          <input
+            v-model="seedboxForm.enabled"
+            type="checkbox"
+          >
+          <span class="checkmark" />
         </label>
       </div>
 
       <div class="form-actions">
-        <a class="btn" @click="saveSeedbox">
+        <a
+          class="btn"
+          @click="saveSeedbox"
+        >
           {{ editingIndex === null ? 'Add Seedbox' : 'Save Changes' }}
         </a>
-        <a class="btn btn-secondary" v-if="editingIndex !== null" @click="resetForm">
+        <a
+          v-if="editingIndex !== null"
+          class="btn btn-secondary"
+          @click="resetForm"
+        >
           Cancel
         </a>
       </div>
     </div>
 
     <div class="settings-card">
-      <h2 class="settings-section-title">Manual Import</h2>
+      <h2 class="settings-section-title">
+        Manual Import
+      </h2>
       <p class="settings-description">
         Trigger a one-time import from a specific seedbox or all seedboxes.
       </p>
@@ -116,7 +178,9 @@
         <div class="form-group">
           <label>Source</label>
           <select v-model="importSource">
-            <option value="all">All seedboxes</option>
+            <option value="all">
+              All seedboxes
+            </option>
             <option
               v-for="(seedbox, index) in seedboxes"
               :key="`import-${seedbox.name || seedbox.storageDriverOptions.host || index}`"
@@ -129,10 +193,16 @@
         <div class="form-group import-actions">
           <label>Import Type</label>
           <div class="actions-group">
-            <button class="btn" @click="triggerImport('movies')">
+            <button
+              class="btn"
+              @click="triggerImport('movies')"
+            >
               Import Movies
             </button>
-            <button class="btn" @click="triggerImport('tvshows')">
+            <button
+              class="btn"
+              @click="triggerImport('tvshows')"
+            >
               Import TV Shows
             </button>
           </div>
@@ -141,28 +211,44 @@
     </div>
 
     <div class="settings-card">
-      <h2 class="settings-section-title">Configured Seedboxes</h2>
+      <h2 class="settings-section-title">
+        Configured Seedboxes
+      </h2>
 
       <div class="settings-table-scroll">
         <table class="settings-table">
           <thead>
             <tr>
-              <th width="50">#</th>
+              <th width="50">
+                #
+              </th>
               <th>Name</th>
               <th>Host</th>
               <th>Driver</th>
               <th>Movie Dir</th>
               <th>Series Dir</th>
               <th>Status</th>
-              <th width="120">Actions</th>
+              <th width="120">
+                Actions
+              </th>
             </tr>
           </thead>
           <tbody>
             <tr v-if="seedboxes.length === 0">
-              <td colspan="8" class="settings-table-center">No seedboxes configured.</td>
+              <td
+                colspan="8"
+                class="settings-table-center"
+              >
+                No seedboxes configured.
+              </td>
             </tr>
-            <tr v-for="(seedbox, index) in seedboxes" :key="seedbox.id || index">
-              <td class="id">{{ index + 1 }}</td>
+            <tr
+              v-for="(seedbox, index) in seedboxes"
+              :key="seedbox.id || index"
+            >
+              <td class="id">
+                {{ index + 1 }}
+              </td>
               <td>{{ seedbox.name || 'Untitled' }}</td>
               <td>{{ seedbox.storageDriverOptions.host || '-' }}</td>
               <td>{{ (seedbox.storageDriver || 'ssh').toUpperCase() }}</td>
@@ -170,10 +256,16 @@
               <td>{{ seedbox.mediaImport.seriesDirectory || '-' }}</td>
               <td>{{ seedbox.enabled ? 'Enabled' : 'Disabled' }}</td>
               <td class="actions">
-                <a title="Edit seedbox" @click="editSeedbox(index)">
+                <a
+                  title="Edit seedbox"
+                  @click="editSeedbox(index)"
+                >
                   <font-awesome-icon :icon="editIcon" />
                 </a>
-                <a title="Remove seedbox" @click="deleteSeedbox(index)">
+                <a
+                  title="Remove seedbox"
+                  @click="deleteSeedbox(index)"
+                >
                   <font-awesome-icon :icon="deleteIcon" />
                 </a>
               </td>

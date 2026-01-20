@@ -4,42 +4,66 @@
       <ul class="nav-list">
         <li class="nav-item">
           <router-link :to="{ name: 'SettingsMaintenance'}">
-            <font-awesome-icon icon="wrench" class="fa-fw" /> Maintenance
+            <font-awesome-icon
+              icon="wrench"
+              class="fa-fw"
+            /> Maintenance
           </router-link>
         </li>
         <li class="nav-item">
           <router-link :to="{ name: 'SettingsUsers'}">
-            <font-awesome-icon icon="users" class="fa-fw" /> Users
+            <font-awesome-icon
+              icon="users"
+              class="fa-fw"
+            /> Users
           </router-link>
         </li>
         <li class="nav-item">
           <router-link :to="{ name: 'SettingsLibraries'}">
-            <font-awesome-icon icon="folder-open" class="fa-fw" /> Libraries
+            <font-awesome-icon
+              icon="folder-open"
+              class="fa-fw"
+            /> Libraries
           </router-link>
         </li>
         <li class="nav-item">
           <router-link :to="{ name: 'IndexerSettings'}">
-            <font-awesome-icon icon="file-video" class="fa-fw" /> Indexer Settings
+            <font-awesome-icon
+              icon="file-video"
+              class="fa-fw"
+            /> Indexer Settings
           </router-link>
         </li>
         <li class="nav-item">
           <router-link :to="{ name: 'ArtworkSettings'}">
-            <font-awesome-icon icon="image" class="fa-fw" /> Artwork
+            <font-awesome-icon
+              icon="image"
+              class="fa-fw"
+            /> Artwork
           </router-link>
         </li>
         <li class="nav-item">
           <router-link :to="{ name: 'FederationSettings'}">
-            <font-awesome-icon icon="globe" class="fa-fw" /> Federation
+            <font-awesome-icon
+              icon="globe"
+              class="fa-fw"
+            /> Federation
           </router-link>
         </li>
         <li class="nav-item">
           <router-link :to="{ name: 'SeedboxSettings'}">
-            <font-awesome-icon icon="server" class="fa-fw" /> Seedboxes
+            <font-awesome-icon
+              icon="server"
+              class="fa-fw"
+            /> Seedboxes
           </router-link>
         </li>
         <li class="nav-item">
           <router-link :to="{ name: 'SettingsSets'}">
-            <font-awesome-icon icon="tags" class="fa-fw" /> Sets
+            <font-awesome-icon
+              icon="tags"
+              class="fa-fw"
+            /> Sets
           </router-link>
         </li>
         <li class="nav-item">

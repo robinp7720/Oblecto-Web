@@ -3,13 +3,22 @@
     <div class="settings-card">
       <h3>Library Indexing</h3>
       <div class="actions-group">
-        <button class="btn" @click="index('all')">
+        <button
+          class="btn"
+          @click="index('all')"
+        >
           <font-awesome-icon icon="sync" /> Full re-index
         </button>
-        <button class="btn" @click="index('series')">
+        <button
+          class="btn"
+          @click="index('series')"
+        >
           <font-awesome-icon icon="tv" /> Re-index series
         </button>
-        <button class="btn" @click="index('movies')">
+        <button
+          class="btn"
+          @click="index('movies')"
+        >
           <font-awesome-icon icon="film" /> Re-index movies
         </button>
       </div>
@@ -18,16 +27,28 @@
     <div class="settings-card">
       <h3>Library Cleanup</h3>
       <div class="actions-group">
-        <button class="btn btn-secondary" @click="clean('files')">
+        <button
+          class="btn btn-secondary"
+          @click="clean('files')"
+        >
           <font-awesome-icon icon="broom" /> Clean up files database
         </button>
-        <button class="btn btn-secondary" @click="clean('episodes')">
+        <button
+          class="btn btn-secondary"
+          @click="clean('episodes')"
+        >
           <font-awesome-icon icon="broom" /> Cleanup episodes without linked files
         </button>
-        <button class="btn btn-secondary" @click="clean('movies')">
+        <button
+          class="btn btn-secondary"
+          @click="clean('movies')"
+        >
           <font-awesome-icon icon="broom" /> Cleanup movies without linked files
         </button>
-        <button class="btn btn-secondary" @click="clean('series')">
+        <button
+          class="btn btn-secondary"
+          @click="clean('series')"
+        >
           <font-awesome-icon icon="broom" /> Remove Series without episodes
         </button>
       </div>
@@ -36,10 +57,16 @@
     <div class="settings-card">
       <h3>Artwork</h3>
       <div class="actions-group">
-        <button class="btn" @click="DownloadTVShowArt">
+        <button
+          class="btn"
+          @click="DownloadTVShowArt"
+        >
           <font-awesome-icon icon="image" /> Download artwork for TV Shows and Episodes
         </button>
-        <button class="btn" @click="DownloadMovieArt">
+        <button
+          class="btn"
+          @click="DownloadMovieArt"
+        >
           <font-awesome-icon icon="image" /> Download artwork for Movies
         </button>
       </div>
@@ -48,16 +75,28 @@
     <div class="settings-card">
       <h3>Metadata Updates</h3>
       <div class="actions-group">
-        <button class="btn" @click="update('episodes')">
+        <button
+          class="btn"
+          @click="update('episodes')"
+        >
           <font-awesome-icon icon="sync" /> Update episode entries
         </button>
-        <button class="btn" @click="update('movies')">
+        <button
+          class="btn"
+          @click="update('movies')"
+        >
           <font-awesome-icon icon="sync" /> Update movie entries
         </button>
-        <button class="btn" @click="update('series')">
+        <button
+          class="btn"
+          @click="update('series')"
+        >
           <font-awesome-icon icon="sync" /> Update series entries
         </button>
-        <button class="btn" @click="update('files')">
+        <button
+          class="btn"
+          @click="update('files')"
+        >
           <font-awesome-icon icon="sync" /> Update file entries
         </button>
       </div>

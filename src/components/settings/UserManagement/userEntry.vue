@@ -32,7 +32,7 @@
   fontawesome.library.add(faTrash, faEdit)
 
   export default {
-    name: 'userEntry',
+    name: 'UserEntry',
     components: {
       FontAwesomeIcon
     },

@@ -3,57 +3,95 @@
     <!-- MOVIES SECTION -->
     <div class="settings-card">
       <div class="settings-header-row">
-        <h2 class="settings-title-plain">Movies</h2>
-        <a class="btn" @click="libraryAdd('movies')">
+        <h2 class="settings-title-plain">
+          Movies
+        </h2>
+        <a
+          class="btn"
+          @click="libraryAdd('movies')"
+        >
           <font-awesome-icon icon="plus" /> Add movie library
         </a>
       </div>
       
       <!-- Configuration -->
       <div class="settings-section-gap">
-          <div class="setting-row">
-            <label class="checkbox-container">
-              Re-index on Startup
-              <input type="checkbox" v-model="moviesConfig.doReIndex" @change="saveMoviesConfig">
-              <span class="checkmark"></span>
-            </label>
-          </div>
-          <div class="setting-row">
-            <label class="checkbox-container">
-              Index Broken Files
-              <input type="checkbox" v-model="moviesConfig.indexBroken" @change="saveMoviesConfig">
-              <span class="checkmark"></span>
-            </label>
-          </div>
+        <div class="setting-row">
+          <label class="checkbox-container">
+            Re-index on Startup
+            <input
+              v-model="moviesConfig.doReIndex"
+              type="checkbox"
+              @change="saveMoviesConfig"
+            >
+            <span class="checkmark" />
+          </label>
+        </div>
+        <div class="setting-row">
+          <label class="checkbox-container">
+            Index Broken Files
+            <input
+              v-model="moviesConfig.indexBroken"
+              type="checkbox"
+              @change="saveMoviesConfig"
+            >
+            <span class="checkmark" />
+          </label>
+        </div>
           
-          <div class="form-group">
-            <label>Identifiers</label>
-            <TagInput v-model="moviesConfig.movieIdentifiers" :options="capabilities.movies.identifiers" @input="saveMoviesConfig" />
-          </div>
-          <div class="form-group">
-             <label>Updaters</label>
-             <TagInput v-model="moviesConfig.movieUpdaters" :options="capabilities.movies.updaters" @input="saveMoviesConfig" />
-          </div>
+        <div class="form-group">
+          <label>Identifiers</label>
+          <TagInput
+            v-model="moviesConfig.movieIdentifiers"
+            :options="capabilities.movies.identifiers"
+            @input="saveMoviesConfig"
+          />
+        </div>
+        <div class="form-group">
+          <label>Updaters</label>
+          <TagInput
+            v-model="moviesConfig.movieUpdaters"
+            :options="capabilities.movies.updaters"
+            @input="saveMoviesConfig"
+          />
+        </div>
       </div>
 
       <div class="settings-table-scroll">
         <table class="settings-table">
           <thead>
             <tr>
-              <th width="50">#</th>
+              <th width="50">
+                #
+              </th>
               <th>Path</th>
-              <th width="100">Actions</th>
+              <th width="100">
+                Actions
+              </th>
             </tr>
           </thead>
           <tbody>
             <tr v-if="movies.length === 0">
-              <td colspan="3" class="settings-table-center">No movie libraries configured.</td>
+              <td
+                colspan="3"
+                class="settings-table-center"
+              >
+                No movie libraries configured.
+              </td>
             </tr>
-            <tr v-for="(library, index) in movies" :key="index">
-              <td class="id">{{ index + 1 }}</td>
+            <tr
+              v-for="(library, index) in movies"
+              :key="index"
+            >
+              <td class="id">
+                {{ index + 1 }}
+              </td>
               <td>{{ library.path }}</td>
               <td class="actions">
-                <a title="Delete library path" @click="deleteMovieLibrary(library.path)">
+                <a
+                  title="Delete library path"
+                  @click="deleteMovieLibrary(library.path)"
+                >
                   <font-awesome-icon :icon="deleteIcon" />
                 </a>
               </td>
@@ -66,76 +104,126 @@
     <!-- TV SHOWS SECTION -->
     <div class="settings-card">
       <div class="settings-header-row">
-        <h2 class="settings-title-plain">TV Shows</h2>
-        <a class="btn" @click="libraryAdd('tvshows')">
+        <h2 class="settings-title-plain">
+          TV Shows
+        </h2>
+        <a
+          class="btn"
+          @click="libraryAdd('tvshows')"
+        >
           <font-awesome-icon icon="plus" /> Add TV show library
         </a>
       </div>
 
       <!-- Configuration -->
       <div class="settings-section-gap">
-          <div class="setting-row">
-            <label class="checkbox-container">
-              Re-index on Startup
-              <input type="checkbox" v-model="tvConfig.doReIndex" @change="saveTvConfig">
-              <span class="checkmark"></span>
-            </label>
-          </div>
-          <div class="setting-row">
-            <label class="checkbox-container">
-              Index Broken Files
-              <input type="checkbox" v-model="tvConfig.indexBroken" @change="saveTvConfig">
-              <span class="checkmark"></span>
-            </label>
-          </div>
-           <div class="setting-row">
-            <label class="checkbox-container">
-              Ignore Series Mismatch
-              <input type="checkbox" v-model="tvConfig.ignoreSeriesMismatch" @change="saveTvConfig">
-              <span class="checkmark"></span>
-            </label>
-          </div>
+        <div class="setting-row">
+          <label class="checkbox-container">
+            Re-index on Startup
+            <input
+              v-model="tvConfig.doReIndex"
+              type="checkbox"
+              @change="saveTvConfig"
+            >
+            <span class="checkmark" />
+          </label>
+        </div>
+        <div class="setting-row">
+          <label class="checkbox-container">
+            Index Broken Files
+            <input
+              v-model="tvConfig.indexBroken"
+              type="checkbox"
+              @change="saveTvConfig"
+            >
+            <span class="checkmark" />
+          </label>
+        </div>
+        <div class="setting-row">
+          <label class="checkbox-container">
+            Ignore Series Mismatch
+            <input
+              v-model="tvConfig.ignoreSeriesMismatch"
+              type="checkbox"
+              @change="saveTvConfig"
+            >
+            <span class="checkmark" />
+          </label>
+        </div>
           
-          <div class="resize-grid">
-              <div class="form-group">
-                <label>Series Identifiers</label>
-                <TagInput v-model="tvConfig.seriesIdentifiers" :options="capabilities.tvshows.seriesIdentifiers" @input="saveTvConfig" />
-              </div>
-              <div class="form-group">
-                 <label>Episode Identifiers</label>
-                 <TagInput v-model="tvConfig.episodeIdentifiers" :options="capabilities.tvshows.episodeIdentifiers" @input="saveTvConfig" />
-              </div>
+        <div class="resize-grid">
+          <div class="form-group">
+            <label>Series Identifiers</label>
+            <TagInput
+              v-model="tvConfig.seriesIdentifiers"
+              :options="capabilities.tvshows.seriesIdentifiers"
+              @input="saveTvConfig"
+            />
           </div>
-          <div class="resize-grid">
-              <div class="form-group">
-                <label>Series Updaters</label>
-                <TagInput v-model="tvConfig.seriesUpdaters" :options="capabilities.tvshows.seriesUpdaters" @input="saveTvConfig" />
-              </div>
-              <div class="form-group">
-                 <label>Episode Updaters</label>
-                 <TagInput v-model="tvConfig.episodeUpdaters" :options="capabilities.tvshows.episodeUpdaters" @input="saveTvConfig" />
-              </div>
+          <div class="form-group">
+            <label>Episode Identifiers</label>
+            <TagInput
+              v-model="tvConfig.episodeIdentifiers"
+              :options="capabilities.tvshows.episodeIdentifiers"
+              @input="saveTvConfig"
+            />
           </div>
+        </div>
+        <div class="resize-grid">
+          <div class="form-group">
+            <label>Series Updaters</label>
+            <TagInput
+              v-model="tvConfig.seriesUpdaters"
+              :options="capabilities.tvshows.seriesUpdaters"
+              @input="saveTvConfig"
+            />
+          </div>
+          <div class="form-group">
+            <label>Episode Updaters</label>
+            <TagInput
+              v-model="tvConfig.episodeUpdaters"
+              :options="capabilities.tvshows.episodeUpdaters"
+              @input="saveTvConfig"
+            />
+          </div>
+        </div>
       </div>
 
       <div class="settings-table-scroll">
         <table class="settings-table">
           <thead>
             <tr>
-              <th width="50">#</th>
+              <th width="50">
+                #
+              </th>
               <th>Path</th>
-              <th width="100">Actions</th>
+              <th width="100">
+                Actions
+              </th>
             </tr>
           </thead>
           <tbody>
             <tr v-if="shows.length === 0">
-              <td colspan="3" class="settings-table-center">No TV show libraries configured.</td>
+              <td
+                colspan="3"
+                class="settings-table-center"
+              >
+                No TV show libraries configured.
+              </td>
             </tr>
-            <tr v-for="(library, index) in shows" :key="index">
-              <td class="id">{{ index + 1 }}</td>
+            <tr
+              v-for="(library, index) in shows"
+              :key="index"
+            >
+              <td class="id">
+                {{ index + 1 }}
+              </td>
               <td>{{ library.path }}</td>
               <td class="actions">
-                <a title="Delete library path" @click="deleteSeriesLibrary(library.path)">
+                <a
+                  title="Delete library path"
+                  @click="deleteSeriesLibrary(library.path)"
+                >
                   <font-awesome-icon :icon="deleteIcon" />
                 </a>
               </td>

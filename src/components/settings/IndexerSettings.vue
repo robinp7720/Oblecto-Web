@@ -1,40 +1,65 @@
 <template>
   <div class="wrapper">
     <div class="settings-card">
-      <h2 class="settings-section-title">General Configuration</h2>
+      <h2 class="settings-section-title">
+        General Configuration
+      </h2>
       
       <div class="setting-row">
         <label class="checkbox-container">
           Run Indexer on Startup
-          <input type="checkbox" v-model="indexer.runAtBoot" @change="saveSettings">
-          <span class="checkmark"></span>
+          <input
+            v-model="indexer.runAtBoot"
+            type="checkbox"
+            @change="saveSettings"
+          >
+          <span class="checkmark" />
         </label>
-        <p class="description">Automatically scan for new files when the server starts.</p>
+        <p class="description">
+          Automatically scan for new files when the server starts.
+        </p>
       </div>
 
       <div class="setting-row">
         <label class="checkbox-container">
           Run Cleaner on Startup
-          <input type="checkbox" v-model="cleaner.runAtBoot" @change="saveSettings">
-          <span class="checkmark"></span>
+          <input
+            v-model="cleaner.runAtBoot"
+            type="checkbox"
+            @change="saveSettings"
+          >
+          <span class="checkmark" />
         </label>
-        <p class="description">Automatically check for removed files when the server starts.</p>
+        <p class="description">
+          Automatically check for removed files when the server starts.
+        </p>
       </div>
 
       <div class="setting-row">
         <label class="checkbox-container">
           Calculate File Hashes
-          <input type="checkbox" v-model="files.doHash" @change="saveSettings">
-          <span class="checkmark"></span>
+          <input
+            v-model="files.doHash"
+            type="checkbox"
+            @change="saveSettings"
+          >
+          <span class="checkmark" />
         </label>
-        <p class="description">Calculate MD5 hashes for files to detect duplicates and changes. (Slower)</p>
+        <p class="description">
+          Calculate MD5 hashes for files to detect duplicates and changes. (Slower)
+        </p>
       </div>
     </div>
 
     <div class="settings-card">
       <div class="settings-header-row">
-        <h2 class="settings-title-plain">Video Filetypes</h2>
-        <a class="btn" @click="filetypeAdd('video')">
+        <h2 class="settings-title-plain">
+          Video Filetypes
+        </h2>
+        <a
+          class="btn"
+          @click="filetypeAdd('video')"
+        >
           <font-awesome-icon icon="plus" /> Add Filetype
         </a>
       </div>
@@ -42,17 +67,31 @@
         <table class="settings-table">
           <thead>
             <tr>
-              <th width="50">#</th>
+              <th width="50">
+                #
+              </th>
               <th>Filetype</th>
-              <th width="100">Actions</th>
+              <th width="100">
+                Actions
+              </th>
             </tr>
           </thead>
           <tbody>
             <tr v-if="videoFiletypes.length === 0">
-              <td colspan="3" class="settings-table-center">No video filetypes configured.</td>
+              <td
+                colspan="3"
+                class="settings-table-center"
+              >
+                No video filetypes configured.
+              </td>
             </tr>
-            <tr v-for="(filetype, index) in videoFiletypes" :key="index">
-              <td class="id">{{ index + 1 }}</td>
+            <tr
+              v-for="(filetype, index) in videoFiletypes"
+              :key="index"
+            >
+              <td class="id">
+                {{ index + 1 }}
+              </td>
               <td>{{ filetype }}</td>
               <td class="actions">
                 <a

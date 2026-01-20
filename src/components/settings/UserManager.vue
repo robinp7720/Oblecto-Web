@@ -2,8 +2,13 @@
   <div class="UserManager">
     <div class="settings-card">
       <div class="settings-header-row">
-        <h2 class="settings-title-plain">Users</h2>
-        <a class="btn" @click="userAdd">
+        <h2 class="settings-title-plain">
+          Users
+        </h2>
+        <a
+          class="btn"
+          @click="userAdd"
+        >
           <font-awesome-icon icon="plus" /> Add user
         </a>
       </div>

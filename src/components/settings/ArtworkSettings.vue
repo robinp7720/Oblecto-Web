@@ -1,52 +1,92 @@
 <template>
   <div class="wrapper">
     <div class="settings-card">
-      <h2 class="settings-section-title">Asset Storage</h2>
+      <h2 class="settings-section-title">
+        Asset Storage
+      </h2>
       
       <div class="setting-row">
         <label class="checkbox-container">
           Store assets with file
-          <input type="checkbox" v-model="assets.storeWithFile" @change="saveSettings">
-          <span class="checkmark"></span>
+          <input
+            v-model="assets.storeWithFile"
+            type="checkbox"
+            @change="saveSettings"
+          >
+          <span class="checkmark" />
         </label>
-        <p class="description">If enabled, images will be saved in the same directory as the media file.</p>
+        <p class="description">
+          If enabled, images will be saved in the same directory as the media file.
+        </p>
       </div>
 
       <div class="form-group">
         <label>Show Poster Location</label>
-        <input type="text" v-model="assets.showPosterLocation" @change="saveSettings">
+        <input
+          v-model="assets.showPosterLocation"
+          type="text"
+          @change="saveSettings"
+        >
       </div>
       <div class="form-group">
         <label>Episode Banner Location</label>
-        <input type="text" v-model="assets.episodeBannerLocation" @change="saveSettings">
+        <input
+          v-model="assets.episodeBannerLocation"
+          type="text"
+          @change="saveSettings"
+        >
       </div>
       <div class="form-group">
         <label>Movie Poster Location</label>
-        <input type="text" v-model="assets.moviePosterLocation" @change="saveSettings">
+        <input
+          v-model="assets.moviePosterLocation"
+          type="text"
+          @change="saveSettings"
+        >
       </div>
       <div class="form-group">
         <label>Movie Fanart Location</label>
-        <input type="text" v-model="assets.movieFanartLocation" @change="saveSettings">
+        <input
+          v-model="assets.movieFanartLocation"
+          type="text"
+          @change="saveSettings"
+        >
       </div>
     </div>
 
     <div class="settings-card">
-      <h2 class="settings-section-title">Image Resizing</h2>
-      <p class="settings-description">Configure target widths (in pixels) for generated images.</p>
+      <h2 class="settings-section-title">
+        Image Resizing
+      </h2>
+      <p class="settings-description">
+        Configure target widths (in pixels) for generated images.
+      </p>
 
       <h3>Posters</h3>
       <div class="resize-grid">
         <div class="form-group">
           <label>Small</label>
-          <input type="number" v-model.number="artwork.poster.small" @change="saveSettings">
+          <input
+            v-model.number="artwork.poster.small"
+            type="number"
+            @change="saveSettings"
+          >
         </div>
         <div class="form-group">
           <label>Medium</label>
-          <input type="number" v-model.number="artwork.poster.medium" @change="saveSettings">
+          <input
+            v-model.number="artwork.poster.medium"
+            type="number"
+            @change="saveSettings"
+          >
         </div>
         <div class="form-group">
           <label>Large</label>
-          <input type="number" v-model.number="artwork.poster.large" @change="saveSettings">
+          <input
+            v-model.number="artwork.poster.large"
+            type="number"
+            @change="saveSettings"
+          >
         </div>
       </div>
 
@@ -54,15 +94,27 @@
       <div class="resize-grid">
         <div class="form-group">
           <label>Small</label>
-          <input type="number" v-model.number="artwork.fanart.small" @change="saveSettings">
+          <input
+            v-model.number="artwork.fanart.small"
+            type="number"
+            @change="saveSettings"
+          >
         </div>
         <div class="form-group">
           <label>Medium</label>
-          <input type="number" v-model.number="artwork.fanart.medium" @change="saveSettings">
+          <input
+            v-model.number="artwork.fanart.medium"
+            type="number"
+            @change="saveSettings"
+          >
         </div>
         <div class="form-group">
           <label>Large</label>
-          <input type="number" v-model.number="artwork.fanart.large" @change="saveSettings">
+          <input
+            v-model.number="artwork.fanart.large"
+            type="number"
+            @change="saveSettings"
+          >
         </div>
       </div>
 
@@ -70,35 +122,61 @@
       <div class="resize-grid">
         <div class="form-group">
           <label>Small</label>
-          <input type="number" v-model.number="artwork.banner.small" @change="saveSettings">
+          <input
+            v-model.number="artwork.banner.small"
+            type="number"
+            @change="saveSettings"
+          >
         </div>
         <div class="form-group">
           <label>Medium</label>
-          <input type="number" v-model.number="artwork.banner.medium" @change="saveSettings">
+          <input
+            v-model.number="artwork.banner.medium"
+            type="number"
+            @change="saveSettings"
+          >
         </div>
         <div class="form-group">
           <label>Large</label>
-          <input type="number" v-model.number="artwork.banner.large" @change="saveSettings">
+          <input
+            v-model.number="artwork.banner.large"
+            type="number"
+            @change="saveSettings"
+          >
         </div>
       </div>
     </div>
 
     <div class="settings-card">
-      <h2 class="settings-section-title">Metadata Providers</h2>
+      <h2 class="settings-section-title">
+        Metadata Providers
+      </h2>
       
       <div class="form-group">
         <label>TheMovieDB Key</label>
-        <input type="text" v-model="tmdb.key" @change="saveSettings">
+        <input
+          v-model="tmdb.key"
+          type="text"
+          @change="saveSettings"
+        >
       </div>
 
       <div class="form-group">
         <label>TVDB Key</label>
-        <input type="text" v-model="tvdb.key" @change="saveSettings">
+        <input
+          v-model="tvdb.key"
+          type="text"
+          @change="saveSettings"
+        >
       </div>
 
       <div class="form-group">
         <label>Fanart.tv Key</label>
-        <input type="text" v-model="fanartTv.key" @change="saveSettings">
+        <input
+          v-model="fanartTv.key"
+          type="text"
+          @change="saveSettings"
+        >
       </div>
     </div>
   </div>

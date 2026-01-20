@@ -1,7 +1,9 @@
 <template>
   <div class="wrapper">
     <div class="settings-card">
-      <h2 class="settings-section-title">Federation</h2>
+      <h2 class="settings-section-title">
+        Federation
+      </h2>
       <p class="settings-description">
         Connect multiple Oblecto servers to share libraries and streaming capabilities.
       </p>
@@ -9,28 +11,46 @@
       <div class="setting-row">
         <label class="checkbox-container">
           Enable Federation
-          <input type="checkbox" v-model="federation.enable" @change="saveSettings">
-          <span class="checkmark"></span>
+          <input
+            v-model="federation.enable"
+            type="checkbox"
+            @change="saveSettings"
+          >
+          <span class="checkmark" />
         </label>
       </div>
 
       <div class="resize-grid">
         <div class="form-group">
           <label>Data Port</label>
-          <input type="number" v-model.number="federation.dataPort" @change="saveSettings">
+          <input
+            v-model.number="federation.dataPort"
+            type="number"
+            @change="saveSettings"
+          >
         </div>
         <div class="form-group">
           <label>Media Port</label>
-          <input type="number" v-model.number="federation.mediaPort" @change="saveSettings">
+          <input
+            v-model.number="federation.mediaPort"
+            type="number"
+            @change="saveSettings"
+          >
         </div>
       </div>
 
       <div class="form-group">
         <label>Private Key Path</label>
-        <input type="text" v-model="federation.key" @change="saveSettings" placeholder="/etc/oblecto/id_rsa">
-        <p class="settings-description settings-description-tight">Path to the RSA private key for identity.</p>
+        <input
+          v-model="federation.key"
+          type="text"
+          placeholder="/etc/oblecto/id_rsa"
+          @change="saveSettings"
+        >
+        <p class="settings-description settings-description-tight">
+          Path to the RSA private key for identity.
+        </p>
       </div>
-
     </div>
   </div>
 </template>

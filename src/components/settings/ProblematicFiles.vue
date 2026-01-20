@@ -1,29 +1,53 @@
 <template>
   <div class="wrapper">
     <div class="settings-card">
-      <h2 class="settings-section-title">Problematic Files</h2>
-      <p v-if="files.length === 0" class="settings-empty">No problematic files found.</p>
+      <h2 class="settings-section-title">
+        Problematic Files
+      </h2>
+      <p
+        v-if="files.length === 0"
+        class="settings-empty"
+      >
+        No problematic files found.
+      </p>
       
-      <div v-else class="settings-table-scroll">
+      <div
+        v-else
+        class="settings-table-scroll"
+      >
         <table class="settings-table">
           <thead>
             <tr>
               <th>Path</th>
               <th>Error</th>
-              <th width="120">Actions</th>
+              <th width="120">
+                Actions
+              </th>
             </tr>
           </thead>
           <tbody>
-            <tr v-for="file in files" :key="file.id">
-              <td class="settings-table-cell-wrap">{{ file.path }}</td>
+            <tr
+              v-for="file in files"
+              :key="file.id"
+            >
+              <td class="settings-table-cell-wrap">
+                {{ file.path }}
+              </td>
               <td>
-                 <div class="error-msg">
-                    {{ file.error }}
-                 </div>
+                <div class="error-msg">
+                  {{ file.error }}
+                </div>
               </td>
               <td class="actions">
-                <a class="btn-icon" @click="retryFile(file)" title="Retry Indexing">
-                   <font-awesome-icon icon="sync" :spin="file.retrying" />
+                <a
+                  class="btn-icon"
+                  title="Retry Indexing"
+                  @click="retryFile(file)"
+                >
+                  <font-awesome-icon
+                    icon="sync"
+                    :spin="file.retrying"
+                  />
                 </a>
               </td>
             </tr>

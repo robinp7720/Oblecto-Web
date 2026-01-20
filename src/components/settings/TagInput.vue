@@ -1,14 +1,38 @@
 <template>
   <div class="tag-input">
     <div class="tags-container">
-      <div v-for="(tag, index) in value" :key="index" class="tag">
+      <div
+        v-for="(tag, index) in value"
+        :key="index"
+        class="tag"
+      >
         {{ tag }}
-        <span class="remove" @click="removeTag(tag)">×</span>
+        <span
+          class="remove"
+          @click="removeTag(tag)"
+        >×</span>
       </div>
-      <div v-if="availableOptions.length > 0" class="add-tag-wrapper">
-        <select v-model="selectedOption" @change="addTag" class="add-select">
-          <option value="" disabled selected>+ Add...</option>
-          <option v-for="opt in availableOptions" :key="opt" :value="opt">
+      <div
+        v-if="availableOptions.length > 0"
+        class="add-tag-wrapper"
+      >
+        <select
+          v-model="selectedOption"
+          class="add-select"
+          @change="addTag"
+        >
+          <option
+            value=""
+            disabled
+            selected
+          >
+            + Add...
+          </option>
+          <option
+            v-for="opt in availableOptions"
+            :key="opt"
+            :value="opt"
+          >
             {{ opt }}
           </option>
         </select>
