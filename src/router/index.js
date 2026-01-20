@@ -3,6 +3,7 @@ import Router from 'vue-router'
 
 import SeriesView from '@/components/pages/SeriesView'
 import MovieInfo from '@/components/pages/MovieInfo'
+import EpisodeInfo from '@/components/pages/EpisodeInfo'
 import Login from '@/components/pages/Login'
 import Movies from '@/components/pages/Movies'
 import Search from '@/components/pages/Search'
@@ -60,6 +61,12 @@ const router = new Router({
       path: '/movie/:movieId',
       name: 'MovieInfo',
       component: MovieInfo,
+      meta: { requiresAuth: true }
+    },
+    {
+      path: '/episode/:episodeId',
+      name: 'EpisodeInfo',
+      component: EpisodeInfo,
       meta: { requiresAuth: true }
     },
     {

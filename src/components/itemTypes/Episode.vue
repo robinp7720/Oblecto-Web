@@ -149,7 +149,7 @@
         this.$modal.show('EpisodeDialog', { episode: this.episode })
       },
       viewEpisodeInfo: function (event) {
-        this.$router.push({ name: 'EpisodeInfo', params: { episode: this.episode.id } })
+        this.$router.push({ name: 'EpisodeInfo', params: { episodeId: this.episode.id } })
       }
     }
   }
