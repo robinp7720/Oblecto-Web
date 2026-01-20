@@ -68,7 +68,18 @@
         </li>
         <li class="nav-item">
           <router-link :to="{ name: 'ProblematicFiles'}">
-            <font-awesome-icon icon="exclamation-triangle" class="fa-fw" /> Problematic Files
+            <font-awesome-icon
+              icon="exclamation-triangle"
+              class="fa-fw"
+            /> Problematic Files
+          </router-link>
+        </li>
+        <li class="nav-item">
+          <router-link :to="{ name: 'ServerStatus'}">
+            <font-awesome-icon
+              icon="signal"
+              class="fa-fw"
+            /> Server Status
           </router-link>
         </li>
       </ul>
@@ -90,9 +101,10 @@
   import faGlobe from '@fortawesome/fontawesome-free-solid/faGlobe'
   import faServer from '@fortawesome/fontawesome-free-solid/faServer'
   import faExclamationTriangle from '@fortawesome/fontawesome-free-solid/faExclamationTriangle'
+  import faSignal from '@fortawesome/fontawesome-free-solid/faSignal'
   import fontawesome from '@fortawesome/fontawesome'
 
-  fontawesome.library.add(faWrench, faUsers, faFolderOpen, faFileVideo, faTags, faImage, faGlobe, faServer, faExclamationTriangle)
+  fontawesome.library.add(faWrench, faUsers, faFolderOpen, faFileVideo, faTags, faImage, faGlobe, faServer, faExclamationTriangle, faSignal)
 
   export default {
     name: 'Settings',

@@ -19,6 +19,7 @@ import ArtworkSettings from '@/components/settings/ArtworkSettings'
 import FederationSettings from '@/components/settings/FederationSettings'
 import SeedboxSettings from '@/components/settings/SeedboxSettings'
 import ProblematicFiles from '@/components/settings/ProblematicFiles'
+import ServerStatus from '@/components/settings/ServerStatus'
 
 import VueAxios from 'vue-axios'
 import axios from 'axios'
@@ -134,6 +135,11 @@ const router = new Router({
           name: 'ProblematicFiles',
           path: 'problematic',
           component: ProblematicFiles
+        },
+        {
+          name: 'ServerStatus',
+          path: 'status',
+          component: ServerStatus
         }
       ]
     }
