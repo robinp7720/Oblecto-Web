@@ -50,7 +50,39 @@
       </div>
     </div>
 
-
+    <div
+      v-if="activeImports.length > 0"
+      class="settings-card"
+    >
+      <h2 class="settings-section-title">
+        Active Transfers
+      </h2>
+      <div class="transfers-list">
+        <div
+          v-for="importItem in activeImports"
+          :key="importItem.origin"
+          class="transfer-item"
+        >
+          <div class="transfer-info">
+            <span class="transfer-name">{{ importItem.origin }}</span>
+            <span class="transfer-status">
+              <span
+                v-if="importItem.event === 'import_error'"
+                class="error"
+              >{{ importItem.error }}</span>
+              <span v-else>{{ (importItem.progress * 100).toFixed(1) }}%</span>
+            </span>
+          </div>
+          <div class="progress-bar-bg">
+            <div
+              class="progress-bar-fill"
+              :class="{ 'error': importItem.event === 'import_error' }"
+              :style="{ width: (importItem.progress * 100) + '%' }"
+            />
+          </div>
+        </div>
+      </div>
+    </div>
 
     <div class="settings-card">
       <h2 class="settings-section-title">
@@ -178,6 +210,7 @@
   import faSync from '@fortawesome/fontawesome-free-solid/faSync'
   import fontawesome from '@fortawesome/fontawesome'
   import oblectoClient from '@/oblectoClient'
+  import { mapGetters } from 'vuex'
 
   fontawesome.library.add(faPlus, faTrash, faEdit, faSync)
 
@@ -212,6 +245,7 @@
       }
     },
     computed: {
+      ...mapGetters('seedbox', ['activeImports']),
       deleteIcon () {
         return faTrash
       },
@@ -405,4 +439,49 @@
   padding: 10px 0
   color: var(--color-text)
   font-weight: 500
+
+.transfers-list
+  display: flex
+  flex-direction: column
+  gap: 15px
+  margin-top: 15px
+
+.transfer-item
+  background: rgba(255, 255, 255, 0.03)
+  padding: 12px
+  border-radius: 8px
+  border: 1px solid rgba(255, 255, 255, 0.05)
+
+.transfer-info
+  display: flex
+  justify-content: space-between
+  margin-bottom: 8px
+  font-size: 0.9em
+
+.transfer-name
+  white-space: nowrap
+  overflow: hidden
+  text-overflow: ellipsis
+  max-width: 70%
+  color: var(--color-text)
+
+.transfer-status
+  color: var(--color-text-muted)
+
+  .error
+    color: #ff4d4d
+
+.progress-bar-bg
+  height: 6px
+  background: rgba(255, 255, 255, 0.1)
+  border-radius: 999px
+  overflow: hidden
+
+.progress-bar-fill
+  height: 100%
+  background: var(--color-accent)
+  transition: width 0.3s ease
+
+  &.error
+    background: #ff4d4d
 </style>
