@@ -1,5 +1,6 @@
 import * as types from '../mutation-types'
 import oblectoClient from '@/oblectoClient'
+import Vue from 'vue'
 
 const state = {
   lists: {},
@@ -25,7 +26,7 @@ const actions = {
 
 const mutations = {
   [types.RECEIVE_MOVIES] (state, { movies, sort }) {
-    state.lists[sort] = movies
+    Vue.set(state.lists, sort, movies)
   },
   [types.RECEIVE_MOVIES_SETS] (state, sets) {
     state.sets = sets
