@@ -4,6 +4,7 @@ import movies from './modules/movies'
 import series from './modules/series'
 import episodes from './modules/episodes'
 import libraries from '@/store/modules/libraries'
+import seedbox from '@/store/modules/seedbox'
 
 import oblectoClient from '@/oblectoClient'
 import router from '@/router'
@@ -30,7 +31,8 @@ export default new Vuex.Store({
     movies,
     series,
     episodes,
-    libraries
+    libraries,
+    seedbox
   },
   mutations: {
     saveWatchingEpisodes: function (state, watching) {

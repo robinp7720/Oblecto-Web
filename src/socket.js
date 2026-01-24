@@ -67,6 +67,33 @@ export function initSocket (vm, host = oblectoClient.axios.defaults.baseURL) {
     }
   })
 
+  socket.on('seedbox', (msg) => {
+    vm.$store.dispatch('seedbox/processSocketEvent', msg)
+
+    if (msg.event === 'import_start') {
+      vm.$notify({
+        group: 'system',
+        title: 'Import Started',
+        text: `Importing ${msg.origin} from ${msg.seedbox}`,
+        type: 'info'
+      })
+    } else if (msg.event === 'import_success') {
+      vm.$notify({
+        group: 'system',
+        title: 'Import Finished',
+        text: `Successfully imported ${msg.origin}`,
+        type: 'success'
+      })
+    } else if (msg.event === 'import_error') {
+      vm.$notify({
+        group: 'system',
+        title: 'Import Failed',
+        text: `Failed to import ${msg.origin}: ${msg.error}`,
+        type: 'error'
+      })
+    }
+  })
+
   return socket
 }
 
