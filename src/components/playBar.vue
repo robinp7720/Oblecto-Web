@@ -164,6 +164,7 @@
         PlayingFileID: 0,
 
         shouldPreSeek: true,
+        lastSocketUpdate: 0,
 
         playbackSession: {},
         hls: null,
@@ -656,23 +657,26 @@
           }
         }
 
-        switch (this.playing.type) {
-          case 'episode':
-            this.$socket.emit('playing', {
-              time: this.playing.entity.TrackEpisodes[0].time = this.initialProgress + this.player.currentTime,
-              progress: this.progress,
-              episodeId: this.playing.entity.id,
-              type: 'tv'
-            })
-            break
-          case 'movie':
-            this.$socket.emit('playing', {
-              time: this.playing.entity.TrackMovies[0].time,
-              progress: this.progress,
-              movieId: this.playing.entity.id,
-              type: 'movie'
-            })
-            break
+        if (Date.now() - this.lastSocketUpdate > 5000) {
+          this.lastSocketUpdate = Date.now()
+          switch (this.playing.type) {
+            case 'episode':
+              this.$socket.emit('playing', {
+                time: this.playing.entity.TrackEpisodes[0].time = this.initialProgress + this.player.currentTime,
+                progress: this.progress,
+                episodeId: this.playing.entity.id,
+                type: 'tv'
+              })
+              break
+            case 'movie':
+              this.$socket.emit('playing', {
+                time: this.playing.entity.TrackMovies[0].time,
+                progress: this.progress,
+                movieId: this.playing.entity.id,
+                type: 'movie'
+              })
+              break
+          }
         }
       })
     }
