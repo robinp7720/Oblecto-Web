@@ -76,6 +76,7 @@ export default new Vuex.Store({
       // Update all episodes in vuex storage
       await dispatch('episodes/getEpisodes', { sort: 'firstAired', order: 'DESC' })
       await dispatch('episodes/getEpisodes', { sort: 'createdAt', order: 'DESC' })
+      await dispatch('libraries/updateAll')
 
       await dispatch('updateWatching')
 
