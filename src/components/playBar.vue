@@ -17,18 +17,18 @@
       class="bar"
     >
       <div
+        ref="seekbar"
         class="progressbarContainer"
         @click="seek"
       >
         <div
+          class="progressbarload"
+          :style="{ width: bufferedProgress * 100 + '%' }"
+        />
+        <div
           :class="{loading}"
           class="progressbar"
           :style="{ width: progress * 100 + '%' }"
-        />
-        <div
-          v-if="$refs.videoPlayer && $refs.videoPlayer.buffered.length > 0"
-          class="progressbarload"
-          :style="{ width: (initialProgress + $refs.videoPlayer.buffered.end($refs.videoPlayer.buffered.length - 1)) / playing.entity.Files[PlayingFileID].duration * 100 + '%' }"
         />
       </div>
 
@@ -51,25 +51,143 @@
           </span>
 
           <div
+            v-if="showVideo"
+            class="volume-control"
+          >
+            <span
+              class="toggle-button small-button"
+              :class="{ active: !muted && volume > 0 }"
+              @click="toggleMute"
+            >
+              {{ muted || volume === 0 ? 'Mute' : 'Vol' }}
+            </span>
+            <input
+              class="volume-slider"
+              type="range"
+              min="0"
+              max="1"
+              step="0.05"
+              :value="volume"
+              @input="setVolume(Number($event.target.value))"
+            >
+            <span class="volume-label">{{ volumeDisplay }}</span>
+          </div>
+
+          <div
             v-if="qualityPopUp"
             class="quality-selector"
+            @click.stop
           >
-            <ul>
-              <li
-                v-for="(FileIterator, index) in playing.entity.Files"
-                :key="FileIterator.id"
-                :class="{selected: index === PlayingFileID}"
-                @click="changeFileId(index)"
+            <div class="settings-section">
+              <h4>Source</h4>
+              <ul>
+                <li
+                  v-for="(FileIterator, index) in playing.entity.Files"
+                  :key="FileIterator.id"
+                  :class="{selected: index === PlayingFileID}"
+                  @click="changeFileId(index)"
+                >
+                  {{ FileIterator.name }} <span class="badge">{{ FileIterator.extension }}</span>
+                </li>
+              </ul>
+            </div>
+
+            <div
+              v-if="availableAudioStreams.length > 0"
+              class="settings-section"
+            >
+              <h4>Audio</h4>
+              <ul>
+                <li
+                  v-for="stream in availableAudioStreams"
+                  :key="`audio-${stream.index}`"
+                  :class="{selected: selectedAudioStreamIndex === stream.index}"
+                  @click="selectAudioStream(stream.index)"
+                >
+                  {{ formatStreamLabel(stream, 'audio') }}
+                </li>
+              </ul>
+            </div>
+
+            <div class="settings-section">
+              <h4>Subtitles</h4>
+              <div class="mode-options">
+                <span
+                  class="mode-option"
+                  :class="{selected: subtitleMode === 'off'}"
+                  @click="setSubtitleMode('off')"
+                >Off</span>
+                <span
+                  class="mode-option"
+                  :class="{selected: subtitleMode === 'auto'}"
+                  @click="setSubtitleMode('auto')"
+                >Auto</span>
+                <span
+                  class="mode-option"
+                  :class="{selected: subtitleMode === 'forced'}"
+                  @click="setSubtitleMode('forced')"
+                >Forced</span>
+              </div>
+              <ul
+                v-if="availableSubtitleStreams.length > 0"
+                :class="{disabled: subtitleMode === 'off'}"
               >
-                {{ FileIterator.name }} <span class="badge">{{ FileIterator.extension }}</span>
-              </li>
-            </ul>
+                <li
+                  :class="{selected: subtitleMode !== 'off' && selectedSubtitleStreamIndex === null}"
+                  @click="selectSubtitleTrack(null)"
+                >
+                  Default subtitle track
+                </li>
+                <li
+                  v-for="stream in availableSubtitleStreams"
+                  :key="`subtitle-${stream.index}`"
+                  :class="{selected: selectedSubtitleStreamIndex === stream.index}"
+                  @click="selectSubtitleTrack(stream.index)"
+                >
+                  {{ formatStreamLabel(stream, 'subtitle') }}
+                </li>
+              </ul>
+              <p
+                v-else
+                class="settings-note"
+              >No subtitle streams detected in this file.</p>
+            </div>
+
+            <div class="settings-section">
+              <h4>Playback speed</h4>
+              <ul class="speed-list">
+                <li
+                  v-for="rate in playbackSpeedOptions"
+                  :key="`speed-${rate}`"
+                  :class="{selected: playbackRate === rate}"
+                  @click="setPlaybackRate(rate)"
+                >
+                  {{ rate }}x
+                </li>
+              </ul>
+            </div>
           </div>
 
           <span
             v-if="showVideo"
-            class="toggle-button"
-            @click="qualityPopUp = !qualityPopUp"
+            class="toggle-button small-button"
+            @click="toggleSubtitleMode"
+          >
+            CC
+          </span>
+
+          <span
+            v-if="showVideo"
+            class="toggle-button small-button"
+            @click="cyclePlaybackRate"
+          >
+            {{ playbackRate }}x
+          </span>
+
+          <span
+            v-if="showVideo"
+            class="toggle-button settings-toggle"
+            @click.stop="qualityPopUp = !qualityPopUp"
           >
             <FontAwesomeIcon :icon="iconCog" />
           </span>
@@ -87,7 +205,7 @@
             class="toggle-button"
             @click="playPause"
           >
-            <FontAwesomeIcon :icon="paused? iconPlay : iconPause" />
+            <FontAwesomeIcon :icon="paused ? iconPlay : iconPause" />
           </span>
 
           <span
@@ -95,7 +213,7 @@
             class="toggle-button"
             @click="toggleFullScreen"
           >
-            <FontAwesomeIcon :icon="playSizeFormat === 3? iconDeFullscreen: iconFullscreen" />
+            <FontAwesomeIcon :icon="playSizeFormat === 3 ? iconDeFullscreen : iconFullscreen" />
           </span>
 
           <span
@@ -107,7 +225,7 @@
           </span>
 
           <a
-            v-if="progress > 0.9 & playing.type === 'episode'"
+            v-if="progress > 0.9 && playing.type === 'episode'"
             class="nextepisode"
             @click="playNext"
           >Next Episode</a>
@@ -150,7 +268,7 @@
 
         loading: false,
 
-        fullscreenEnabled: document.fullscreenEnabled || false, // Does the client support putting content in a fullscreen state?
+        fullscreenEnabled: document.fullscreenEnabled || false,
         browserSupportsPiP: document.pictureInPictureEnabled || false,
 
         initialProgress: 0,
@@ -168,7 +286,24 @@
 
         playbackSession: {},
         hls: null,
-        streamType: 'hls'
+        streamType: 'hls',
+
+        selectedAudioStreamIndex: null,
+        selectedSubtitleStreamIndex: null,
+        subtitleMode: 'auto',
+
+        volume: 1,
+        previousVolume: 1,
+        muted: false,
+
+        playbackRate: 1,
+        playbackSpeedOptions: [0.5, 0.75, 1, 1.25, 1.5, 2],
+
+        resumeAfterStreamChange: true,
+
+        keydownHandler: null,
+        clickHandler: null,
+        playerListeners: {}
       }
     },
     computed: {
@@ -177,6 +312,41 @@
       },
       playbar () {
         return this.$refs.playbar
+      },
+      hasActivePlayback () {
+        return Boolean(this.playing && this.playing.entity && Array.isArray(this.playing.entity.Files) && this.playing.entity.Files.length > 0)
+      },
+      currentFile () {
+        if (!this.hasActivePlayback) return null
+
+        return this.playing.entity.Files[this.PlayingFileID] || null
+      },
+      currentDuration () {
+        return this.currentFile?.duration || 0
+      },
+      bufferedProgress () {
+        if (!this.player || !this.currentDuration) return 0
+        if (!this.player.buffered || this.player.buffered.length === 0) return 0
+
+        let bufferedEnd = this.player.buffered.end(this.player.buffered.length - 1)
+        return this.clamp((this.initialProgress + bufferedEnd) / this.currentDuration, 0, 1)
+      },
+      availableAudioStreams () {
+        if (!this.currentFile || !Array.isArray(this.currentFile.Streams)) return []
+
+        return this.currentFile.Streams
+          .filter((stream) => stream.codec_type === 'audio' && Number.isInteger(stream.index))
+          .sort((a, b) => a.index - b.index)
+      },
+      availableSubtitleStreams () {
+        if (!this.currentFile || !Array.isArray(this.currentFile.Streams)) return []
+
+        return this.currentFile.Streams
+          .filter((stream) => stream.codec_type === 'subtitle' && Number.isInteger(stream.index))
+          .sort((a, b) => a.index - b.index)
+      },
+      volumeDisplay () {
+        return `${Math.round(this.volume * 100)}%`
       },
       iconUp () {
         return faUp
@@ -200,19 +370,10 @@
         return faDeFullscreen
       },
       PlayTimeDisplayValue () {
-        let hours = ('0' + Math.floor(this.progress * this.playing.entity.Files[this.PlayingFileID].duration / (60 * 60))).substr(-2)
-        let mins = ('0' + Math.floor(this.progress * this.playing.entity.Files[this.PlayingFileID].duration / 60) % 60).substr(-2)
-        let seconds = ('0' + Math.floor(this.progress * this.playing.entity.Files[this.PlayingFileID].duration) % 60).substr(-2)
-
-        return `${hours}:${mins}:${seconds}`
+        return this.formatSeconds(this.currentAbsoluteTime())
       },
-
       DurationDisplayValue () {
-        let hours = ('0' + Math.floor(this.playing.entity.Files[this.PlayingFileID].duration / (60 * 60))).substr(-2)
-        let mins = ('0' + Math.floor(this.playing.entity.Files[this.PlayingFileID].duration / 60) % 60).substr(-2)
-        let seconds = ('0' + Math.floor(this.playing.entity.Files[this.PlayingFileID].duration) % 60).substr(-2)
-
-        return `${hours}:${mins}:${seconds}`
+        return this.formatSeconds(this.currentDuration)
       },
       iconCog () {
         return faCog
@@ -221,6 +382,31 @@
     },
     methods: {
       ...mapMutations(['setPlaySizeFormat']),
+      clamp: function (value, min, max) {
+        return Math.min(max, Math.max(min, value))
+      },
+      formatSeconds: function (seconds) {
+        if (!Number.isFinite(seconds) || seconds < 0) {
+          return '00:00:00'
+        }
+
+        let rounded = Math.floor(seconds)
+        let hours = (`0${Math.floor(rounded / (60 * 60))}`).substr(-2)
+        let mins = (`0${Math.floor(rounded / 60) % 60}`).substr(-2)
+        let secs = (`0${Math.floor(rounded) % 60}`).substr(-2)
+
+        return `${hours}:${mins}:${secs}`
+      },
+      currentAbsoluteTime: function () {
+        if (!this.player) return this.initialProgress
+
+        return this.initialProgress + (this.player.currentTime || 0)
+      },
+      getTracking: function () {
+        if (!this.hasActivePlayback) return []
+
+        return this.playing.entity.TrackMovies || this.playing.entity.TrackEpisodes || []
+      },
       getBaseUrl: function () {
         return oblectoClient?.axios?.defaults?.baseURL || window.location.origin
       },
@@ -291,26 +477,7 @@
 
         if (Hls.isSupported()) {
           this.hls = new Hls(this.buildHlsConfig())
-          this.hls.on(Hls.Events.MEDIA_ATTACHED, () => {
-            console.log('[hls] media attached')
-          })
-          this.hls.on(Hls.Events.MANIFEST_LOADING, (event, data) => {
-            console.log('[hls] manifest loading', data?.url)
-          })
-          this.hls.on(Hls.Events.MANIFEST_LOADED, (event, data) => {
-            console.log('[hls] manifest loaded', data)
-          })
-          this.hls.on(Hls.Events.LEVEL_LOADED, (event, data) => {
-            console.log('[hls] level loaded', { startSN: data?.details?.startSN, endSN: data?.details?.endSN, live: data?.details?.live })
-          })
-          this.hls.on(Hls.Events.FRAG_LOADED, (event, data) => {
-            console.log('[hls] frag loaded', { sn: data?.frag?.sn, level: data?.frag?.level, url: data?.frag?.url })
-          })
-          this.hls.on(Hls.Events.FRAG_CHANGED, (event, data) => {
-            console.log('[hls] frag changed', { sn: data?.frag?.sn, level: data?.frag?.level })
-          })
           this.hls.on(Hls.Events.ERROR, (event, data) => {
-            console.warn('[hls] error', data)
             if (!data || !data.fatal) return
 
             switch (data.type) {
@@ -326,9 +493,6 @@
           })
           this.hls.loadSource(url)
           this.hls.attachMedia(this.player)
-        } else if (this.player.canPlayType('application/vnd.apple.mpegurl')) {
-          this.player.src = url
-          this.player.load()
         } else {
           this.player.src = url
           this.player.load()
@@ -340,13 +504,80 @@
           this.setPlaySizeFormat(ScreenFormats.SMALL)
         }
       },
+      formatStreamLabel: function (stream, type) {
+        let language = (stream.tags_language || 'und').toUpperCase()
+        let title = stream.tags_title || stream.codec_name || type
+        let forced = Number(stream.disposition_forced) > 0 ? ' forced' : ''
+
+        return `${language} - ${title}${forced} (#${stream.index})`
+      },
+      applyPlayerAudioState: function () {
+        if (!this.player) return
+
+        this.player.volume = this.volume
+        this.player.muted = this.muted
+      },
+      setVolume: function (value) {
+        let clamped = this.clamp(value, 0, 1)
+
+        this.volume = clamped
+        if (clamped > 0) {
+          this.previousVolume = clamped
+          this.muted = false
+        } else {
+          this.muted = true
+        }
+
+        this.applyPlayerAudioState()
+      },
+      toggleMute: function () {
+        if (this.muted || this.volume === 0) {
+          this.muted = false
+          this.setVolume(this.previousVolume || 1)
+          return
+        }
+
+        if (this.volume > 0) {
+          this.previousVolume = this.volume
+        }
+
+        this.muted = true
+        this.applyPlayerAudioState()
+      },
+      setPlaybackRate: function (rate) {
+        if (!this.playbackSpeedOptions.includes(rate)) return
+
+        this.playbackRate = rate
+
+        if (this.player) {
+          this.player.playbackRate = rate
+        }
+      },
+      cyclePlaybackRate: function () {
+        let currentIndex = this.playbackSpeedOptions.indexOf(this.playbackRate)
+        let nextIndex = (currentIndex + 1) % this.playbackSpeedOptions.length
+        this.setPlaybackRate(this.playbackSpeedOptions[nextIndex])
+      },
+      adjustPlaybackRate: function (direction) {
+        let currentIndex = this.playbackSpeedOptions.indexOf(this.playbackRate)
+
+        if (currentIndex === -1) {
+          currentIndex = this.playbackSpeedOptions.indexOf(1)
+        }
+
+        let nextIndex = this.clamp(currentIndex + direction, 0, this.playbackSpeedOptions.length - 1)
+        this.setPlaybackRate(this.playbackSpeedOptions[nextIndex])
+      },
       changeFileId: async function (id) {
         this.updateLocalTracker()
 
-        let tracking = this.playing.entity.TrackMovies || this.playing.entity.TrackEpisodes
+        let tracking = this.getTracking()
         let usesServerSeeking = this.streamType === 'hls' || this.playbackSession.seeking === 'server'
 
         this.PlayingFileID = id
+        this.selectedAudioStreamIndex = null
+        this.selectedSubtitleStreamIndex = null
+        this.subtitleMode = 'auto'
 
         if (usesServerSeeking) {
           if (tracking[0] !== undefined) {
@@ -362,6 +593,7 @@
         this.qualityPopUp = false
 
         this.loading = true
+        this.resumeAfterStreamChange = !this.paused
         this.setURL()
       },
       updateSession: async function (offset = null) {
@@ -377,7 +609,29 @@
           params.offset = offset
         }
 
+        if (Number.isInteger(this.selectedAudioStreamIndex)) {
+          params.audioStreamIndex = this.selectedAudioStreamIndex
+        }
+
+        params.subtitleMode = this.subtitleMode
+
+        if (this.subtitleMode === 'off') {
+          params.subtitleStreamIndex = -1
+        } else if (Number.isInteger(this.selectedSubtitleStreamIndex)) {
+          params.subtitleStreamIndex = this.selectedSubtitleStreamIndex
+        }
+
         this.playbackSession = await oblectoClient.sessions.create(this.playing.entity.Files[this.PlayingFileID].id, params)
+
+        if (this.playbackSession.selectedTracks) {
+          this.selectedAudioStreamIndex = Number.isInteger(this.playbackSession.selectedTracks.audioStreamIndex)
+            ? this.playbackSession.selectedTracks.audioStreamIndex
+            : null
+          this.selectedSubtitleStreamIndex = Number.isInteger(this.playbackSession.selectedTracks.subtitleStreamIndex)
+            ? this.playbackSession.selectedTracks.subtitleStreamIndex
+            : null
+          this.subtitleMode = this.playbackSession.selectedTracks.subtitleMode || this.subtitleMode
+        }
       },
       updateURL: async function (offset = null) {
         await this.updateSession(offset)
@@ -385,26 +639,130 @@
       },
       setURL: function () {
         let token = this.playbackSession.sessionId
-
         let url = oblectoClient.sessions.getStreamUrl(token)
+
         this.attachHlsStream(url)
       },
-      seek: function (event) {
-        // Calculate the offset in seconds from where the user clicked on the seekbar
-        let position = this.playing.entity.Files[this.PlayingFileID].duration * event.clientX / document.documentElement.clientWidth
+      seekToAbsolute: function (position) {
+        if (!this.currentDuration || !this.player) return
+
+        let nextPosition = this.clamp(position, 0, this.currentDuration)
 
         if (this.playbackSession.seeking === 'server') {
-          if (position < this.initialProgress + this.player.duration && position - this.initialProgress > 0) {
-            this.player.currentTime = position - this.initialProgress
+          let playableWindowEnd = this.initialProgress + (this.player.duration || 0)
 
+          if (nextPosition <= playableWindowEnd && nextPosition >= this.initialProgress) {
+            this.player.currentTime = nextPosition - this.initialProgress
             return
           }
 
-          this.initialProgress = position
+          this.initialProgress = nextPosition
+          this.shouldPreSeek = true
           this.updateURL(this.initialProgress)
-        } else {
-          this.player.currentTime = position
+          return
         }
+
+        this.player.currentTime = nextPosition
+      },
+      seek: function (event) {
+        if (!this.currentDuration || !this.$refs.seekbar) return
+
+        let rect = this.$refs.seekbar.getBoundingClientRect()
+        if (!rect.width) return
+
+        let normalized = this.clamp((event.clientX - rect.left) / rect.width, 0, 1)
+        let position = this.currentDuration * normalized
+
+        this.seekToAbsolute(position)
+      },
+      seekBy: function (seconds) {
+        this.seekToAbsolute(this.currentAbsoluteTime() + seconds)
+      },
+      reconfigurePlayback: async function () {
+        if (!this.hasActivePlayback) return
+
+        this.updateLocalTracker()
+
+        let usesServerSeeking = this.streamType === 'hls' || this.playbackSession.seeking === 'server'
+        let absoluteTime = this.currentAbsoluteTime()
+        let tracking = this.getTracking()
+
+        if (tracking[0]) {
+          tracking[0].time = absoluteTime
+        }
+
+        this.loading = true
+        this.resumeAfterStreamChange = !this.paused
+
+        if (usesServerSeeking) {
+          this.initialProgress = absoluteTime
+        } else {
+          this.initialProgress = 0
+          this.shouldPreSeek = true
+        }
+
+        await this.updateSession(this.initialProgress)
+        this.setURL()
+      },
+      selectAudioStream: async function (streamIndex) {
+        if (this.selectedAudioStreamIndex === streamIndex) return
+
+        this.selectedAudioStreamIndex = streamIndex
+        await this.reconfigurePlayback()
+      },
+      setSubtitleMode: async function (mode) {
+        if (!['off', 'auto', 'forced'].includes(mode)) return
+        if (this.subtitleMode === mode && mode !== 'off') return
+
+        this.subtitleMode = mode
+
+        if (mode === 'off') {
+          this.selectedSubtitleStreamIndex = null
+        } else if (this.selectedSubtitleStreamIndex === null && this.availableSubtitleStreams.length > 0) {
+          this.selectedSubtitleStreamIndex = this.availableSubtitleStreams[0].index
+        }
+
+        await this.reconfigurePlayback()
+      },
+      toggleSubtitleMode: async function () {
+        if (this.subtitleMode === 'off') {
+          await this.setSubtitleMode('auto')
+          return
+        }
+
+        await this.setSubtitleMode('off')
+      },
+      selectSubtitleTrack: async function (streamIndex) {
+        if (this.subtitleMode === 'off') {
+          this.subtitleMode = 'auto'
+        }
+
+        if (streamIndex === this.selectedSubtitleStreamIndex) return
+
+        this.selectedSubtitleStreamIndex = streamIndex
+        await this.reconfigurePlayback()
+      },
+      closeSettingsOnOutsideClick: function (event) {
+        if (!this.qualityPopUp) return
+        if (!(event.target instanceof Element)) {
+          this.qualityPopUp = false
+          return
+        }
+
+        if (this.$el && this.$el.contains(event.target)) {
+          let panel = this.$el.querySelector('.quality-selector')
+          let toggle = event.target.closest('.settings-toggle')
+
+          if (panel && panel.contains(event.target)) {
+            return
+          }
+
+          if (toggle) {
+            return
+          }
+        }
+
+        this.qualityPopUp = false
       },
       toggleFullScreen: function () {
         if (this.playSizeFormat !== ScreenFormats.FULLSCREEN) {
@@ -415,7 +773,9 @@
       },
       stopPlaying: function () {
         this.destroyHls()
-        this.player.src = ''
+        if (this.player) {
+          this.player.src = ''
+        }
 
         this.$store.dispatch('clearPlaying')
         this.$store.dispatch('updateWatching')
@@ -427,37 +787,105 @@
         this.autoplaying = false
         this.progress = 0
 
+        this.selectedAudioStreamIndex = null
+        this.selectedSubtitleStreamIndex = null
+        this.subtitleMode = 'auto'
+
         this.setPlaySizeFormat(ScreenFormats.SMALL)
       },
       playPause: function (event) {
-        event.preventDefault()
+        if (event) {
+          event.preventDefault()
+        }
 
-        console.log(this.$store)
+        if (!this.hasActivePlayback) return
 
         this.paused = !this.paused
       },
       playNext: function () {
-        this.$store.dispatch('playEpisode', this.nextepisode.id)
+        if (this.nextepisode && this.nextepisode.id) {
+          this.$store.dispatch('playEpisode', this.nextepisode.id)
+        }
       },
       updateLocalTracker: function () {
+        if (!this.player || !this.hasActivePlayback) return
+
         if (this.playing.type === 'movie') {
           if (!this.playing.entity.TrackMovies) this.playing.entity.TrackMovies = []
           if (!this.playing.entity.TrackMovies[0]) this.playing.entity.TrackMovies[0] = {}
 
-          this.playing.entity.TrackMovies[0].time = this.initialProgress + this.player.currentTime
+          this.playing.entity.TrackMovies[0].time = this.currentAbsoluteTime()
         }
 
         if (this.playing.type === 'episode') {
           if (!this.playing.entity.TrackEpisodes) this.playing.entity.TrackEpisodes = []
           if (!this.playing.entity.TrackEpisodes[0]) this.playing.entity.TrackEpisodes[0] = {}
 
-          this.playing.entity.TrackEpisodes[0].time = this.initialProgress + this.player.currentTime
+          this.playing.entity.TrackEpisodes[0].time = this.currentAbsoluteTime()
+        }
+      },
+      isTypingContext: function (event) {
+        if (!event || !event.target) return false
+
+        let target = event.target
+
+        if (target.isContentEditable) return true
+        if (!target.tagName) return false
+
+        return ['INPUT', 'TEXTAREA', 'SELECT', 'BUTTON'].includes(target.tagName)
+      },
+      handleGlobalKeydown: function (event) {
+        if (!this.hasActivePlayback || this.isTypingContext(event)) {
+          return
+        }
+
+        switch (event.code) {
+          case 'Space':
+          case 'KeyK':
+            event.preventDefault()
+            this.playPause()
+            break
+          case 'ArrowLeft':
+          case 'KeyJ':
+            event.preventDefault()
+            this.seekBy(-10)
+            break
+          case 'ArrowRight':
+          case 'KeyL':
+            event.preventDefault()
+            this.seekBy(10)
+            break
+          case 'ArrowUp':
+            event.preventDefault()
+            this.setVolume(this.volume + 0.05)
+            break
+          case 'ArrowDown':
+            event.preventDefault()
+            this.setVolume(this.volume - 0.05)
+            break
+          case 'KeyM':
+            event.preventDefault()
+            this.toggleMute()
+            break
+          case 'KeyF':
+            event.preventDefault()
+            if (this.showVideo && this.fullscreenEnabled) {
+              this.toggleFullScreen()
+            }
+            break
+          case 'BracketLeft':
+            event.preventDefault()
+            this.adjustPlaybackRate(-1)
+            break
+          case 'BracketRight':
+            event.preventDefault()
+            this.adjustPlaybackRate(1)
+            break
         }
       }
     },
     watch: {
-      playSizeFormat: async function (newState, oldState) {
-        console.log('Size changed:', newState)
+      playSizeFormat: async function (newState) {
         switch (newState) {
           case ScreenFormats.FULLSCREEN:
             if (this.browserSupportsPiP && document.pictureInPictureElement) {
@@ -484,7 +912,7 @@
               await document.exitFullscreen()
             }
 
-            if (this.browserSupportsPiP) {
+            if (this.browserSupportsPiP && this.player && !document.pictureInPictureElement) {
               await this.player.requestPictureInPicture()
             }
 
@@ -504,22 +932,24 @@
         this.loading = false
         this.autoplaying = false
 
+        this.selectedAudioStreamIndex = null
+        this.selectedSubtitleStreamIndex = null
+        this.subtitleMode = 'auto'
+
         this.nextepisode = null
 
-        if (this.playing.entity === undefined) {
-          navigator.mediaSession.playbackState = 'none'
+        if (!this.playing.entity) {
+          if ('mediaSession' in navigator) {
+            navigator.mediaSession.playbackState = 'none'
+          }
 
           return
         }
 
         this.loading = true
-
         this.showVideo = true
 
-        let tracking = this.playing.entity.TrackMovies || this.playing.entity.TrackEpisodes
-
-        // If the progress is above 90 percent, we shouldn't seek to the last position since the user probably
-        // wants to start from the beginning.
+        let tracking = this.getTracking()
 
         if (tracking[0]) {
           this.shouldPreSeek = tracking[0].progress < IGNORE_RESTORE_PROGRESS_THRESHOLD
@@ -527,17 +957,16 @@
 
         let usesServerSeeking = this.streamType === 'hls' || this.playbackSession.seeking === 'server'
 
-        if (usesServerSeeking) {
-          if (tracking[0] !== undefined && this.shouldPreSeek) {
-            this.initialProgress = tracking[0].time
-          }
+        if (usesServerSeeking && tracking[0] !== undefined && this.shouldPreSeek) {
+          this.initialProgress = tracking[0].time
         }
+
+        this.resumeAfterStreamChange = true
 
         await this.updateSession(this.initialProgress)
 
         this.setURL()
 
-        // Set the mediaSession environment
         if ('mediaSession' in navigator) {
           let imageURL = ''
 
@@ -545,13 +974,10 @@
             imageURL = this.host + '/episode/' + this.playing.entity.id + '/banner'
           }
 
-          // eslint-disable-next-line no-undef
           navigator.mediaSession.metadata = new MediaMetadata({
             title: this.playing.title,
-            album: this.playing.entity.Series.seriesName,
-            artwork: [
-              { src: imageURL }
-            ]
+            album: this.playing.type === 'episode' ? this.playing.entity.Series?.seriesName : '',
+            artwork: [{ src: imageURL }]
           })
 
           navigator.mediaSession.setActionHandler('nexttrack', this.playNext)
@@ -562,96 +988,104 @@
           this.nextepisode = await oblectoClient.episodeLibrary.getNext(this.playing.entity.id)
         }
       },
-      paused: async function (newState, oldState) {
-        navigator.mediaSession.playbackState = newState ? 'paused' : 'playing'
-        if (newState) {
-          return this.player.pause()
+      paused: async function (newState) {
+        if ('mediaSession' in navigator) {
+          navigator.mediaSession.playbackState = newState ? 'paused' : 'playing'
         }
 
-        this.player.play()
+        if (!this.player) return
+
+        if (newState) {
+          this.player.pause()
+          return
+        }
+
+        try {
+          await this.player.play()
+        } catch (error) {
+          this.paused = true
+        }
       }
     },
     mounted: function () {
-      window.addEventListener('keydown', (e) => {
-        if (e.code !== 'Space') { return }
-        if (this.playing === {}) { return }
-        if (this.playSizeFormat === ScreenFormats.SMALL) { return }
+      this.keydownHandler = (event) => this.handleGlobalKeydown(event)
+      this.clickHandler = (event) => this.closeSettingsOnOutsideClick(event)
 
-        e.preventDefault()
+      window.addEventListener('keydown', this.keydownHandler)
+      window.addEventListener('click', this.clickHandler)
 
-        if (this.playSizeFormat === ScreenFormats.FULLSCREEN || this.playSizeFormat === ScreenFormats.LARGE) {
-          this.paused = !this.paused
-        }
-      })
+      this.applyPlayerAudioState()
+      this.player.playbackRate = this.playbackRate
 
-      this.player.addEventListener('waiting', () => {
+      this.playerListeners.waiting = () => {
         this.loading = true
-        console.log('[player] waiting')
-      })
-
-      this.player.addEventListener('playing', () => {
+      }
+      this.playerListeners.playing = () => {
         this.paused = false
         this.loading = false
-        console.log('[player] playing')
-      })
-
-      this.player.addEventListener('pause', () => {
+      }
+      this.playerListeners.pause = () => {
         this.paused = true
-        console.log('[player] pause')
-      })
-
-      this.player.addEventListener('play', () => {
+      }
+      this.playerListeners.play = () => {
         this.paused = false
-        console.log('[player] play')
-      })
-
-      this.player.addEventListener('ended', () => {
+      }
+      this.playerListeners.ended = () => {
         this.$store.dispatch('updateWatching')
-        console.log('[player] ended')
-      })
-
-      this.player.addEventListener('enterpictureinpicture', () => {
+      }
+      this.playerListeners.enterpictureinpicture = () => {
         this.setPlaySizeFormat(ScreenFormats.SMALL)
         this.browserSupportsPiP = true
-      })
-
-      this.player.addEventListener('leavepictureinpicture', () => {
+      }
+      this.playerListeners.leavepictureinpicture = () => {
         if (this.playSizeFormat === ScreenFormats.SMALL) {
           this.setPlaySizeFormat(ScreenFormats.LARGE)
         }
-      })
+      }
+      this.playerListeners.loadedmetadata = async () => {
+        if (!this.hasActivePlayback) return
 
-      this.player.addEventListener('loadedmetadata', () => {
-        console.log('[player] loadedmetadata', { duration: this.player.duration })
-        let tracking = this.playing.entity.TrackMovies || this.playing.entity.TrackEpisodes
+        let tracking = this.getTracking()
 
         if (tracking[0] && this.shouldPreSeek) {
-          this.player.currentTime = tracking[0].time - this.initialProgress
+          let seekTime = tracking[0].time - this.initialProgress
+          this.player.currentTime = this.clamp(seekTime, 0, Number.isFinite(this.player.duration) ? this.player.duration : seekTime)
         }
 
-        this.player.play()
+        if (this.resumeAfterStreamChange) {
+          try {
+            await this.player.play()
+            this.paused = false
+          } catch (error) {
+            this.paused = true
+          }
+        } else {
+          this.player.pause()
+          this.paused = true
+        }
 
-        this.paused = false
+        this.player.playbackRate = this.playbackRate
+        this.applyPlayerAudioState()
         this.loading = false
-      })
-
-      this.player.addEventListener('timeupdate', () => {
-        this.updateLocalTracker()
-
-        if (this.playing.entity === undefined) {
+      }
+      this.playerListeners.timeupdate = () => {
+        if (!this.hasActivePlayback) {
           this.playbarTimeout = 0
-
           return
         }
+
+        this.updateLocalTracker()
 
         if (this.playbarTimeout < 20) {
           this.playbarTimeout += 1
         }
 
-        this.progress = (this.initialProgress + this.player.currentTime) / this.playing.entity.Files[this.PlayingFileID].duration
+        if (this.currentDuration > 0) {
+          this.progress = this.clamp(this.currentAbsoluteTime() / this.currentDuration, 0, 1)
+        }
 
-        if (this.autoplay && !this.autoplaying) {
-          if (this.playing.entity.Files[this.PlayingFileID].duration - (this.initialProgress + this.player.currentTime) <= AUTOPLAY_TIME_LEFT_THRESHOLD) {
+        if (this.autoplay && !this.autoplaying && this.currentDuration > 0) {
+          if (this.currentDuration - this.currentAbsoluteTime() <= AUTOPLAY_TIME_LEFT_THRESHOLD) {
             this.autoplaying = true
             this.playNext()
           }
@@ -662,7 +1096,7 @@
           switch (this.playing.type) {
             case 'episode':
               this.$socket.emit('playing', {
-                time: this.playing.entity.TrackEpisodes[0].time = this.initialProgress + this.player.currentTime,
+                time: this.playing.entity.TrackEpisodes[0].time = this.currentAbsoluteTime(),
                 progress: this.progress,
                 episodeId: this.playing.entity.id,
                 type: 'tv'
@@ -678,12 +1112,32 @@
               break
           }
         }
-      })
+      }
+
+      for (let eventName of Object.keys(this.playerListeners)) {
+        this.player.addEventListener(eventName, this.playerListeners[eventName])
+      }
+    },
+    beforeUnmount: function () {
+      if (this.keydownHandler) {
+        window.removeEventListener('keydown', this.keydownHandler)
+      }
+
+      if (this.clickHandler) {
+        window.removeEventListener('click', this.clickHandler)
+      }
+
+      if (this.player) {
+        for (let eventName of Object.keys(this.playerListeners)) {
+          this.player.removeEventListener(eventName, this.playerListeners[eventName])
+        }
+      }
+
+      this.destroyHls()
     }
   }
 </script>
 
-<!-- Add "scoped" attribute to limit CSS to this component only -->
 <style lang="sass">
 
   video
@@ -822,6 +1276,20 @@
       box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.1)
       color: var(--color-text)
       transition: transform 0.2s, background-color 0.2s, box-shadow 0.2s
+      user-select: none
+
+    .toggle-button.active
+      background: rgba(217, 129, 60, 0.3)
+      box-shadow: inset 0 0 0 1px rgba(217, 129, 60, 0.55)
+
+    .small-button
+      width: auto
+      min-width: 46px
+      border-radius: 999px
+      padding: 0 10px
+      font-size: 0.75rem
+      letter-spacing: 0.03em
+      text-transform: uppercase
 
     .toggle-button:hover
       background: rgba(255, 255, 255, 0.12)
@@ -835,6 +1303,26 @@
       color: var(--color-text-muted)
       font-size: 0.85rem
       letter-spacing: 0.03em
+
+    .volume-control
+      display: inline-flex
+      align-items: center
+      gap: 8px
+      padding: 5px 10px
+      border-radius: 999px
+      background: rgba(255, 255, 255, 0.06)
+      box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.1)
+
+    .volume-slider
+      width: 90px
+      accent-color: var(--color-accent)
+      cursor: pointer
+
+    .volume-label
+      font-size: 0.75rem
+      min-width: 36px
+      text-align: right
+      color: var(--color-text-muted)
 
   .progressbarContainer
     height: 8px
@@ -873,7 +1361,6 @@
 
       opacity: 0.2
 
-
   @keyframes loading
     from
       left: -10%
@@ -890,27 +1377,76 @@
 
   .quality-selector
     position: fixed
-    bottom: 50px
-    right: 10px
-    width: auto
-    background: rgba(40, 33, 37, 0.95)
+    bottom: 52px
+    right: 14px
+    width: min(360px, calc(100vw - 28px))
+    max-height: min(70vh, 560px)
+    overflow-y: auto
+    background: rgba(40, 33, 37, 0.97)
     border: 1px solid var(--color-border)
     border-radius: var(--radius-md)
     box-shadow: var(--shadow-soft)
     backdrop-filter: blur(12px)
+    padding: 10px
+
+  .settings-section
+    border-radius: 10px
+    background: rgba(255, 255, 255, 0.03)
+    margin-bottom: 8px
+    overflow: hidden
+
+    h4
+      margin: 0
+      padding: 10px 12px
+      font-size: 0.78rem
+      letter-spacing: 0.06em
+      text-transform: uppercase
+      color: var(--color-text-faint)
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08)
 
     ul
       list-style: none
-      border-radius: var(--radius-md)
-      li
-        padding: 12px 18px
-        cursor: pointer
-        color: var(--color-text)
-        font-size: 0.9rem
-      li.selected
-        background-color: rgba(255, 255, 255, 0.08)
-      li:hover
-        background-color: rgba(255, 255, 255, 0.12)
+
+    li
+      padding: 9px 12px
+      cursor: pointer
+      color: var(--color-text)
+      font-size: 0.86rem
+
+    li.selected
+      background-color: rgba(255, 255, 255, 0.08)
+
+    li:hover
+      background-color: rgba(255, 255, 255, 0.12)
+
+  .settings-section:last-child
+    margin-bottom: 0
+
+  .mode-options
+    display: flex
+    gap: 6px
+    padding: 10px 12px
+
+  .mode-option
+    font-size: 0.78rem
+    padding: 4px 8px
+    border-radius: 999px
+    cursor: pointer
+    background: rgba(255, 255, 255, 0.08)
+    color: var(--color-text-muted)
+
+  .mode-option.selected
+    background: rgba(217, 129, 60, 0.32)
+    color: var(--color-text)
+
+  .settings-note
+    margin: 0
+    padding: 10px 12px
+    color: var(--color-text-faint)
+    font-size: 0.8rem
+
+  .disabled
+    opacity: 0.55
 
   .badge
     margin-left: 6px
@@ -921,12 +1457,20 @@
     background: rgba(255, 255, 255, 0.1)
     color: var(--color-text-faint)
 
-
   .hiddenBar
     cursor: none
     .bar
       opacity: 0
       transform: translateY(80px)
+
+  @media only screen and (max-width: 960px)
+    .playBar
+      .bar
+        .controls
+          gap: 8px
+
+        .volume-slider
+          width: 70px
 
   @media only screen and (max-width: 720px)
     .playBar
@@ -940,9 +1484,13 @@
 
         .controls
           width: 100%
-          justify-content: space-between
+          justify-content: flex-start
 
         .title
           max-width: 100%
+
+        .quality-selector
+          right: 8px
+          bottom: 72px
 
 </style>
