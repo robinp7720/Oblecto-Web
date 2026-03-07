@@ -3,14 +3,15 @@ import vue from '@vitejs/plugin-vue2'
 import path from 'path'
 
 export default defineConfig(({ command, mode }) => {
-  // Logic to match the old webpack config values
-  let oblectoHost = 'http://oblecto'
+  // Logic to match the old webpack config values while keeping dev sane by default
+  const envOblectoHost = process.env.OBLECTO_HOST || process.env.VITE_OBLECTO_HOST || null
+  let oblectoHost = envOblectoHost || 'http://localhost:8080'
   let basePath = '/'
   
   if (mode === 'production') {
      // In production, existing config set this to false (JSON.stringify(false))
      // so the client falls back to window.location
-     oblectoHost = false 
+     oblectoHost = envOblectoHost || false
      basePath = '/web/'
   }
 

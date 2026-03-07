@@ -303,7 +303,9 @@
 
         keydownHandler: null,
         clickHandler: null,
-        playerListeners: {}
+        playerListeners: {},
+        playerListenersBound: false,
+        pendingStreamUrl: null
       }
     },
     computed: {
@@ -415,53 +417,10 @@
 
         return `bearer ${oblectoClient.accessToken}`
       },
-      normalizeHlsUrl: function (url) {
-        if (!url) return url
-
-        let baseUrl = this.getBaseUrl().replace(/\/+$/, '')
-        let sessionId = this.playbackSession?.sessionId
-        let uuidMatch = url.match(/\/([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})$/i)
-
-        if (url.includes('/session/stream/')) {
-          return url
-        }
-
-        if (sessionId && url.startsWith(baseUrl + '/') && uuidMatch && !url.includes('/HLS/')) {
-          return `${baseUrl}/HLS/${sessionId}/segment/${uuidMatch[1]}`
-        }
-
-        return url
-      },
       buildHlsConfig: function () {
-        let authHeader = this.getHlsAuthHeader()
-        let getFixedUrl = (url) => this.normalizeHlsUrl(url)
-
         return {
           enableWorker: true,
-          lowLatencyMode: false,
-          xhrSetup: (xhr, url) => {
-            let nextUrl = getFixedUrl(url)
-
-            if (nextUrl && nextUrl !== url) {
-              xhr.open('GET', nextUrl, true)
-            }
-            if (authHeader) {
-              xhr.setRequestHeader('Authorization', authHeader)
-            }
-          },
-          fetchSetup: (context, init) => {
-            let nextInit = init || {}
-            let nextUrl = getFixedUrl(context.url)
-
-            if (authHeader) {
-              nextInit.headers = {
-                ...(nextInit.headers || {}),
-                Authorization: authHeader
-              }
-            }
-
-            return new Request(nextUrl, nextInit)
-          }
+          lowLatencyMode: false
         }
       },
       destroyHls: function () {
@@ -473,10 +432,29 @@
         this.hls = null
       },
       attachHlsStream: function (url) {
+        if (!this.bindPlayerEventListeners()) {
+          this.pendingStreamUrl = url
+          this.$nextTick(() => {
+            this.bindPlayerEventListeners()
+          })
+          return
+        }
+
+        let sourceUrl = url
+        try {
+          sourceUrl = new URL(url, this.getBaseUrl()).toString()
+        } catch (error) {}
+
         this.destroyHls()
 
         if (Hls.isSupported()) {
           this.hls = new Hls(this.buildHlsConfig())
+          this.hls.on(Hls.Events.MANIFEST_LOADING, () => {
+            this.loading = true
+          })
+          this.hls.on(Hls.Events.MANIFEST_PARSED, () => {
+            this.loading = false
+          })
           this.hls.on(Hls.Events.ERROR, (event, data) => {
             if (!data || !data.fatal) return
 
@@ -491,10 +469,10 @@
                 this.destroyHls()
             }
           })
-          this.hls.loadSource(url)
+          this.hls.loadSource(sourceUrl)
           this.hls.attachMedia(this.player)
         } else {
-          this.player.src = url
+          this.player.src = sourceUrl
           this.player.load()
         }
       },
@@ -516,6 +494,42 @@
 
         this.player.volume = this.volume
         this.player.muted = this.muted
+      },
+      bindPlayerEventListeners: function () {
+        if (!this.player) return false
+
+        const eventNames = Object.keys(this.playerListeners)
+
+        if (eventNames.length === 0) return false
+
+        this.applyPlayerAudioState()
+        this.player.playbackRate = this.playbackRate
+
+        if (this.playerListenersBound) {
+          this.unbindPlayerEventListeners()
+        }
+
+        for (let eventName of eventNames) {
+          this.player.addEventListener(eventName, this.playerListeners[eventName])
+        }
+        this.playerListenersBound = true
+
+        if (this.pendingStreamUrl) {
+          let pendingUrl = this.pendingStreamUrl
+          this.pendingStreamUrl = null
+          this.attachHlsStream(pendingUrl)
+        }
+
+        return true
+      },
+      unbindPlayerEventListeners: function () {
+        if (!this.player || !this.playerListenersBound) return
+
+        for (let eventName of Object.keys(this.playerListeners)) {
+          this.player.removeEventListener(eventName, this.playerListeners[eventName])
+        }
+
+        this.playerListenersBound = false
       },
       setVolume: function (value) {
         let clamped = this.clamp(value, 0, 1)
@@ -1014,9 +1028,6 @@
       window.addEventListener('keydown', this.keydownHandler)
       window.addEventListener('click', this.clickHandler)
 
-      this.applyPlayerAudioState()
-      this.player.playbackRate = this.playbackRate
-
       this.playerListeners.waiting = () => {
         this.loading = true
       }
@@ -1114,9 +1125,9 @@
         }
       }
 
-      for (let eventName of Object.keys(this.playerListeners)) {
-        this.player.addEventListener(eventName, this.playerListeners[eventName])
-      }
+      this.$nextTick(() => {
+        this.bindPlayerEventListeners()
+      })
     },
     beforeUnmount: function () {
       if (this.keydownHandler) {
@@ -1127,11 +1138,7 @@
         window.removeEventListener('click', this.clickHandler)
       }
 
-      if (this.player) {
-        for (let eventName of Object.keys(this.playerListeners)) {
-          this.player.removeEventListener(eventName, this.playerListeners[eventName])
-        }
-      }
+      this.unbindPlayerEventListeners()
 
       this.destroyHls()
     }

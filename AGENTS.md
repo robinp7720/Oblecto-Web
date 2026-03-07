@@ -8,7 +8,8 @@ What lives here
 - API client library is in src/oblecto-client/ ideally all api calls should be made through it.
   - If anything is not exposed through the library, it should be added there.
 
-A documentation of the API is available at ../docs/API.md.
+A documentation of the REST API is available at ../docs/API.md.
+A documentation of the Websocket API is available at ../docs/REALTIME_API.md.
 
 How to run
 - Install: `npm install`
