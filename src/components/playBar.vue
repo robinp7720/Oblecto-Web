@@ -418,9 +418,32 @@
         return `bearer ${oblectoClient.accessToken}`
       },
       buildHlsConfig: function () {
+        const loadingPolicy = {
+          maxTimeToFirstByteMs: 60000,
+          maxLoadTimeMs: 60000,
+          timeoutRetry: {
+            maxNumRetry: 3,
+            retryDelayMs: 1000,
+            maxRetryDelayMs: 8000
+          },
+          errorRetry: {
+            maxNumRetry: 3,
+            retryDelayMs: 1000,
+            maxRetryDelayMs: 8000
+          }
+        }
+
         return {
           enableWorker: true,
-          lowLatencyMode: false
+          lowLatencyMode: false,
+          manifestLoadPolicy: { default: loadingPolicy },
+          playlistLoadPolicy: { default: loadingPolicy },
+          fragLoadPolicy: { default: loadingPolicy },
+          manifestLoadingTimeOut: 60000,
+          manifestLoadingMaxRetry: 3,
+          manifestLoadingRetryDelay: 1000,
+          levelLoadingTimeOut: 60000,
+          fragLoadingTimeOut: 60000
         }
       },
       destroyHls: function () {
