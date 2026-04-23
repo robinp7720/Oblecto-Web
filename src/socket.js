@@ -1,25 +1,23 @@
 import io from 'socket.io-client'
-import Vue from 'vue'
 import oblectoClient from '@/oblectoClient'
 
 let socket = null
 let connectionFailedCount = 0
 
-export function initSocket (vm, host = oblectoClient.axios.defaults.baseURL) {
+export function initSocket ({ app, store, notify }, host = oblectoClient.axios.defaults.baseURL) {
   if (socket) {
     socket.close()
   }
 
   socket = io(host)
-  Vue.prototype.$socket = socket
+  app.config.globalProperties.$socket = socket
 
   connectionFailedCount = 0
 
   socket.on('connect_error', () => {
     connectionFailedCount++
     if (connectionFailedCount === 1) {
-      vm.$notify({
-        group: 'system',
+      notify({
         title: 'Connection failed',
         text: 'Failed to connect to the Oblecto web socket server. Is the server online?',
         type: 'error'
@@ -30,8 +28,7 @@ export function initSocket (vm, host = oblectoClient.axios.defaults.baseURL) {
   socket.on('connect', () => {
     connectionFailedCount = 0
 
-    vm.$notify({
-      group: 'system',
+    notify({
       title: 'Connection to Oblecto succeeded',
       text: 'Client has successfully connected to the Oblecto websocket interface!',
       type: 'success'
@@ -40,53 +37,49 @@ export function initSocket (vm, host = oblectoClient.axios.defaults.baseURL) {
     if (oblectoClient.accessToken) {
       socket.emit('authenticate', { token: oblectoClient.accessToken })
 
-      vm.$notify({
-        group: 'system',
+      notify({
         title: 'Authentication success',
         text: 'Socket interface has been authenticated',
         type: 'success'
       })
 
-      vm.$store.dispatch('updateAll')
+      store.dispatch('updateAll')
     }
   })
 
   socket.on('indexer', (val) => {
     if (val.event === 'added') {
-      vm.$store.dispatch('updateAll')
+      store.dispatch('updateAll')
     }
   })
 
   socket.on('play', (msg) => {
     if (msg.episodeId) {
-      vm.$store.dispatch('playEpisodeLocal', msg.episodeId)
+      store.dispatch('playEpisodeLocal', msg.episodeId)
     }
 
     if (msg.movieId) {
-      vm.$store.dispatch('playMovieLocal', msg.movieId)
+      store.dispatch('playMovieLocal', msg.movieId)
     }
   })
 
   socket.on('seedbox', (msg) => {
-    vm.$store.dispatch('seedbox/processSocketEvent', msg)
+    store.dispatch('seedbox/processSocketEvent', msg)
 
     if (msg.event === 'import_start') {
-      vm.$notify({
-        group: 'system',
+      notify({
         title: 'Import Started',
         text: `Importing ${msg.origin} from ${msg.seedbox}`,
         type: 'info'
       })
     } else if (msg.event === 'import_success') {
-      vm.$notify({
-        group: 'system',
+      notify({
         title: 'Import Finished',
         text: `Successfully imported ${msg.origin}`,
         type: 'success'
       })
     } else if (msg.event === 'import_error') {
-      vm.$notify({
-        group: 'system',
+      notify({
         title: 'Import Failed',
         text: `Failed to import ${msg.origin}: ${msg.error}`,
         type: 'error'
@@ -97,8 +90,8 @@ export function initSocket (vm, host = oblectoClient.axios.defaults.baseURL) {
   return socket
 }
 
-export function reconnectSocket (vm, host) {
-  return initSocket(vm, host)
+export function reconnectSocket ({ app, store, notify }, host) {
+  return initSocket({ app, store, notify }, host)
 }
 
 export function getSocket () {

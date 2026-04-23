@@ -1,36 +1,45 @@
-// The Vue build version to load with the `import` command
-// (runtime-only or standalone) has been set in webpack.base.conf with an alias.
-import Vue from 'vue'
-import App from './App'
+import { createApp } from 'vue'
+import { createPinia } from 'pinia'
+import App from './App.vue'
 import router from './router'
-import store from './store'
-import axios from 'axios'
-import VueAxios from 'vue-axios'
-import { Tabs, Tab } from 'vue-tabs-component'
-import VModal from 'vue-js-modal'
-import Notifications from 'vue-notification'
-import { initSocket } from '@/socket'
+import legacyStore from './store'
 import oblectoClient from '@/oblectoClient'
+import { initSocket, reconnectSocket } from '@/socket'
+import { createNotificationsPlugin } from '@/plugins/notifications'
+import { createLegacyModalPlugin } from '@/plugins/legacyModal'
+import Tabs from '@/components/system/Tabs.vue'
+import Tab from '@/components/system/Tab.vue'
+import { useAuthStore } from '@/stores/auth'
 
-Vue.use(VModal)
+const app = createApp(App)
+const pinia = createPinia()
 
-Vue.use(Notifications)
+const notifications = createNotificationsPlugin()
+const legacyModal = createLegacyModalPlugin()
 
-Vue.use(VueAxios, axios)
+legacyStore.dispatch('updateHost', oblectoClient.axios.defaults.baseURL)
 
-store.dispatch('updateHost', oblectoClient.axios.defaults.baseURL)
+app.use(pinia)
+app.use(legacyStore)
+app.use(router)
+app.use(notifications)
+app.use(legacyModal)
+app.component('Tabs', Tabs)
+app.component('Tab', Tab)
 
-Vue.component('Tabs', Tabs)
-Vue.component('Tab', Tab)
+const authStore = useAuthStore(pinia)
+authStore.hydrate()
 
-Vue.config.productionTip = false
-
-/* eslint-disable no-new */
-export const instance = new Vue({
-  el: '#app',
-  store,
-  router,
-  render: h => h(App)
+initSocket({
+  app,
+  store: legacyStore,
+  notify: notifications.notify
 })
 
-initSocket(instance)
+app.config.globalProperties.$reconnectSocket = (host) => reconnectSocket({
+  app,
+  store: legacyStore,
+  notify: notifications.notify
+}, host)
+
+app.mount('#app')

@@ -1,15 +1,17 @@
-import Vue from 'vue'
-import Router from 'vue-router'
+import { createRouter, createWebHistory } from 'vue-router'
+import oblectoClient from '@/oblectoClient'
 
-import SeriesView from '@/components/pages/SeriesView'
+import HomeView from '@/views/HomeView.vue'
+import DiscoverView from '@/views/DiscoverView.vue'
+import LibraryView from '@/views/LibraryView.vue'
+import SearchView from '@/views/SearchView.vue'
+import LoginView from '@/views/LoginView.vue'
+import SettingsView from '@/views/SettingsView.vue'
+
 import MovieInfo from '@/components/pages/MovieInfo'
 import EpisodeInfo from '@/components/pages/EpisodeInfo'
-import Login from '@/components/pages/Login'
-import Movies from '@/components/pages/Movies'
-import Search from '@/components/pages/Search'
-import Main from '@/components/pages/Main'
+import SeriesView from '@/components/pages/SeriesView'
 
-import Settings from '@/components/pages/Settings'
 import Maintenance from '@/components/settings/Maintenance'
 import UserManager from '@/components/settings/UserManager'
 import Libraries from '@/components/settings/Libraries'
@@ -21,35 +23,45 @@ import SeedboxSettings from '@/components/settings/SeedboxSettings'
 import ProblematicFiles from '@/components/settings/ProblematicFiles'
 import ServerStatus from '@/components/settings/ServerStatus'
 
-import VueAxios from 'vue-axios'
-import axios from 'axios'
-import oblectoClient from '@/oblectoClient'
-import Series from '@/components/pages/Series'
-
-Vue.use(VueAxios, axios)
-
-Vue.use(Router)
-
-const router = new Router({
-  mode: 'history',
-  base: BASE_PATH,
+const router = createRouter({
+  history: createWebHistory(BASE_PATH),
   routes: [
     {
       path: '/',
       name: 'Main',
-      component: Main,
+      component: HomeView,
       meta: { requiresAuth: true }
     },
     {
-      path: '/series',
-      name: 'Series',
-      component: Series,
+      path: '/discover',
+      name: 'Discover',
+      component: DiscoverView,
+      meta: { requiresAuth: true }
+    },
+    {
+      path: '/library/:mediaType(movies|series)',
+      name: 'Library',
+      component: LibraryView,
       meta: { requiresAuth: true }
     },
     {
       path: '/movies',
-      name: 'Movies',
-      component: Movies,
+      redirect: {
+        name: 'Library',
+        params: { mediaType: 'movies' }
+      }
+    },
+    {
+      path: '/series',
+      redirect: {
+        name: 'Library',
+        params: { mediaType: 'series' }
+      }
+    },
+    {
+      path: '/movie/:movieId',
+      name: 'MovieInfo',
+      component: MovieInfo,
       meta: { requiresAuth: true }
     },
     {
@@ -59,31 +71,37 @@ const router = new Router({
       meta: { requiresAuth: true }
     },
     {
-      path: '/movie/:movieId',
-      name: 'MovieInfo',
-      component: MovieInfo,
-      meta: { requiresAuth: true }
-    },
-    {
       path: '/episode/:episodeId',
       name: 'EpisodeInfo',
       component: EpisodeInfo,
       meta: { requiresAuth: true }
     },
     {
-      path: '/search/:search',
+      path: '/search',
       name: 'Search',
-      component: Search,
+      component: SearchView,
       meta: { requiresAuth: true }
+    },
+    {
+      path: '/search/:search',
+      redirect: to => ({
+        name: 'Search',
+        query: {
+          q: to.params.search
+        }
+      })
     },
     {
       path: '/login',
       name: 'login',
-      component: Login
+      component: LoginView,
+      meta: {
+        layout: 'auth'
+      }
     },
     {
       path: '/settings',
-      component: Settings,
+      component: SettingsView,
       meta: { requiresAuth: true },
       children: [
         {
@@ -146,19 +164,21 @@ const router = new Router({
   ]
 })
 
-router.beforeEach((to, from, next) => {
-  if (to.matched.some(record => record.meta.requiresAuth)) {
-    if (!oblectoClient.accessToken) {
-      next({
-        path: '/login',
-        query: { redirect: to.fullPath }
-      })
-    } else {
-      next()
+router.beforeEach((to) => {
+  const hasToken = Boolean(oblectoClient.accessToken || window.localStorage.getItem('oblecto.accessToken'))
+
+  if (to.matched.some(record => record.meta.requiresAuth) && !hasToken) {
+    return {
+      path: '/login',
+      query: { redirect: to.fullPath }
     }
-  } else {
-    next() // make sure to always call next()!
   }
+
+  if (to.name === 'login' && hasToken) {
+    return { name: 'Main' }
+  }
+
+  return true
 })
 
 export default router

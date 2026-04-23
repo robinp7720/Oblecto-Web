@@ -1,124 +1,48 @@
 <template>
   <div id="app">
-    <ShowDialogModal />
-    <ShowModifyModal />
-    <UserAddModal />
-    <MovieDialogModal />
-    <EpisodeDialogModal />
-    <LibraryAdd />
-    <NewMovieSet />
-    <PasswordChange />
-    <CopyText />
-    <ChangeRemoteDialog />
-    <SeedboxDialog />
+    <LegacyModalMounts />
+    <NotificationsToaster />
 
-    <notifications
-      group="system"
-      classes="system-notification"
-      position="bottom center"
-    />
+    <RouterView v-if="authStore.ready" v-slot="{ Component }">
+      <transition name="fade" mode="out-in">
+        <AppShell v-if="showShell">
+          <component :is="Component" />
+        </AppShell>
+        <component :is="Component" v-else />
+      </transition>
+    </RouterView>
 
-    <NavBar v-if="$router.history.current.name !== 'login' && loaded" />
-
-    <WatchPanel v-if="$router.history.current.name !== 'login' && loaded" />
-
-    <playBar v-if="$router.history.current.name !== 'login' && loaded" />
-
-    <transition
-      name="long-fade"
-      mode="out"
-    >
-      <LoadingPage v-if="$router.history.current.name !== 'login' && !loaded" />
-    </transition>
-
-    <transition
-      v-if="$router.history.current.name === 'login' || loaded"
-      name="fade"
-      mode="out-in"
-    >
-      <router-view />
-    </transition>
+    <playBar v-if="showShell" />
   </div>
 </template>
 
-<script>
-  import { mapState } from 'vuex'
+<script setup>
+import { computed, watch } from 'vue'
+import { useRoute } from 'vue-router'
+import { useStore } from 'vuex'
+import AppShell from '@/layouts/AppShell.vue'
+import playBar from '@/components/playBar'
+import { ScreenFormats } from '@/enums/ScreenFormats'
+import NotificationsToaster from '@/components/system/NotificationsToaster.vue'
+import LegacyModalMounts from '@/components/system/LegacyModalMounts.vue'
+import { useAuthStore } from '@/stores/auth'
 
-  import NavBar from '@/components/NavBar'
-  import WatchPanel from '@/components/WatchPanel'
-  import playBar from '@/components/playBar'
-  import LoadingPage from '@/components/LoadingPage'
+const route = useRoute()
+const store = useStore()
+const authStore = useAuthStore()
 
-  import { ScreenFormats } from '@/enums/ScreenFormats'
+const showShell = computed(() => authStore.isAuthenticated && route.meta.layout !== 'auth')
+const playing = computed(() => store.state.playing)
+const playSizeFormat = computed(() => store.state.playSizeFormat)
 
-  // Modals
-  import ShowDialogModal from '@/components/modals/ShowDialog'
-  import ShowModifyModal from '@/components/modals/ShowModify'
-  import UserAddModal from '@/components/modals/UserAdd'
-  import MovieDialogModal from '@/components/modals/MovieDialog'
-  import EpisodeDialogModal from '@/components/modals/EpisodeDialog'
-  import LibraryAdd from '@/components/modals/LibraryAdd'
-  import NewMovieSet from '@/components/modals/NewMovieSet'
-  import PasswordChange from '@/components/modals/PasswordChange'
-  import CopyText from '@/components/modals/CopyText'
-  import ChangeRemoteDialog from '@/components/modals/ChangeRemoteDialog'
-  import SeedboxDialog from '@/components/modals/SeedboxDialog'
-
-  export default {
-    name: 'App',
-    components: {
-      ChangeRemoteDialog,
-      WatchPanel: WatchPanel,
-      NavBar,
-      ShowDialogModal,
-      PasswordChange,
-      ShowModifyModal,
-      UserAddModal,
-      MovieDialogModal,
-      EpisodeDialogModal,
-      CopyText,
-      NewMovieSet,
-      LibraryAdd,
-      SeedboxDialog,
-      playBar,
-      LoadingPage
-    },
-    computed: {
-      ...mapState({
-        loaded: state => state.initialLoaded,
-        playSizeFormat: state => state.playSizeFormat,
-        playing: state => state.playing
-      })
-    },
-    watch: {
-      playing: async function (newState, oldState) {
-        if (this.playSizeFormat === ScreenFormats.LARGE && this.playing.entity) {
-          document.body.style.overflow = 'hidden'
-
-          return
-        }
-
-        document.body.style.overflow = 'auto'
-      },
-      playSizeFormat: async function (newState, oldState) {
-        if (newState === ScreenFormats.LARGE && this.playing.entity) {
-          document.body.style.overflow = 'hidden'
-
-          return
-        }
-
-        document.body.style.overflow = 'auto'
-      }
-    },
-    created () {
-
-    },
-    beforeCreate () {
-      this.$store.dispatch('updateAll')
-    },
-    methods: {
-    }
+watch([playing, playSizeFormat], () => {
+  if (playSizeFormat.value === ScreenFormats.LARGE && playing.value?.entity) {
+    document.body.style.overflow = 'hidden'
+    return
   }
+
+  document.body.style.overflow = 'auto'
+}, { immediate: true })
 </script>
 
 <style lang="sass">
@@ -202,30 +126,39 @@
     background-repeat: no-repeat
     background-size: cover
 
-    padding-top: 440px
-    padding-bottom: 80px
+    padding: 20px 24px 120px
 
     min-height: 100vh
 
     color: var(--color-text)
 
     @media screen and (max-width: 700px)
-      padding-top: 400px
+      padding: 16px 16px 120px
 
-  .v--modal
-    background: radial-gradient(900px 500px at 20% -10%, rgba(217, 129, 60, 0.18), transparent 55%), linear-gradient(180deg, #5d5353 0%, #3d3a42 45%, #1b242d 100%)
+  .legacy-modal-shell
+    position: fixed
+    inset: 0
+    z-index: 60
+    display: grid
+    place-items: center
+    padding: 20px
 
-  .v--modal-overlay
+  .legacy-modal-overlay
+    position: fixed
+    inset: 0
     background: rgba(10, 8, 12, 0.6)
     backdrop-filter: blur(6px)
 
-  .v--modal-box
+  .legacy-modal-box
     background: var(--color-surface-card) !important
     color: var(--color-text)
     border: 1px solid var(--color-border) !important
     border-radius: var(--radius-lg) !important
     box-shadow: var(--shadow-strong) !important
     overflow: hidden
+    width: min(760px, calc(100vw - 32px))
+    max-height: calc(100vh - 40px)
+    overflow: auto
 
     h3
       font-family: var(--font-display)
@@ -255,7 +188,7 @@
 
   @media screen and (max-height: 1200px)
     #app
-      padding-top: 0
+      padding-top: 16px
 
   ul
     margin: 0
@@ -264,25 +197,6 @@
   .fade-enter-active, .fade-leave-active
     transition: opacity .2s ease
 
-  .long-fade-enter-active, .long-fade-leave-active
-    transition: opacity .7s ease
-
-  .fade-enter, .fade-leave-active
+  .fade-enter-from, .fade-leave-to
     opacity: 0
-  .long-fade-enter, .long-fade-leave-active
-    opacity: 0
-
-  .child-view
-    position: absolute
-    transition: all .2s cubic-bezier(.55,0,.1,1)
-
-  .slide-left-enter, .slide-right-leave-active
-    opacity: 0
-    -webkit-transform: translate(30px, 0)
-    transform: translate(30px, 0)
-
-  .slide-left-leave-active, .slide-right-enter
-    opacity: 0
-    -webkit-transform: translate(-30px, 0)
-    transform: translate(-30px, 0)
 </style>

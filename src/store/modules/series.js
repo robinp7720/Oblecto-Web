@@ -1,6 +1,5 @@
 import * as types from '../mutation-types'
 import oblectoClient from '@/oblectoClient'
-import Vue from 'vue'
 import {
   createDefaultBrowseState,
   createBrowseActions,
@@ -41,7 +40,10 @@ const actions = {
 
 const mutations = {
   [types.RECEIVE_SHOWS] (state, { shows, sort }) {
-    Vue.set(state.lists, sort, shows)
+    state.lists = {
+      ...state.lists,
+      [sort]: shows
+    }
   },
   ...createBrowseMutations({
     types: browseMutationTypes,

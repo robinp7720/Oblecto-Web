@@ -3,13 +3,10 @@
     name="slide-fade"
     appear
   >
-    <li
-      v-if="horizontal"
-      class="movie-horizontal"
-    >
+    <li :class="horizontal ? 'movie-horizontal' : 'movie-vertical'">
       <div
         class="movie-poster"
-        :style="{ backgroundImage: 'url(' + host + '/movie/' + movieId + '/banner)' }"
+        :style="{ backgroundImage: 'url(' + host + '/movie/' + movieId + (horizontal ? '/banner)' : '/poster)') }"
       >
         <a
           class="play"
@@ -19,48 +16,16 @@
           aria-hidden="true"
         /></a>
         <div
-          v-if="inside"
+          v-if="horizontal && inside"
           :title="title"
           class="title"
         >
           {{ title }}
         </div>
         <div
-          class="progress"
-          :style="{ width: progress * 100 + '%' }"
-        />
-      </div>
-      <div
-        v-if="!inside"
-        :title="title"
-        class="title"
-      >
-        {{ title }}
-      </div>
-      <div
-        v-if="subtitle && !inside"
-        class="subtitle"
-      >
-        {{ subtitle }}
-      </div>
-    </li>
-
-    <li
-      v-if="!horizontal"
-      class="movie-vertical"
-    >
-      <div
-        class="movie-poster"
-        :style="{ backgroundImage: 'url(' + host + '/movie/' + movieId + '/poster)' }"
-      >
-        <a
-          class="play"
-          @click="playMovie"
-        ><i
-          class="fa fa-play"
-          aria-hidden="true"
-        /></a>
-        <div class="actions">
+          v-if="!horizontal"
+          class="actions"
+        >
           <a
             class="action-item"
             title="Options"
@@ -88,13 +53,14 @@
         />
       </div>
       <div
+        v-if="!inside"
         :title="title"
         class="title"
       >
         {{ title }}
       </div>
       <div
-        v-if="subtitle"
+        v-if="subtitle && !inside"
         class="subtitle"
       >
         {{ subtitle }}

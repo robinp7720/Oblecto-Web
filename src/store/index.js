@@ -1,5 +1,4 @@
-import Vue from 'vue'
-import Vuex from 'vuex'
+import { createStore } from 'vuex'
 import movies from './modules/movies'
 import series from './modules/series'
 import episodes from './modules/episodes'
@@ -7,12 +6,8 @@ import libraries from '@/store/modules/libraries'
 import seedbox from '@/store/modules/seedbox'
 
 import oblectoClient from '@/oblectoClient'
-import router from '@/router'
 import { ScreenFormats } from '@/enums/ScreenFormats'
-
-Vue.use(Vuex)
-
-export default new Vuex.Store({
+export default createStore({
   state: {
     host: null,
     initialLoaded: false,
@@ -36,28 +31,28 @@ export default new Vuex.Store({
   },
   mutations: {
     saveWatchingEpisodes: function (state, watching) {
-      Vue.set(state, 'watchingEpisodes', watching)
+      state.watchingEpisodes = watching
     },
     saveNextEpisodes: function (state, next) {
-      Vue.set(state, 'nextEpisodes', next)
+      state.nextEpisodes = next
     },
     saveWatchingMovies: function (state, watching) {
-      Vue.set(state, 'watchingMovies', watching)
+      state.watchingMovies = watching
     },
     setPlaying: function (state, playing) {
-      Vue.set(state, 'playing', playing)
+      state.playing = playing
     },
     updateHost: function (state, host) {
-      Vue.set(state, 'host', host)
+      state.host = host
     },
     initialLoaded: function (state, initialLoaded) {
-      Vue.set(state, 'initialLoaded', initialLoaded)
+      state.initialLoaded = initialLoaded
     },
     setPlaybackRemote: function (state, remote) {
-      Vue.set(state, 'playbackRemote', remote)
+      state.playbackRemote = remote
     },
     setPlaySizeFormat: function (state, size) {
-      Vue.set(state, 'playSizeFormat', size)
+      state.playSizeFormat = size
     }
   },
   actions: {
@@ -82,14 +77,13 @@ export default new Vuex.Store({
 
       commit('initialLoaded', true)
     },
-    logout: function (state) {
-      state.commit('saveWatchingEpisodes', [])
-      state.dispatch('clearPlaying')
-      state.commit('initialLoaded', false)
+    logout: function ({ commit, dispatch }) {
+      commit('saveWatchingEpisodes', [])
+      dispatch('clearPlaying')
+      commit('initialLoaded', false)
 
       oblectoClient.accessToken = ''
-
-      router.push({ name: 'login' })
+      delete oblectoClient.axios.defaults.headers.common.Authorization
     },
     updateWatching: async function ({ commit, dispatch }) {
       let episodes = await oblectoClient.episodeLibrary.getWatching()
@@ -112,7 +106,6 @@ export default new Vuex.Store({
       state.commit('updateHost', host)
 
       // Update axios http urls
-      Vue.axios.defaults.baseURL = host
       oblectoClient.axios.defaults.baseURL = host
     },
     clearPlaying: function (state) {

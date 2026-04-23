@@ -1,5 +1,5 @@
 import { defineConfig } from 'vite'
-import vue from '@vitejs/plugin-vue2'
+import vue from '@vitejs/plugin-vue'
 import path from 'path'
 
 export default defineConfig(({ command, mode }) => {
@@ -23,8 +23,8 @@ export default defineConfig(({ command, mode }) => {
     resolve: {
       alias: {
         '@': path.resolve(__dirname, './src'),
-        '@fortawesome/vue-fontawesome': path.resolve(__dirname, 'node_modules/@fortawesome/vue-fontawesome/index.js'),
-        'vue-tabs-component': path.resolve(__dirname, 'node_modules/vue-tabs-component/dist/index.js'),
+        '@fortawesome/vue-fontawesome': path.resolve(__dirname, './src/components/system/FontAwesomeIcon.vue'),
+        '@fortawesome/fontawesome': path.resolve(__dirname, './src/components/system/fontawesomeLibraryShim.js'),
       },
       extensions: ['.js', '.vue', '.json'],
     },

@@ -1,5 +1,4 @@
 import * as types from '../mutation-types'
-import Vue from 'vue'
 
 const state = {
   imports: {}
@@ -24,10 +23,15 @@ const actions = {
 
 const mutations = {
   [types.UPDATE_SEEDBOX_IMPORT] (state, payload) {
-    Vue.set(state.imports, payload.origin, payload)
+    state.imports = {
+      ...state.imports,
+      [payload.origin]: payload
+    }
   },
   [types.REMOVE_SEEDBOX_IMPORT] (state, origin) {
-    Vue.delete(state.imports, origin)
+    const nextImports = { ...state.imports }
+    delete nextImports[origin]
+    state.imports = nextImports
   }
 }
 

@@ -1,6 +1,5 @@
 import * as types from '../mutation-types'
 import oblectoClient from '@/oblectoClient'
-import Vue from 'vue'
 import {
   createDefaultBrowseState,
   createBrowseActions,
@@ -47,7 +46,10 @@ const actions = {
 
 const mutations = {
   [types.RECEIVE_MOVIES] (state, { movies, sort }) {
-    Vue.set(state.lists, sort, movies)
+    state.lists = {
+      ...state.lists,
+      [sort]: movies
+    }
   },
   [types.RECEIVE_MOVIES_SETS] (state, sets) {
     state.sets = sets
