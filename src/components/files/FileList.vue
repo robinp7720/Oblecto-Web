@@ -46,9 +46,9 @@ export default {
   },
   methods: {
     getUrl: async function (fileId) {
-      let session = await oblectoClient.sessions.create(fileId, { noremux: true })
+      let session = await oblectoClient.sessions.create(fileId, { quality: 'original' })
 
-      return oblectoClient.sessions.getStreamUrl(session.sessionId)
+      return oblectoClient.sessions.mediaUrl(session.mediaUrl)
     },
     copyUrl: async function (fileId) {
       this.$modal.show('CopyText', { title: 'Copy URL', text: await this.getUrl(fileId) })

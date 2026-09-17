@@ -35,6 +35,19 @@ Use the CSS variables in `src/App.vue`:
 - Respect reduced motion for transitions and row scrolling.
 - Keep mobile navigation scrollable and media content within the viewport.
 
+## Playback
+
+The player is an overlay, not a bar. Controls sit on the video behind a scrim and share the stage with it; there is no detached chrome below the picture. `PlayerRoot` owns the single `<video>` element and never re-mounts it, so switching between the three modes in `ScreenFormats` is a class change and playback survives navigation.
+
+- Large and fullscreen fill the viewport with `100dvh`. The bottom block carries the seek bar, elapsed and remaining time, and one control row that must never wrap.
+- On coarse pointers the transport moves to the centre of the stage where a thumb can reach it, and the bottom row keeps only captions, settings and fullscreen. Volume is a gesture there, not a slider.
+- Small is a floating card on desktop and a docked bar on phones, with artwork, title, play/pause, a progress line and tap-to-expand. Picture-in-picture still takes over when the browser supports it.
+- Progress and selected states use accent orange; the primary transport and Next Episode use coral on dark text, matching `.detail-button`.
+
+Gestures use pointer events so mouse, touch and pen share one path. Tap toggles the chrome on touch and toggles playback on a mouse; double-tap either half seeks by ten seconds and chains on repeat; a horizontal drag scrubs; a vertical swipe on the right half sets volume where the browser allows it. The chrome auto-hides after three seconds of playback and any tap brings it back — never make visibility depend on an input a touch device cannot produce.
+
+Respect `env(safe-area-inset-*)` on every edge the player touches; the app is `viewport-fit=cover`. Controls are at least 44px. Every control is a `<button>` with an accessible name, the seek bar is a `role="slider"` with `aria-valuetext`, and the buffering ring and seek ripple must stay legible when motion is reduced.
+
 ## Other screens
 
 Carry the same neutral surfaces, typography, and Oblecto brand accents through sign-in, discovery, libraries, settings, and legacy detail dialogs using shared tokens. Keep user-facing copy focused on finding and watching their collection.

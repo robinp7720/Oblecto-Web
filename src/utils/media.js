@@ -121,3 +121,18 @@ export function progressForItem (type, item) {
 
   return 0
 }
+
+/**
+ * Human label for an ffprobe stream entry, e.g. `EN - English forced (#3)`.
+ * Lifted out of the player so both the settings panel and any future track
+ * picker format tracks identically.
+ */
+export function formatStreamLabel (stream, type) {
+  if (!stream) return ''
+
+  const language = String(stream.tags?.language || stream.tags_language || 'und').toUpperCase()
+  const title = stream.tags_title || stream.tags?.title || stream.codec_name || type
+  const forced = Number(stream.disposition_forced) > 0 ? ' forced' : ''
+
+  return `${language} - ${title}${forced} (#${stream.index})`
+}

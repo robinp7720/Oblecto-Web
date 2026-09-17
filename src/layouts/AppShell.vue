@@ -149,12 +149,12 @@ async function logout () {
 .shell-header
   position: sticky
   top: 0
-  z-index: 50
+  z-index: var(--z-header)
   display: flex
   align-items: center
   gap: 32px
   min-height: 76px
-  padding: 12px var(--page-gutter)
+  padding: max(12px, var(--safe-top)) max(var(--page-gutter), var(--safe-right)) 12px max(var(--page-gutter), var(--safe-left))
   background: rgba(14, 14, 14, 0.96)
 
 .brand
@@ -249,7 +249,7 @@ async function logout () {
 .content
   min-width: 0
   min-height: calc(100vh - 230px)
-  padding: 40px var(--page-gutter) 80px
+  padding: 40px max(var(--page-gutter), var(--safe-right)) 80px max(var(--page-gutter), var(--safe-left))
 .content-home
   padding: 0 0 80px
 .shell-footer
@@ -257,7 +257,7 @@ async function logout () {
   align-items: center
   flex-wrap: wrap
   gap: 20px
-  padding: 24px var(--page-gutter) 110px
+  padding: 24px max(var(--page-gutter), var(--safe-right)) calc(24px + var(--safe-bottom) + var(--mini-player-reserve)) max(var(--page-gutter), var(--safe-left))
   color: var(--color-text-faint)
   font-size: 0.8rem
 .footer-brand
@@ -267,7 +267,7 @@ async function logout () {
   position: fixed
   top: -100px
   left: 20px
-  z-index: 100
+  z-index: var(--z-skip-link)
   padding: 12px
   background: white
   color: black

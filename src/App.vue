@@ -21,7 +21,7 @@
       </transition>
     </RouterView>
 
-    <playBar v-if="showShell" />
+    <PlayerRoot v-if="showShell" />
   </div>
 </template>
 
@@ -30,7 +30,7 @@ import { computed, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import { useStore } from 'vuex'
 import AppShell from '@/layouts/AppShell.vue'
-import playBar from '@/components/playBar'
+import PlayerRoot from '@/components/player/PlayerRoot.vue'
 import { ScreenFormats } from '@/enums/ScreenFormats'
 import NotificationsToaster from '@/components/system/NotificationsToaster.vue'
 import LegacyModalMounts from '@/components/system/LegacyModalMounts.vue'
@@ -44,13 +44,17 @@ const showShell = computed(() => authStore.isAuthenticated && route.meta.layout 
 const playing = computed(() => store.state.playing)
 const playSizeFormat = computed(() => store.state.playSizeFormat)
 
+// Both immersive modes lock the page. FULLSCREEN was previously left out, so
+// the page scrolled behind the video whenever a gesture ran past the stage.
 watch([playing, playSizeFormat], () => {
-  if (playSizeFormat.value === ScreenFormats.LARGE && playing.value?.entity) {
-    document.body.style.overflow = 'hidden'
-    return
-  }
+  const immersive = playSizeFormat.value === ScreenFormats.LARGE ||
+    playSizeFormat.value === ScreenFormats.FULLSCREEN
 
-  document.body.style.overflow = 'auto'
+  const locked = immersive && Boolean(playing.value?.entity)
+
+  // Restore to '' rather than 'auto' so the stylesheet default wins back.
+  document.body.style.overflow = locked ? 'hidden' : ''
+  document.documentElement.style.overflow = locked ? 'hidden' : ''
 }, { immediate: true })
 </script>
 
@@ -88,6 +92,27 @@ watch([playing, playSizeFormat], () => {
     --shadow-strong: 0 16px 48px var(--color-shadow)
     --glass-blur: blur(16px)
     --page-gutter: clamp(20px, 4vw, 80px)
+    --safe-top: env(safe-area-inset-top, 0px)
+    --safe-right: env(safe-area-inset-right, 0px)
+    --safe-bottom: env(safe-area-inset-bottom, 0px)
+    --safe-left: env(safe-area-inset-left, 0px)
+    --control-size: 44px
+    --control-size-lg: 64px
+    --color-scrim-strong: rgba(0, 0, 0, 0.85)
+    --color-scrim-soft: rgba(0, 0, 0, 0.35)
+    --player-scrim: linear-gradient(to top, rgba(0, 0, 0, 0.88) 0%, rgba(0, 0, 0, 0.5) 42%, rgba(0, 0, 0, 0) 100%)
+    --player-scrim-top: linear-gradient(to bottom, rgba(0, 0, 0, 0.7) 0%, rgba(0, 0, 0, 0) 100%)
+    /* Stacking order, in one place. .player-root owns a stacking context, so
+       every player child stays below 10 and only this scale decides layering. */
+    --z-toast: 40
+    --z-player-mini: 45
+    --z-header: 50
+    --z-player: 55
+    --z-modal: 60
+    --z-skip-link: 70
+    /* Raised by the player only while the mini-player is docked, so pages do not
+       reserve dead space when nothing is playing. */
+    --mini-player-reserve: 0px
 
   *, *::before, *::after
     box-sizing: border-box
@@ -182,7 +207,7 @@ watch([playing, playSizeFormat], () => {
   .legacy-modal-shell
     position: fixed
     inset: 0
-    z-index: 60
+    z-index: var(--z-modal)
     display: grid
     place-items: center
     padding: 20px
