@@ -41,7 +41,10 @@
       />
     </div>
 
-    <div v-else class="browse-panel">
+    <div
+      v-else
+      class="browse-panel"
+    >
       <BrowseToolbar
         :filters="browse.filters"
         :facets="browse.facets"

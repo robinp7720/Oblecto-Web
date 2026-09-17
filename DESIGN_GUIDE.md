@@ -1,84 +1,44 @@
 # Oblecto Web UI Design Guide
 
-This guide documents the updated design tokens and styling patterns for the Oblecto Web UI. Use these tokens and patterns for new components to keep the interface cohesive.
+## Direction
 
-## Design Direction
-- **Mood:** cinematic dusk, warm graphite, copper highlights.
-- **Surfaces:** glassy panels with soft borders and deep shadows.
-- **Motion:** subtle lift on hover, fade/slide on entry; no jittery micro-animations.
+A cinematic, library-first browsing experience inspired by streaming services. Keep the Oblecto identity: original cloud/play mark and turquoise wordmark, a near-black canvas, prominent artwork, clear playback actions, and compact horizontal media rows. Avoid dashboard statistics, glass panels, ornamental gradients, and oversized rounded containers in browsing views.
 
-## Typography
-- **Body:** `"Space Grotesk"` (primary), fallback `"Work Sans"`.
-- **Display/Headings:** `"Fraunces"` for section headers and hero titles.
-- **Letter spacing:** small positive tracking for navigation and UI labels.
+## Tokens
 
-## Core Colors
+Use the CSS variables in `src/App.vue`:
 
-### Backgrounds
-- **App Gradient:**
-  - Start: `#6e605f`
-  - Mid: `#4b4850`
-  - End: `#1d262f`
-  - Usage: `#app` background.
-- **Modal Backdrop:**
-  - `linear-gradient(180deg, #5d5353 0%, #3d3a42 45%, #1b242d 100%)`
+- Canvas: `--color-bg-1` (`#141414`).
+- Surfaces: `--color-surface` (`#1c1c1c`) and `--color-surface-card` (`#202020`).
+- Text: `--color-text` (`#f5f5f1`), `--color-text-muted` (`#bcbcbc`), and `--color-text-faint` (`#999999`).
+- Brand colors, sampled from `images/logomark.png`: turquoise `#68e0dc`, deep blue `#096f93`, orange `#f15a24`, coral `#ff734d`.
+- Accent: `--color-accent` (brand orange) for progress and selected states; turquoise for navigation and labels; coral with dark text for primary playback actions.
+- Typography: Arial / Helvetica / system sans-serif for body and display text. Use bold weight and tight tracking for hero titles.
+- Corners: 4px controls and artwork, 6px panels, 8px dialogs.
+- Page gutters: `--page-gutter`, responsive from 20px to 80px.
 
-### Surfaces
-- **Surface Base:** `#3b3437`
-- **Surface Strong:** `#453d40`
-- **Surface Card (glass):** `rgba(45, 39, 43, 0.9)`
-- **Surface Glass:** `rgba(36, 30, 33, 0.72)`
+## Browsing
 
-### Text
-- **Primary:** `#f4f1ee`
-- **Muted:** `rgba(244, 241, 238, 0.72)`
-- **Faint:** `rgba(244, 241, 238, 0.55)`
+- Compact, sticky top navigation; account menu holds settings, playback device selection, and sign out.
+- Home features library artwork with dark readability gradients. Use a coral primary Play button and a gray More Info button.
+- `MediaShelf` provides horizontal scroll snapping, touch scrolling, keyboard arrows, and previous/next controls with disabled boundary states.
+- Movies and episodes use landscape artwork in shelves; shows retain their posters. Library grids retain poster cards; search results use the same horizontal shelves.
+- Missing movie fanart falls back to the poster, then a title tile. Never fabricate catalog entries.
+- Loading, error/retry, and empty-library states remain part of the home experience.
 
-### Accent
-- **Copper:** `#d9813c`
-- **Copper Highlight:** `#f2a154`
-- **Copper Soft:** `rgba(217, 129, 60, 0.35)`
+## Accessibility and motion
 
-### Borders & Shadows
-- **Border:** `rgba(255, 255, 255, 0.12)`
-- **Border Strong:** `rgba(255, 255, 255, 0.22)`
-- **Soft Shadow:** `0 12px 30px rgba(16, 12, 14, 0.35)`
-- **Strong Shadow:** `0 18px 40px rgba(16, 12, 14, 0.6)`
+- Give all search fields and icon controls accessible names.
+- Keep playback buttons separate from details links.
+- Reveal card actions on hover, keyboard focus, and touch devices.
+- Use visible keyboard focus, a skip-to-content link, and descriptive row controls.
+- Respect reduced motion for transitions and row scrolling.
+- Keep mobile navigation scrollable and media content within the viewport.
 
-## Radii
-- **Small:** `8px`
-- **Medium:** `12px`
-- **Large:** `18px`
-- **Pill:** `999px` (buttons, badges, search)
+## Other screens
 
-## Component Patterns
+Carry the same neutral surfaces, typography, and Oblecto brand accents through sign-in, discovery, libraries, settings, and legacy detail dialogs using shared tokens. Keep user-facing copy focused on finding and watching their collection.
 
-### Navigation Bar
-- Height: `64px`
-- Background: dark glass gradient with blur
-- Text: uppercase, letter-spaced, accent hover
+## Detail pages
 
-### List Containers
-- Title uses display font, subtle divider line under titles.
-
-### Media Cards (Movies, Series, Episodes)
-- Rounded corners (`14px`), soft shadow, lift on hover.
-- Action overlays use top-to-bottom dark gradient.
-- Progress bars use the copper accent.
-
-### Watch Panel
-- Glassy panel with border and strong shadow.
-- Tabs show active state via copper underline.
-
-### Forms & Inputs
-- Inputs: translucent surface (`rgba(255,255,255,0.12)`) with soft focus glow.
-- Buttons: pill style, copper gradient for primary actions.
-
-## Motion
-- Hover lift: `transform: translateY(-3px)` on cards.
-- Use subtle opacity and transform transitions (0.2s).
-
-## Implementation Notes
-- Use CSS variables from `App.vue` for tokens (colors, fonts, radii, shadows).
-- Avoid legacy `Roboto` usage; use the body and display fonts instead.
-- Favor glass surfaces and borders over flat dark panels.
+Movie, show, and episode pages share `MediaDetailHero` and `details.sass`: artwork fades into the app canvas, titles and synopsis sit directly on the background, and playback remains visible on touch devices. Metadata and files use plain sections beneath the hero. TV shows use a season selector and episode rows with playback, details links, options, and live progress. Missing artwork must never block the title or actions. Detail requests show loading, empty, and retry states and discard stale responses after navigation.

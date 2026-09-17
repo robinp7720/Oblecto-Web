@@ -21,6 +21,11 @@
 <script>
 export default {
   name: 'Tabs',
+  provide () {
+    return {
+      tabsController: this
+    }
+  },
   data () {
     return {
       tabs: [],
@@ -36,11 +41,6 @@ export default {
       if (!this.activeTab) {
         this.activeTab = name
       }
-    }
-  },
-  provide () {
-    return {
-      tabsController: this
     }
   }
 }
