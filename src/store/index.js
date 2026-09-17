@@ -7,6 +7,29 @@ import seedbox from '@/store/modules/seedbox'
 
 import oblectoClient from '@/oblectoClient'
 import { ScreenFormats } from '@/enums/ScreenFormats'
+import { remote, isRemote } from '@/remote/state'
+import { sendCommand } from '@/remote/transport'
+
+/**
+ * Sends playback to the selected device, if there is one.
+ *
+ * A failed command falls back to playing here rather than doing nothing, which
+ * is what the old implementation did whenever the remote hop broke.
+ *
+ * @param {string} kind - 'episode' or 'movie'.
+ * @param {string|number} id - Media id.
+ * @returns {Promise<boolean>} Whether the remote device took it.
+ */
+async function dispatchRemotePlay (kind, id) {
+  if (!isRemote.value) return false
+
+  const ack = await sendCommand(remote.targetDeviceId, {
+    type: 'play',
+    media: { kind, id: String(id) }
+  })
+
+  return ack.ok
+}
 export default createStore({
   state: {
     host: null,
@@ -19,8 +42,7 @@ export default createStore({
       title: ''
     },
     autoplay: true,
-    playSizeFormat: ScreenFormats.SMALL,
-    playbackRemote: 'local'
+    playSizeFormat: ScreenFormats.SMALL
   },
   modules: {
     movies,
@@ -47,9 +69,6 @@ export default createStore({
     },
     initialLoaded: function (state, initialLoaded) {
       state.initialLoaded = initialLoaded
-    },
-    setPlaybackRemote: function (state, remote) {
-      state.playbackRemote = remote
     },
     setPlaySizeFormat: function (state, size) {
       state.playSizeFormat = size
@@ -122,11 +141,8 @@ export default createStore({
         entity: episode
       })
     },
-    playEpisode: async function ({ state, commit, dispatch }, id) {
-      if (state.playbackRemote !== 'local') {
-        await oblectoClient.remotes.playback(state.playbackRemote, 'episode', id)
-        return
-      }
+    playEpisode: async function ({ dispatch }, id) {
+      if (await dispatchRemotePlay('episode', id)) return
 
       await dispatch('playEpisodeLocal', id)
     },
@@ -141,11 +157,8 @@ export default createStore({
         entity: movie
       })
     },
-    playMovie: async function ({ state, commit, dispatch }, id) {
-      if (state.playbackRemote !== 'local') {
-        await oblectoClient.remotes.playback(state.playbackRemote, 'movie', id)
-        return
-      }
+    playMovie: async function ({ dispatch }, id) {
+      if (await dispatchRemotePlay('movie', id)) return
 
       await dispatch('playMovieLocal', id)
     }

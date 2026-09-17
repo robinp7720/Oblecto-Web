@@ -84,15 +84,12 @@ async function submit () {
   try {
     store.dispatch('updateHost', host.value)
     window.localStorage.setItem('oblecto.host', host.value)
-    vm?.appContext.config.globalProperties.$reconnectSocket?.(host.value)
 
     await authStore.login(credentials)
 
-    if (vm?.appContext.config.globalProperties.$socket) {
-      vm.appContext.config.globalProperties.$socket.emit('authenticate', {
-        token: window.localStorage.getItem('oblecto.accessToken')
-      })
-    }
+    // Connect only once there is a token: the realtime server authenticates in
+    // the handshake, so a socket opened before sign-in is simply refused.
+    vm?.appContext.config.globalProperties.$reconnectSocket?.(host.value)
 
     router.replace(String(route.query.redirect || '/'))
   } catch (e) {

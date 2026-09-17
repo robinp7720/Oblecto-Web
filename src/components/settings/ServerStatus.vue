@@ -92,23 +92,26 @@
       <div class="status-grid">
         <div
           v-for="client in clients"
-          :key="client.clientId"
+          :key="client.deviceId"
           class="status-card"
         >
           <div class="card-header">
             <div class="card-title">
               <font-awesome-icon icon="desktop" />
-              <span>{{ client.clientName || 'Unknown Client' }}</span>
+              <span>{{ client.name }}</span>
             </div>
-            <span class="user-badge">
-              <font-awesome-icon icon="user" /> {{ client.user.username }}
+            <span
+              v-if="client.capabilities.includes('playback')"
+              class="user-badge"
+            >
+              <font-awesome-icon icon="play-circle" /> Playback
             </span>
           </div>
 
           <div class="card-body">
             <div class="info-row">
-              <span class="label">IP Address:</span>
-              <span class="value monospace">{{ formatAddress(client.address) }}</span>
+              <span class="label">Device ID:</span>
+              <span class="value monospace">{{ client.deviceId }}</span>
             </div>
             <div class="info-row">
               <span class="label">Connected:</span>
@@ -123,23 +126,15 @@
               <div class="activity-title">
                 Now Playing
               </div>
-              <div
-                v-if="client.activity.movie.length > 0"
-                class="activity-item"
-              >
-                <font-awesome-icon icon="film" /> Movie (ID: {{ client.activity.movie[0].movieId }})
+              <div class="activity-item">
+                <font-awesome-icon :icon="client.state.media.kind === 'movie' ? 'film' : 'tv'" />
+                {{ client.state.media.title || client.state.media.kind }}
                 <div class="progress-bar">
                   <div
                     class="progress-fill"
-                    :style="{ width: (client.activity.movie[0].progress * 100) + '%' }"
+                    :style="{ width: progressOf(client) + '%' }"
                   />
                 </div>
-              </div>
-              <div
-                v-if="client.activity.series.length > 0"
-                class="activity-item"
-              >
-                <font-awesome-icon icon="tv" /> Episode
               </div>
             </div>
             <div
@@ -171,7 +166,6 @@
   import faSync from '@fortawesome/fontawesome-free-solid/faSync'
   import faPlayCircle from '@fortawesome/fontawesome-free-solid/faPlayCircle'
   import faDesktop from '@fortawesome/fontawesome-free-solid/faDesktop'
-  import faUser from '@fortawesome/fontawesome-free-solid/faUser'
   import faFilm from '@fortawesome/fontawesome-free-solid/faFilm'
   import faTv from '@fortawesome/fontawesome-free-solid/faTv'
   import fontawesome from '@fortawesome/fontawesome'
@@ -180,7 +174,7 @@
   import SaveState from '@/components/system/SaveState.vue'
   import { createSaveState } from '@/composables/useSaveState'
 
-  fontawesome.library.add(faSync, faPlayCircle, faDesktop, faUser, faFilm, faTv)
+  fontawesome.library.add(faSync, faPlayCircle, faDesktop, faFilm, faTv)
 
   export default {
     name: 'ServerStatus',
@@ -216,12 +210,15 @@
       formatDate (date) {
         return moment(date).fromNow()
       },
-      formatAddress (address) {
-        return address.replace(/^::ffff:/, '')
-      },
       hasActivity (client) {
-        return (client.activity.movie && client.activity.movie.length > 0) ||
-               (client.activity.series && client.activity.series.length > 0)
+        return Boolean(client.state && client.state.status !== 'idle' && client.state.media)
+      },
+      progressOf (client) {
+        const state = client.state
+
+        if (!state || !state.duration) return 0
+
+        return Math.min(100, Math.max(0, (state.position / state.duration) * 100))
       }
     }
   }

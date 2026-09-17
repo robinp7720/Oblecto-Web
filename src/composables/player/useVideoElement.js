@@ -122,14 +122,19 @@ export function useVideoElement (videoRef, { onEnded, onPipEnter, onPipLeave, on
     seekTo((el()?.currentTime || 0) + seconds, limit)
   }
 
+  // Returns the DOMException name when the browser refuses, so a caller that
+  // needs to know - a remote device being told to resume, say - can tell a
+  // refusal from a successful start. Local callers ignore it, because
+  // autoplay rejection is already reported through the controller's state.
   async function play () {
     const video = el()
-    if (!video) return
+    if (!video) return 'NotFoundError'
 
     try {
       await video.play()
+      return null
     } catch (error) {
-      // Autoplay rejection is reported through the controller's own state.
+      return error?.name || 'NotAllowedError'
     }
   }
 
