@@ -15,7 +15,7 @@
           >
           <span class="checkmark" />
         </label>
-        <p class="description">
+        <p class="checkbox-description">
           Automatically scan for new files when the server starts.
         </p>
       </div>
@@ -30,7 +30,7 @@
           >
           <span class="checkmark" />
         </label>
-        <p class="description">
+        <p class="checkbox-description">
           Automatically check for removed files when the server starts.
         </p>
       </div>
@@ -45,7 +45,7 @@
           >
           <span class="checkmark" />
         </label>
-        <p class="description">
+        <p class="checkbox-description">
           Calculate MD5 hashes for files to detect duplicates and changes. (Slower)
         </p>
       </div>
@@ -56,13 +56,17 @@
         <h2 class="settings-title-plain">
           Video Filetypes
         </h2>
-        <a
+        <button
+          type="button"
           class="btn"
-          @click="filetypeAdd('video')"
+          @click="openFiletypeDialog"
         >
-          <font-awesome-icon icon="plus" /> Add Filetype
-        </a>
+          <font-awesome-icon icon="plus" /> Add filetype
+        </button>
       </div>
+      <p class="settings-description">
+        Only files with one of these extensions are picked up by a scan.
+      </p>
       <div class="settings-table-scroll">
         <table class="settings-table">
           <thead>
@@ -94,18 +98,67 @@
               </td>
               <td>{{ filetype }}</td>
               <td class="actions">
-                <a
-                  title="Remove filetype"
-                  @click="deleteFiletype(filetype, 'video')"
+                <button
+                  type="button"
+                  title="Remove this filetype"
+                  :aria-label="`Remove .${filetype}`"
+                  @click="deleteFiletype(filetype)"
                 >
                   <FontAwesomeIcon :icon="deleteIcon" />
-                </a>
+                </button>
               </td>
             </tr>
           </tbody>
         </table>
       </div>
     </div>
+
+    <AutosaveBar :state="save" />
+
+    <AppDialog
+      v-model:open="showFiletypeDialog"
+      title="Add video filetype"
+      subtitle="Extensions are stored without a leading dot and matched case-insensitively."
+      size="sm"
+      @submit="addFiletype"
+    >
+      <div
+        class="form-group"
+        :class="{ 'is-invalid': Boolean(filetypeError) }"
+      >
+        <label for="new-filetype">Extension</label>
+        <input
+          id="new-filetype"
+          v-model="newFiletype"
+          type="text"
+          placeholder="mkv"
+          autocapitalize="off"
+          spellcheck="false"
+        >
+        <p
+          v-if="filetypeError"
+          class="form-hint form-error"
+        >
+          {{ filetypeError }}
+        </p>
+      </div>
+
+      <template #footer>
+        <button
+          type="button"
+          class="btn btn-secondary"
+          @click="showFiletypeDialog = false"
+        >
+          Cancel
+        </button>
+        <button
+          type="submit"
+          class="btn btn-primary"
+        >
+          Add filetype
+        </button>
+      </template>
+    </AppDialog>
   </div>
 </template>
 
@@ -115,16 +168,26 @@
   import faPlus from '@fortawesome/fontawesome-free-solid/faPlus'
   import fontawesome from '@fortawesome/fontawesome'
   import oblectoClient from '@/oblectoClient'
+  import AutosaveBar from '@/components/settings/AutosaveBar.vue'
+  import AppDialog from '@/components/system/AppDialog.vue'
+  import { createSaveState } from '@/composables/useSaveState'
+  import { confirm } from '@/composables/useConfirm'
 
   fontawesome.library.add(faPlus, faTrash)
 
   export default {
     name: 'IndexerSettings',
     components: {
+      AutosaveBar,
+      AppDialog,
       FontAwesomeIcon
     },
     data () {
       return {
+        save: createSaveState(),
+        showFiletypeDialog: false,
+        newFiletype: '',
+        filetypeError: '',
         videoFiletypes: [],
         indexer: { runAtBoot: false },
         cleaner: { runAtBoot: false },
@@ -141,118 +204,82 @@
     },
     methods: {
       async refresh () {
-        try {
-          const config = await oblectoClient.settings.getAll()
-          this.videoFiletypes = config.fileExtensions?.video || []
-          this.indexer = config.indexer || { runAtBoot: false }
-          this.cleaner = config.cleaner || { runAtBoot: false }
-          this.files = config.files || { doHash: false }
-        } catch (e) {
-          console.error('Failed to load settings', e)
-          this.$notify({ type: 'error', title: 'Error', text: 'Failed to load settings' })
-        }
+        await this.save.run(
+          async () => {
+            const config = await oblectoClient.settings.getAll()
+            this.videoFiletypes = config.fileExtensions?.video || []
+            this.indexer = config.indexer || { runAtBoot: false }
+            this.cleaner = config.cleaner || { runAtBoot: false }
+            this.files = config.files || { doHash: false }
+          },
+          { busy: 'Loading…', ok: '', error: 'Could not load indexer settings' }
+        )
       },
       async saveSettings () {
-         try {
-           await oblectoClient.settings.update({
-              indexer: this.indexer,
-              cleaner: this.cleaner,
-              files: this.files
-           })
-           this.$notify({ type: 'success', title: 'Saved', text: 'Settings saved successfully' })
-         } catch (e) {
-           console.error('Failed to save settings', e)
-           this.$notify({ type: 'error', title: 'Error', text: 'Failed to save settings' })
-         }
+        await this.save.run(
+          () => oblectoClient.settings.update({
+            indexer: this.indexer,
+            cleaner: this.cleaner,
+            files: this.files
+          }),
+          { error: 'Could not save indexer settings' }
+        )
       },
-      async filetypeAdd (type) {
-        // TODO: Replace with a proper modal later
-        const ext = prompt("Enter new file extension (e.g. .mkv):")
-        if (ext) {
-          let currentList = [...this.videoFiletypes]
-          if (!currentList.includes(ext)) {
-             currentList.push(ext)
-             await this.updateFiletypes(currentList)
-             this.$notify({ type: 'success', title: 'Success', text: 'Filetype added' })
-          }
+      openFiletypeDialog () {
+        this.newFiletype = ''
+        this.filetypeError = ''
+        this.showFiletypeDialog = true
+      },
+      async addFiletype () {
+        // Normalised here so ".MKV", "MKV" and ".mkv" cannot all end up in the
+        // list as separate entries.
+        const ext = this.newFiletype.trim().toLowerCase().replace(/^\.+/, '')
+
+        if (!ext) {
+          this.filetypeError = 'Enter a file extension, for example mkv.'
+          return
         }
-      },
-      async deleteFiletype (filetype, type) {
-        if(confirm(`Are you sure you want to remove ${filetype}?`)) {
-           let currentList = this.videoFiletypes.filter(f => f !== filetype)
-           await this.updateFiletypes(currentList)
-           this.$notify({ type: 'success', title: 'Success', text: 'Filetype removed' })
+
+        if (this.videoFiletypes.includes(ext)) {
+          this.filetypeError = `${ext} is already in the list.`
+          return
         }
+
+        this.filetypeError = ''
+
+        const ok = await this.updateFiletypes([...this.videoFiletypes, ext], {
+          busy: 'Adding…',
+          ok: `Added .${ext}`,
+          error: `Could not add .${ext}`
+        })
+
+        if (ok) this.showFiletypeDialog = false
       },
-      async updateFiletypes(videoList) {
-          // Update the specific section
-          await oblectoClient.settings.updateSection('fileExtensions', {
-             video: videoList
-          })
-          this.refresh()
+      async deleteFiletype (filetype) {
+        const confirmed = await confirm({
+          title: `Stop indexing .${filetype} files?`,
+          message: 'Existing entries stay in the library, but files with this extension are skipped by future scans.',
+          confirmLabel: 'Remove extension',
+          destructive: true
+        })
+
+        if (!confirmed) return
+
+        await this.updateFiletypes(
+          this.videoFiletypes.filter(f => f !== filetype),
+          { busy: 'Removing…', ok: `Removed .${filetype}`, error: `Could not remove .${filetype}` }
+        )
+      },
+      async updateFiletypes (videoList, labels) {
+        const ok = await this.save.run(
+          () => oblectoClient.settings.updateSection('fileExtensions', { video: videoList }),
+          labels
+        )
+
+        if (ok) this.videoFiletypes = videoList
+
+        return ok
       }
     }
   }
 </script>
-
-<style scoped lang="sass">
-@use "@/assets/sass/settings.sass"
-
-.setting-row
-  margin-bottom: 20px
-  
-.description
-  color: var(--color-text-muted)
-  font-size: 0.9em
-  margin-top: 5px
-  margin-left: 28px
-
-/* Simple Checkbox Styling */
-.checkbox-container
-  display: block
-  position: relative
-  padding-left: 30px
-  margin-bottom: 5px
-  cursor: pointer
-  font-size: 16px
-  user-select: none
-
-  input
-    position: absolute
-    opacity: 0
-    cursor: pointer
-    height: 0
-    width: 0
-
-  .checkmark
-    position: absolute
-    top: 2px
-    left: 0
-    height: 18px
-    width: 18px
-    background-color: rgba(255, 255, 255, 0.08)
-    border: 1px solid var(--color-border)
-    border-radius: 6px
-
-  &:hover input ~ .checkmark
-    background-color: rgba(255, 255, 255, 0.16)
-
-  input:checked ~ .checkmark
-    background-color: var(--color-accent)
-    border-color: var(--color-accent)
-
-  input:checked ~ .checkmark:after
-    display: block
-
-  .checkmark:after
-    content: ""
-    position: absolute
-    display: none
-    left: 6px
-    top: 2px
-    width: 3px
-    height: 8px
-    border: solid white
-    border-width: 0 2px 2px 0
-    transform: rotate(45deg)
-</style>

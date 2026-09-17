@@ -1,10 +1,10 @@
 import io from 'socket.io-client'
 import oblectoClient from '@/oblectoClient'
+import { markConnected, markConnecting, markConnectionFailure } from '@/stores/connection'
 
 let socket = null
-let connectionFailedCount = 0
 
-export function initSocket ({ app, store, notify }, host = oblectoClient.axios.defaults.baseURL) {
+export function initSocket ({ app, store }, host = oblectoClient.axios.defaults.baseURL) {
   if (socket) {
     socket.close()
   }
@@ -12,37 +12,24 @@ export function initSocket ({ app, store, notify }, host = oblectoClient.axios.d
   socket = io(host)
   app.config.globalProperties.$socket = socket
 
-  connectionFailedCount = 0
+  markConnecting()
 
-  socket.on('connect_error', () => {
-    connectionFailedCount++
-    if (connectionFailedCount === 1) {
-      notify({
-        title: 'Connection failed',
-        text: 'Failed to connect to the Oblecto web socket server. Is the server online?',
-        type: 'error'
-      })
-    }
+  // Connection health is reported by the pill in the header rather than by
+  // toasts: it stays visible for as long as it is true, and says nothing at all
+  // while the socket is healthy.
+  socket.on('connect_error', (error) => {
+    markConnectionFailure(error?.message || '')
+  })
+
+  socket.on('disconnect', () => {
+    markConnecting()
   })
 
   socket.on('connect', () => {
-    connectionFailedCount = 0
-
-    notify({
-      title: 'Connection to Oblecto succeeded',
-      text: 'Client has successfully connected to the Oblecto websocket interface!',
-      type: 'success'
-    })
+    markConnected()
 
     if (oblectoClient.accessToken) {
       socket.emit('authenticate', { token: oblectoClient.accessToken })
-
-      notify({
-        title: 'Authentication success',
-        text: 'Socket interface has been authenticated',
-        type: 'success'
-      })
-
       store.dispatch('updateAll')
     }
   })
@@ -63,35 +50,18 @@ export function initSocket ({ app, store, notify }, host = oblectoClient.axios.d
     }
   })
 
+  // Import progress lands in the seedbox store, which Settings → Seedboxes
+  // renders as a live transfer list. That page is where someone watching an
+  // import already is; a toast on every event just interrupted everyone else.
   socket.on('seedbox', (msg) => {
     store.dispatch('seedbox/processSocketEvent', msg)
-
-    if (msg.event === 'import_start') {
-      notify({
-        title: 'Import Started',
-        text: `Importing ${msg.origin} from ${msg.seedbox}`,
-        type: 'info'
-      })
-    } else if (msg.event === 'import_success') {
-      notify({
-        title: 'Import Finished',
-        text: `Successfully imported ${msg.origin}`,
-        type: 'success'
-      })
-    } else if (msg.event === 'import_error') {
-      notify({
-        title: 'Import Failed',
-        text: `Failed to import ${msg.origin}: ${msg.error}`,
-        type: 'error'
-      })
-    }
   })
 
   return socket
 }
 
-export function reconnectSocket ({ app, store, notify }, host) {
-  return initSocket({ app, store, notify }, host)
+export function reconnectSocket ({ app, store }, host) {
+  return initSocket({ app, store }, host)
 }
 
 export function getSocket () {

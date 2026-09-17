@@ -6,12 +6,17 @@
         <h2 class="settings-title-plain">
           Active Sessions
         </h2>
-        <button
-          class="btn"
-          @click="refresh"
-        >
-          <font-awesome-icon icon="sync" /> Refresh
-        </button>
+        <div class="header-actions">
+          <SaveState :state="status" />
+          <button
+            type="button"
+            class="btn"
+            :disabled="status.status === 'busy'"
+            @click="refresh"
+          >
+            <font-awesome-icon icon="sync" /> Refresh
+          </button>
+        </div>
       </div>
 
       <div class="status-grid">
@@ -109,7 +114,7 @@
               <span class="label">Connected:</span>
               <span class="value">{{ formatDate(client.connectedAt) }}</span>
             </div>
-            
+
             <div
               v-if="hasActivity(client)"
               class="activity-section"
@@ -172,18 +177,22 @@
   import fontawesome from '@fortawesome/fontawesome'
   import oblectoClient from '@/oblectoClient'
   import moment from 'moment'
+  import SaveState from '@/components/system/SaveState.vue'
+  import { createSaveState } from '@/composables/useSaveState'
 
   fontawesome.library.add(faSync, faPlayCircle, faDesktop, faUser, faFilm, faTv)
 
   export default {
     name: 'ServerStatus',
     components: {
-      FontAwesomeIcon
+      FontAwesomeIcon,
+      SaveState
     },
     data () {
       return {
         sessions: [],
-        clients: []
+        clients: [],
+        status: createSaveState()
       }
     },
     async created () {
@@ -191,18 +200,14 @@
     },
     methods: {
       async refresh () {
-        try {
-          this.sessions = await oblectoClient.status.getSessions()
-          this.clients = await oblectoClient.status.getClients()
-        } catch (e) {
-          console.error('Failed to fetch server status', e)
-          this.$notify({
-            group: 'system',
-            title: 'Error',
-            text: 'Failed to fetch server status',
-            type: 'error'
-          })
-        }
+        // An empty `ok` keeps a successful refresh silent; only failure is news.
+        await this.status.run(
+          async () => {
+            this.sessions = await oblectoClient.status.getSessions()
+            this.clients = await oblectoClient.status.getClients()
+          },
+          { busy: 'Refreshing…', ok: '', error: 'Could not fetch server status' }
+        )
       },
       getFileName (path) {
         if (!path) return 'Unknown File'
@@ -215,7 +220,7 @@
         return address.replace(/^::ffff:/, '')
       },
       hasActivity (client) {
-        return (client.activity.movie && client.activity.movie.length > 0) || 
+        return (client.activity.movie && client.activity.movie.length > 0) ||
                (client.activity.series && client.activity.series.length > 0)
       }
     }
@@ -223,7 +228,10 @@
 </script>
 
 <style scoped lang="sass">
-@use "@/assets/sass/settings.sass"
+.header-actions
+  display: flex
+  align-items: center
+  gap: 14px
 
 .status-grid
   display: grid
@@ -256,7 +264,7 @@
   align-items: center
   gap: 8px
   overflow: hidden
-  
+
   span
     white-space: nowrap
     overflow: hidden
@@ -273,12 +281,12 @@
   font-size: 0.9em
 
   .label
-    color: #aaa
+    color: var(--color-text-muted)
 
   .value
-    color: #eee
+    color: var(--color-text)
     font-weight: 500
-    
+
     &.monospace
       font-family: monospace
       font-size: 0.9em
@@ -289,22 +297,22 @@
   border-radius: 12px
   text-transform: uppercase
   font-weight: bold
-  
+
   &.streaming, &.playing
     background: rgba(46, 204, 113, 0.2)
     color: #2ecc71
-    
+
   &.idle, &.paused
     background: rgba(241, 196, 15, 0.2)
     color: #f1c40f
-    
+
   &.transcoding
     background: rgba(52, 152, 219, 0.2)
     color: #3498db
 
 .user-badge
   font-size: 0.85em
-  color: #ccc
+  color: var(--color-text-muted)
   display: flex
   align-items: center
   gap: 5px
@@ -313,27 +321,27 @@
   grid-column: 1 / -1
   padding: 40px
   text-align: center
-  color: #666
+  color: var(--color-text-faint)
   background: rgba(0, 0, 0, 0.1)
   border-radius: 8px
-  
+
   .empty-icon
     font-size: 2em
     margin-bottom: 10px
     opacity: 0.5
-    
+
   p
     margin: 0
 
 .activity-section
   margin-top: 10px
-  
+
   &.idle
     text-align: center
     padding-top: 5px
-    
+
     .idle-text
-      color: #555
+      color: var(--color-text-faint)
       font-size: 0.85em
       font-style: italic
 
@@ -345,7 +353,7 @@
 .activity-title
   font-size: 0.8em
   text-transform: uppercase
-  color: #888
+  color: var(--color-text-faint)
   margin-bottom: 8px
   letter-spacing: 0.5px
 
@@ -361,10 +369,9 @@
   border-radius: 2px
   overflow: hidden
   margin-top: 2px
-  
+
   .progress-fill
     height: 100%
-    background: #e74c3c
+    background: var(--color-accent)
     transition: width 0.3s ease
-
 </style>

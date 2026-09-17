@@ -5,23 +5,35 @@
       class="file-list"
     >
       <li
-        v-for="FileIterator in files"
-        :key="FileIterator.id"
+        v-for="file in files"
+        :key="file.id"
         class="file-list-item"
       >
-        <span class="file-name">{{ FileIterator.name }}</span><span class="badge">{{ FileIterator.extension }}</span>
+        <span class="file-name">{{ file.name }}</span><span class="badge">{{ file.extension }}</span>
         <div class="file-item-right">
           <button
             type="button"
             class="copy"
-            :aria-label="`Copy stream URL for ${FileIterator.name}`"
-            @click="copyUrl(FileIterator.id)"
+            :class="{ 'copy--done': states[file.id] === 'copied', 'copy--failed': states[file.id] === 'failed' }"
+            :disabled="states[file.id] === 'working'"
+            :aria-label="`Copy stream URL for ${file.name}`"
+            @click="copyUrl(file.id)"
           >
-            <FontAwesomeIcon :icon="iconCopy" />
+            <FontAwesomeIcon :icon="states[file.id] === 'copied' ? 'check' : iconCopy" />
           </button>
         </div>
       </li>
     </ul>
+
+    <!-- One live region for the list: the button itself shows a tick, and this
+         carries the same news to a screen reader. -->
+    <p
+      class="copy-status"
+      role="status"
+      aria-live="polite"
+    >
+      {{ status }}
+    </p>
 
     <div
       v-if="files.length === 0"
@@ -36,22 +48,86 @@
 import FontAwesomeIcon from '@fortawesome/vue-fontawesome'
 import faCopy from '@fortawesome/fontawesome-free-solid/faCopy'
 import oblectoClient from '@/oblectoClient'
+import { describeError } from '@/composables/useSaveState'
+
+const RESET_AFTER = 2500
+
+/**
+ * navigator.clipboard only exists in a secure context, and plenty of Oblecto
+ * servers are reached over plain http on a LAN. Fall back to the old
+ * selection-based copy there rather than telling those users it failed.
+ */
+async function writeToClipboard (text) {
+  if (navigator.clipboard?.writeText) {
+    return navigator.clipboard.writeText(text)
+  }
+
+  const field = document.createElement('textarea')
+
+  field.value = text
+  field.setAttribute('readonly', '')
+  field.style.position = 'fixed'
+  field.style.opacity = '0'
+  document.body.appendChild(field)
+
+  try {
+    field.select()
+    if (!document.execCommand('copy')) throw new Error('Copying is not available in this browser')
+  } finally {
+    field.remove()
+  }
+}
 
 export default {
   name: 'FileList',
   components: { FontAwesomeIcon },
   props: { files: { type: Array, default: () => [] } },
+  data () {
+    return {
+      // fileId -> working | copied | failed
+      states: {},
+      status: ''
+    }
+  },
   computed: {
     iconCopy: () => faCopy
   },
+  beforeUnmount () {
+    window.clearTimeout(this.timer)
+  },
   methods: {
-    getUrl: async function (fileId) {
-      let session = await oblectoClient.sessions.create(fileId, { quality: 'original' })
+    async getUrl (fileId) {
+      const session = await oblectoClient.sessions.create(fileId, { quality: 'original' })
 
       return oblectoClient.sessions.mediaUrl(session.mediaUrl)
     },
-    copyUrl: async function (fileId) {
-      this.$modal.show('CopyText', { title: 'Copy URL', text: await this.getUrl(fileId) })
+    // The old flow opened a modal holding a read-only input and called
+    // document.execCommand('copy'). The clipboard API does the same job without
+    // a window in the way, and works where execCommand no longer does.
+    async copyUrl (fileId) {
+      window.clearTimeout(this.timer)
+      this.states = { ...this.states, [fileId]: 'working' }
+      this.status = 'Preparing stream URL…'
+
+      try {
+        const url = await this.getUrl(fileId)
+
+        await writeToClipboard(url)
+
+        this.states = { ...this.states, [fileId]: 'copied' }
+        this.status = 'Stream URL copied to the clipboard.'
+      } catch (e) {
+        this.states = { ...this.states, [fileId]: 'failed' }
+        this.status = describeError(e, 'Could not copy the stream URL')
+        console.error('Failed to copy stream URL', e)
+      }
+
+      this.timer = window.setTimeout(() => {
+        const next = { ...this.states }
+        delete next[fileId]
+        this.states = next
+        this.status = ''
+      }, RESET_AFTER)
     }
   }
 }
@@ -89,8 +165,23 @@ export default {
   color: var(--color-text)
   background: var(--color-surface)
   cursor: pointer
+  transition: color 0.2s, border-color 0.2s
   &:hover
     color: var(--color-brand-turquoise)
+  &:disabled
+    opacity: 0.6
+    cursor: progress
+.copy--done
+  color: #6fce8c
+  border-color: rgba(111, 206, 140, 0.5)
+.copy--failed
+  color: #ff8f7a
+  border-color: rgba(255, 143, 122, 0.5)
+.copy-status
+  min-height: 1.3em
+  margin: 10px 0 0
+  color: var(--color-text-muted)
+  font-size: 0.8rem
 .error
   color: var(--color-text-muted)
   line-height: 1.6

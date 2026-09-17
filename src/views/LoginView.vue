@@ -37,6 +37,14 @@
           >
         </label>
 
+        <p
+          v-if="error"
+          class="login-error"
+          role="alert"
+        >
+          {{ error }}
+        </p>
+
         <button
           type="submit"
           :disabled="authStore.loggingIn"
@@ -54,6 +62,7 @@ import { useRoute, useRouter } from 'vue-router'
 import { useStore } from 'vuex'
 import BrandLogo from '@/components/system/BrandLogo.vue'
 import { useAuthStore } from '@/stores/auth'
+import { describeError } from '@/composables/useSaveState'
 
 const router = useRouter()
 const route = useRoute()
@@ -67,8 +76,11 @@ const credentials = reactive({
 })
 
 const host = ref(store.state.host || '')
+const error = ref('')
 
 async function submit () {
+  error.value = ''
+
   try {
     store.dispatch('updateHost', host.value)
     window.localStorage.setItem('oblecto.host', host.value)
@@ -83,12 +95,11 @@ async function submit () {
     }
 
     router.replace(String(route.query.redirect || '/'))
-  } catch (error) {
-    vm?.appContext.config.globalProperties.$notify({
-      title: 'Login failed',
-      text: 'Unable to authenticate with the current Oblecto host.',
-      type: 'error'
-    })
+  } catch (e) {
+    // Shown next to the form that failed rather than in a corner toast that
+    // vanishes before the user has finished reading it.
+    console.error('Login failed', e)
+    error.value = describeError(e, 'Could not sign in with these details')
   }
 }
 </script>
@@ -146,6 +157,16 @@ async function submit () {
     display: grid
     gap: 8px
     color: var(--color-text-muted)
+
+  .login-error
+    margin: 0
+    padding: 10px 12px
+    border-radius: var(--radius-sm)
+    background: rgba(217, 87, 87, 0.15)
+    border: 1px solid rgba(217, 87, 87, 0.4)
+    color: #ff8f7a
+    font-size: 0.85rem
+    line-height: 1.5
 
   button
     margin-top: 10px

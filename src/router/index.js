@@ -105,9 +105,10 @@ const router = createRouter({
       meta: { requiresAuth: true },
       children: [
         {
-          name: 'SettingsHome',
+          // Redirect rather than mount Maintenance twice, so /settings resolves
+          // to a named section the sidebar and page header can highlight.
           path: '',
-          component: Maintenance
+          redirect: { name: 'SettingsMaintenance' }
         },
         {
           name: 'SettingsMaintenance',

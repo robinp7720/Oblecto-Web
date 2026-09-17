@@ -36,24 +36,15 @@
         class="watched"
       >Watched</span>
     </div>
-    <button
-      class="episode-options"
-      type="button"
-      :aria-label="`Options for ${title}`"
-      @click="modal.show('EpisodeDialog', { episode })"
-    >
-      •••
-    </button>
   </article>
 </template>
 <script setup>
-import { computed, inject, ref, watch, onMounted, onBeforeUnmount } from 'vue'
+import { computed, ref, watch, onMounted, onBeforeUnmount } from 'vue'
 import { useStore } from 'vuex'
 import { getSocket } from '@/socket'
 import { imageUrl, formatRuntime, progressForItem } from '@/utils/media'
 const props = defineProps({ episode: { type: Object, required: true } })
 const store = useStore()
-const modal = inject('legacyModal')
 const imageFailed = ref(false)
 const progress = ref(0)
 const title = computed(() => props.episode.episodeName || `Episode ${props.episode.airedEpisodeNumber ?? ''}`)
@@ -71,7 +62,7 @@ onBeforeUnmount(() => socket?.off('client-episode-progress', updateProgress))
 <style scoped lang="sass">
 .episode-row
   display: grid
-  grid-template-columns: 24px 180px minmax(0, 1fr) 40px
+  grid-template-columns: 24px 180px minmax(0, 1fr)
   align-items: center
   gap: 24px
   padding: 24px 12px
@@ -143,17 +134,9 @@ onBeforeUnmount(() => socket?.off('client-episode-progress', updateProgress))
   color: var(--color-brand-turquoise)
   font-size: 0.75rem
   margin-top: 8px
-.episode-options
-  color: var(--color-text)
-  background: transparent
-  border: 1px solid var(--color-border)
-  border-radius: 50%
-  width: 36px
-  height: 36px
-  cursor: pointer
 @media (max-width: 760px)
   .episode-row
-    grid-template-columns: 110px minmax(0, 1fr) 32px
+    grid-template-columns: 110px minmax(0, 1fr)
     gap: 12px
     padding: 20px 0
   .episode-number
@@ -165,11 +148,8 @@ onBeforeUnmount(() => socket?.off('client-episode-progress', updateProgress))
       margin-top: 6px
   .episode-copy p
     -webkit-line-clamp: 2
-  .episode-options
-    width: 30px
-    height: 30px
 @media (max-width: 400px)
   .episode-row
-    grid-template-columns: 88px minmax(0, 1fr) 30px
+    grid-template-columns: 88px minmax(0, 1fr)
     gap: 8px
 </style>

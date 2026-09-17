@@ -64,9 +64,11 @@
           placeholder="Titles, movies, shows"
         >
       </form>
+      <ConnectionStatus />
       <details
         ref="accountMenu"
         class="account-menu"
+        @toggle="onMenuToggle"
         @keydown.esc="closeMenu"
       >
         <summary aria-label="Account and playback options">
@@ -82,12 +84,50 @@
           <RouterLink :to="{ name: 'SettingsMaintenance' }">
             Settings
           </RouterLink>
-          <button
-            type="button"
-            @click="openRemotePicker"
+
+          <!-- Choosing where to play is a pick from a short list, not a task
+               worth interrupting the page for, so the list lives in the menu
+               that was already open. -->
+          <div
+            class="menu-section"
+            role="group"
+            aria-label="Playback device"
           >
-            Playback device
-          </button>
+            <p class="menu-label">
+              Play on
+            </p>
+            <button
+              type="button"
+              class="device"
+              :class="{ 'device--active': playbackRemote === 'local' }"
+              @click="setRemote('local')"
+            >
+              This device
+            </button>
+            <button
+              v-for="remote in remotes"
+              :key="remote.clientId"
+              type="button"
+              class="device"
+              :class="{ 'device--active': playbackRemote === remote.clientId }"
+              @click="setRemote(remote.clientId)"
+            >
+              {{ remote.clientName || 'Unnamed device' }}
+            </button>
+            <p
+              v-if="remotesError"
+              class="menu-note"
+            >
+              {{ remotesError }}
+            </p>
+            <p
+              v-else-if="!remotes.length"
+              class="menu-note"
+            >
+              No other devices are connected.
+            </p>
+          </div>
+
           <button
             type="button"
             @click="logout"
@@ -112,18 +152,25 @@
 </template>
 
 <script setup>
-import { getCurrentInstance, inject, ref, watch } from 'vue'
+import { computed, getCurrentInstance, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
+import { useStore } from 'vuex'
 import BrandLogo from '@/components/system/BrandLogo.vue'
+import ConnectionStatus from '@/components/system/ConnectionStatus.vue'
+import oblectoClient from '@/oblectoClient'
 import { useAuthStore } from '@/stores/auth'
 
 const router = useRouter()
 const route = useRoute()
+const store = useStore()
 const authStore = useAuthStore()
-const modal = inject('legacyModal')
 const vm = getCurrentInstance()
 const accountMenu = ref(null)
 const searchText = ref(String(route.query.q || ''))
+const remotes = ref([])
+const remotesError = ref('')
+
+const playbackRemote = computed(() => store.state.playbackRemote)
 
 watch(() => route.query.q, value => { searchText.value = String(value || '') })
 watch(() => route.fullPath, closeMenu)
@@ -134,9 +181,24 @@ function closeMenu () {
 function submitSearch () {
   router.push({ name: 'Search', query: { q: searchText.value } })
 }
-function openRemotePicker () {
+// Devices are fetched when the menu opens, so the list is current without
+// polling while it is closed.
+async function onMenuToggle (event) {
+  if (!event.target.open) return
+
+  remotesError.value = ''
+
+  try {
+    remotes.value = await oblectoClient.remotes.getClients() || []
+  } catch (e) {
+    console.error('Failed to load playback devices', e)
+    remotes.value = []
+    remotesError.value = 'Could not load playback devices.'
+  }
+}
+function setRemote (clientId) {
+  store.commit('setPlaybackRemote', clientId)
   closeMenu()
-  modal.show('ChangeRemoteDialog')
 }
 async function logout () {
   vm?.appContext.config.globalProperties.$socket?.disconnect()
@@ -228,7 +290,11 @@ async function logout () {
   position: absolute
   right: 0
   top: 48px
-  width: 220px
+  // Capped to the viewport so the panel cannot run off the left edge on a
+  // narrow screen, where it was being clipped away entirely.
+  width: min(250px, calc(100vw - 40px))
+  max-height: min(70vh, 480px)
+  overflow-y: auto
   padding: 8px 0
   border: 1px solid #444
   background: #181818
@@ -245,6 +311,47 @@ async function logout () {
     cursor: pointer
     &:hover
       background: #333
+
+.menu-section
+  margin: 6px 0
+  padding: 6px 0
+  border-top: 1px solid #333
+  border-bottom: 1px solid #333
+
+.menu-label
+  margin: 0
+  padding: 6px 18px
+  color: var(--color-text-faint)
+  font-size: 0.65rem
+  font-weight: 700
+  letter-spacing: 0.14em
+  text-transform: uppercase
+
+.menu-note
+  margin: 0
+  padding: 6px 18px 10px
+  color: var(--color-text-faint)
+  font-size: 0.75rem
+  line-height: 1.5
+
+.device
+  display: flex
+  align-items: center
+  gap: 8px
+
+  &::before
+    content: ""
+    flex-shrink: 0
+    width: 6px
+    height: 6px
+    border-radius: 999px
+    background: transparent
+
+  &.device--active
+    font-weight: 700
+
+    &::before
+      background: var(--color-brand-turquoise)
 
 .content
   min-width: 0

@@ -2,15 +2,19 @@
   <div class="tag-input">
     <div class="tags-container">
       <div
-        v-for="(tag, index) in value"
-        :key="index"
+        v-for="tag in tags"
+        :key="tag"
         class="tag"
       >
         {{ tag }}
-        <span
+        <button
+          type="button"
           class="remove"
+          :aria-label="`Remove ${tag}`"
           @click="removeTag(tag)"
-        >×</span>
+        >
+          ×
+        </button>
       </div>
       <div
         v-if="availableOptions.length > 0"
@@ -42,39 +46,45 @@
 </template>
 
 <script>
+// This was still on the Vue 2 v-model contract (`value` + `input`). Under Vue 3
+// `v-model` passes `modelValue`, so `value` was always undefined and every tag
+// field threw on render — which is why the identifier and updater pickers on
+// Settings → Libraries came up empty.
 export default {
   name: 'TagInput',
   props: {
-    value: {
+    modelValue: {
       type: Array,
-      required: true
+      default: () => []
     },
     options: {
       type: Array,
       default: () => []
     }
   },
-  data() {
+  emits: ['update:modelValue'],
+  data () {
     return {
-      selectedOption: ""
+      selectedOption: ''
     }
   },
   computed: {
-    availableOptions() {
-      return this.options.filter(opt => !this.value.includes(opt))
+    tags () {
+      return Array.isArray(this.modelValue) ? this.modelValue : []
+    },
+    availableOptions () {
+      return this.options.filter(opt => !this.tags.includes(opt))
     }
   },
   methods: {
-    addTag() {
-      if (this.selectedOption) {
-        const newValue = [...this.value, this.selectedOption]
-        this.$emit('input', newValue)
-        this.selectedOption = ""
-      }
+    addTag () {
+      if (!this.selectedOption) return
+
+      this.$emit('update:modelValue', [...this.tags, this.selectedOption])
+      this.selectedOption = ''
     },
-    removeTag(tag) {
-      const newValue = this.value.filter(t => t !== tag)
-      this.$emit('input', newValue)
+    removeTag (tag) {
+      this.$emit('update:modelValue', this.tags.filter(t => t !== tag))
     }
   }
 }
@@ -117,6 +127,9 @@ $tag-bg: rgba(255, 255, 255, 0.08)
 
   .remove
     margin-left: 10px
+    padding: 0
+    border: 0
+    background: transparent
     cursor: pointer
     font-weight: bold
     color: $text-muted

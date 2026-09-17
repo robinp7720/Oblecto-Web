@@ -1,17 +1,5 @@
 <template>
   <div class="wrapper">
-    <div class="settings-card">
-      <h2 class="settings-section-title">
-        Seedbox Setup
-      </h2>
-      <p class="settings-description">
-        Configure remote seedboxes for automated downloads and media imports.
-      </p>
-      <p class="description settings-description settings-description-tight">
-        Each seedbox can be enabled individually, with its own import rules.
-      </p>
-    </div>
-
     <div
       v-if="status"
       class="settings-card"
@@ -20,12 +8,13 @@
         <h2 class="settings-title-plain">
           Import Status
         </h2>
-        <a
+        <button
+          type="button"
           class="btn"
           @click="refreshStatus"
         >
           <font-awesome-icon icon="sync" /> Refresh
-        </a>
+        </button>
       </div>
 
       <div class="resize-grid">
@@ -51,12 +40,29 @@
     </div>
 
     <div
-      v-if="activeImports.length > 0"
+      v-if="activeImports.length > 0 || importHistory.length > 0"
       class="settings-card"
     >
-      <h2 class="settings-section-title">
-        Active Transfers
-      </h2>
+      <div class="settings-header-row">
+        <h2 class="settings-title-plain">
+          Transfers
+        </h2>
+        <button
+          v-if="importHistory.length > 0"
+          type="button"
+          class="btn btn-secondary"
+          @click="clearImportHistory"
+        >
+          Clear finished
+        </button>
+      </div>
+
+      <p
+        v-if="activeImports.length === 0"
+        class="settings-description"
+      >
+        Nothing is transferring right now.
+      </p>
       <div class="transfers-list">
         <div
           v-for="importItem in activeImports"
@@ -76,12 +82,28 @@
           <div class="progress-bar-bg">
             <div
               class="progress-bar-fill"
-              :class="{ 'error': importItem.event === 'import_error' }"
               :style="{ width: (importItem.progress * 100) + '%' }"
             />
           </div>
         </div>
       </div>
+
+      <!-- Finished imports used to be announced with a toast and then lost.
+           They stay here for the session instead, where someone watching an
+           import is already looking. -->
+      <ul
+        v-if="importHistory.length > 0"
+        class="import-history"
+      >
+        <li
+          v-for="entry in importHistory"
+          :key="`${entry.origin}-${entry.finishedAt}`"
+          :class="entry.event === 'import_error' ? 'is-error' : 'is-done'"
+        >
+          <span class="history-origin">{{ entry.origin }}</span>
+          <span class="history-detail">{{ entry.event === 'import_error' ? entry.error || 'Import failed' : 'Imported' }}</span>
+        </li>
+      </ul>
     </div>
 
     <div class="settings-card">
@@ -111,19 +133,25 @@
           <label>Import Type</label>
           <div class="actions-group">
             <button
+              type="button"
               class="btn"
               @click="triggerImport('movies')"
             >
-              Import Movies
+              Import movies
             </button>
             <button
+              type="button"
               class="btn"
               @click="triggerImport('tvshows')"
             >
-              Import TV Shows
+              Import TV shows
             </button>
           </div>
         </div>
+      </div>
+
+      <div class="settings-card-actions">
+        <SaveState :state="importStatus" />
       </div>
     </div>
 
@@ -132,12 +160,13 @@
         <h2 class="settings-section-title">
           Configured Seedboxes
         </h2>
-        <a
+        <button
+          type="button"
           class="btn"
           @click="openDialog()"
         >
-          <font-awesome-icon icon="plus" /> New Seedbox
-        </a>
+          <font-awesome-icon icon="plus" /> New seedbox
+        </button>
       </div>
 
       <div class="settings-table-scroll">
@@ -181,24 +210,39 @@
               <td>{{ seedbox.mediaImport.seriesDirectory || '-' }}</td>
               <td>{{ seedbox.enabled ? 'Enabled' : 'Disabled' }}</td>
               <td class="actions">
-                <a
-                  title="Edit seedbox"
-                  @click="editSeedbox(index)"
+                <button
+                  type="button"
+                  title="Edit this seedbox"
+                  :aria-label="`Edit ${seedbox.name || 'seedbox'}`"
+                  @click="openDialog(index)"
                 >
                   <font-awesome-icon :icon="editIcon" />
-                </a>
-                <a
-                  title="Remove seedbox"
+                </button>
+                <button
+                  type="button"
+                  title="Remove this seedbox"
+                  :aria-label="`Remove ${seedbox.name || 'seedbox'}`"
                   @click="deleteSeedbox(index)"
                 >
                   <font-awesome-icon :icon="deleteIcon" />
-                </a>
+                </button>
               </td>
             </tr>
           </tbody>
         </table>
       </div>
+
+      <div class="settings-card-actions">
+        <SaveState :state="save" />
+      </div>
     </div>
+
+    <SeedboxDialog
+      :open="dialogIndex !== null"
+      :seedbox="dialogSeedbox"
+      @update:open="value => { if (!value) dialogIndex = null }"
+      @save="applySeedbox"
+    />
   </div>
 </template>
 
@@ -210,7 +254,11 @@
   import faSync from '@fortawesome/fontawesome-free-solid/faSync'
   import fontawesome from '@fortawesome/fontawesome'
   import oblectoClient from '@/oblectoClient'
-  import { mapGetters } from 'vuex'
+  import { mapActions, mapGetters } from 'vuex'
+  import SeedboxDialog from '@/components/modals/SeedboxDialog'
+  import SaveState from '@/components/system/SaveState.vue'
+  import { createSaveState } from '@/composables/useSaveState'
+  import { confirm } from '@/composables/useConfirm'
 
   fontawesome.library.add(faPlus, faTrash, faEdit, faSync)
 
@@ -235,17 +283,28 @@
   export default {
     name: 'SeedboxSettings',
     components: {
-      FontAwesomeIcon
+      FontAwesomeIcon,
+      SeedboxDialog,
+      SaveState
     },
     data () {
       return {
         seedboxes: [],
         importSource: 'all',
-        status: null
+        status: null,
+        // Index of the seedbox being edited, -1 for a new one, null when closed.
+        dialogIndex: null,
+        save: createSaveState(),
+        importStatus: createSaveState()
       }
     },
     computed: {
-      ...mapGetters('seedbox', ['activeImports']),
+      ...mapGetters('seedbox', ['activeImports', 'importHistory']),
+      dialogSeedbox () {
+        return this.dialogIndex === null || this.dialogIndex < 0
+          ? null
+          : this.seedboxes[this.dialogIndex]
+      },
       deleteIcon () {
         return faTrash
       },
@@ -257,6 +316,7 @@
       this.refresh()
     },
     methods: {
+      ...mapActions('seedbox', ['clearImportHistory']),
       async refresh () {
         try {
           const config = await oblectoClient.settings.getSection('seedboxes')
@@ -281,7 +341,7 @@
           this.refreshStatus()
         } catch (e) {
           console.error('Failed to load seedbox settings', e)
-          this.$notify({ type: 'error', title: 'Error', text: 'Failed to load seedbox settings' })
+          this.save.fail('Could not load seedbox settings')
         }
       },
       async refreshStatus () {
@@ -291,149 +351,108 @@
           console.error('Failed to get seedbox status', e)
         }
       },
-      async saveSettings () {
-        try {
-          await oblectoClient.settings.updateSection('seedboxes', this.seedboxes)
-          this.$notify({ type: 'success', title: 'Saved', text: 'Seedbox settings saved successfully' })
-        } catch (e) {
-          console.error('Failed to save seedbox settings', e)
-          this.$notify({ type: 'error', title: 'Error', text: 'Failed to save seedbox settings' })
-        }
+      async saveSettings (labels = {}) {
+        return this.save.run(
+          () => oblectoClient.settings.updateSection('seedboxes', this.seedboxes),
+          { error: 'Could not save seedbox settings', ...labels }
+        )
       },
-      openDialog (index = null) {
-        const seedbox = index !== null ? this.seedboxes[index] : null
-        this.$modal.show('SeedboxDialog', {
-          seedbox,
-          callback: async (newSeedbox) => {
-            if (index !== null) {
-              this.$set(this.seedboxes, index, newSeedbox)
-            } else {
-              this.seedboxes.push(newSeedbox)
-            }
-            await this.saveSettings()
-          }
+      openDialog (index = -1) {
+        this.dialogIndex = index
+      },
+      async applySeedbox (seedbox) {
+        const index = this.dialogIndex
+        const previous = this.seedboxes
+
+        // Vue 3 tracks array index writes directly; the old code called
+        // this.$set, which does not exist here, so editing always threw.
+        this.seedboxes = index >= 0
+          ? this.seedboxes.map((entry, i) => (i === index ? seedbox : entry))
+          : [...this.seedboxes, seedbox]
+
+        this.dialogIndex = null
+
+        const ok = await this.saveSettings({
+          busy: 'Saving…',
+          ok: index >= 0 ? 'Seedbox updated' : 'Seedbox added'
         })
-      },
-      editSeedbox (index) {
-        this.openDialog(index)
+
+        // Put the list back if the server refused it, so what is shown matches
+        // what is stored.
+        if (!ok) this.seedboxes = previous
       },
       async deleteSeedbox (index) {
         const seedbox = this.seedboxes[index]
-        if (!confirm(`Remove seedbox "${seedbox.name || seedbox.storageDriverOptions.host}"?`)) {
-          return
-        }
-        this.seedboxes.splice(index, 1)
-        await this.saveSettings()
+        const label = seedbox.name || seedbox.storageDriverOptions.host || 'this seedbox'
+
+        const confirmed = await confirm({
+          title: `Remove ${label}?`,
+          message: 'Oblecto stops connecting to this host. Files already imported stay in the library, and nothing on the seedbox is touched.',
+          confirmLabel: 'Remove seedbox',
+          destructive: true
+        })
+
+        if (!confirmed) return
+
+        const previous = this.seedboxes
+
+        this.seedboxes = this.seedboxes.filter((entry, i) => i !== index)
+
+        const ok = await this.saveSettings({ busy: 'Removing…', ok: `Removed ${label}` })
+
+        if (!ok) this.seedboxes = previous
       },
       async triggerImport (type) {
-        try {
-          await oblectoClient.system.triggerImport(this.importSource, type)
-          const sourceLabel = this.importSource === 'all' ? 'all seedboxes' : this.importSource
-          this.$notify({
-            group: 'system',
-            title: 'Import started',
-            text: `Importing ${type} from ${sourceLabel}.`,
-            type: 'success'
-          })
-        } catch (e) {
-          console.error('Failed to trigger import', e)
-          this.$notify({
-            group: 'system',
-            title: 'Error',
-            text: 'Failed to start seedbox import.',
-            type: 'error'
-          })
-        }
+        const sourceLabel = this.importSource === 'all' ? 'all seedboxes' : this.importSource
+
+        await this.importStatus.run(
+          () => oblectoClient.system.triggerImport(this.importSource, type),
+          {
+            busy: 'Starting…',
+            ok: `Import started from ${sourceLabel}. Progress appears under Transfers.`,
+            error: 'Could not start this import'
+          }
+        )
       }
     }
   }
 </script>
 
 <style scoped lang="sass">
-@use "@/assets/sass/settings.sass"
+.import-history
+  display: grid
+  gap: 8px
+  margin: 16px 0 0
+  padding: 0
+  list-style: none
 
-.setting-row
-  margin-bottom: 20px
+  li
+    display: flex
+    justify-content: space-between
+    gap: 12px
+    padding: 8px 12px
+    border-radius: var(--radius-sm)
+    background: rgba(255, 255, 255, 0.03)
+    font-size: 0.85rem
 
-.description
-  color: var(--color-text-muted)
-  font-size: 0.9em
-  margin-top: 5px
-  margin-left: 28px
+  .history-origin
+    min-width: 0
+    overflow: hidden
+    text-overflow: ellipsis
+    white-space: nowrap
 
-.resize-grid
-  display: flex
-  gap: 20px
-  margin-bottom: 10px
+  .history-detail
+    flex-shrink: 0
+    color: var(--color-text-muted)
 
-  .form-group
-    flex: 1
+  .is-done .history-detail
+    color: #6fce8c
+
+  .is-error .history-detail
+    color: #ff8f7a
 
 .import-grid
   align-items: flex-end
-
-.actions-group
-  display: flex
-  flex-wrap: wrap
-  gap: 10px
-
-  button
-    margin: 0 !important
-    display: inline-flex
-    align-items: center
-    gap: 8px
-
-.form-actions
-  display: flex
-  gap: 10px
-
-.checkbox-container
-  display: block
-  position: relative
-  padding-left: 30px
-  margin-bottom: 5px
-  cursor: pointer
-  font-size: 16px
-  user-select: none
-
-  input
-    position: absolute
-    opacity: 0
-    cursor: pointer
-    height: 0
-    width: 0
-
-  .checkmark
-    position: absolute
-    top: 2px
-    left: 0
-    height: 18px
-    width: 18px
-    background-color: rgba(255, 255, 255, 0.08)
-    border: 1px solid var(--color-border)
-    border-radius: 6px
-
-  &:hover input ~ .checkmark
-    background-color: rgba(255, 255, 255, 0.16)
-
-  input:checked ~ .checkmark
-    background-color: var(--color-accent)
-    border-color: var(--color-accent)
-
-  input:checked ~ .checkmark:after
-    display: block
-
-  .checkmark:after
-    content: ""
-    position: absolute
-    display: none
-    left: 6px
-    top: 2px
-    width: 3px
-    height: 8px
-    border: solid white
-    border-width: 0 2px 2px 0
-    transform: rotate(45deg)
 
 .value
   padding: 10px 0
