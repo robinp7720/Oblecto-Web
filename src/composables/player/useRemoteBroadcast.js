@@ -1,4 +1,4 @@
-import { onBeforeUnmount, ref, watch } from 'vue'
+import { computed, onBeforeUnmount, ref, watch } from 'vue'
 
 import { clearHandlers, registerHandlers } from '@/remote/receiver'
 import { reportState, startHeartbeat, stopHeartbeat } from '@/remote/transport'
@@ -26,13 +26,18 @@ export function useRemoteBroadcast (sources) {
     volumeSupported,
     nextEpisode,
     canSeek,
+    autoplayBlocked,
     controls
   } = sources
 
   // The browser refused to start playback and wants a gesture. Locally that is
   // obvious - you are looking at the screen. From another room it is invisible
   // unless we say so, which is why it is a first-class status.
-  const blocked = ref(false)
+  //
+  // It has two sources: the controller reports a refused autoplay when a remote
+  // `play` lands, and a refused `resume` is caught here.
+  const resumeBlocked = ref(false)
+  const blocked = computed(() => resumeBlocked.value || Boolean(autoplayBlocked?.value))
 
   function currentStatus () {
     if (!playing.value?.entity) return 'idle'
@@ -76,7 +81,7 @@ export function useRemoteBroadcast (sources) {
   async function resume () {
     const refusal = await controls.play()
 
-    blocked.value = refusal === 'NotAllowedError'
+    resumeBlocked.value = refusal === 'NotAllowedError'
 
     // Report at once: the controlling device pressed play and is waiting to
     // find out whether anything happened.
@@ -85,12 +90,12 @@ export function useRemoteBroadcast (sources) {
 
   registerHandlers({
     pause: () => {
-      blocked.value = false
+      resumeBlocked.value = false
       controls.pause()
     },
     resume,
     stop: () => {
-      blocked.value = false
+      resumeBlocked.value = false
       controls.stop()
     },
     seek: command => controls.seek(command.position),
@@ -107,7 +112,7 @@ export function useRemoteBroadcast (sources) {
     { immediate: true }
   )
 
-  watch(() => playing.value?.entity?.id, () => { blocked.value = false })
+  watch(() => playing.value?.entity?.id, () => { resumeBlocked.value = false })
 
   startHeartbeat(snapshot)
 

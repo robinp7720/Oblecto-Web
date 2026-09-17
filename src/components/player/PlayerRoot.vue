@@ -189,6 +189,8 @@ const nextEpisode = ref(null)
 const initialProgress = ref(0)
 const resumeAfterStreamChange = ref(true)
 const autoplaying = ref(false)
+// The browser refused to start playback and wants a gesture on this device.
+const autoplayBlocked = ref(false)
 
 let controller = null
 let resumeAfterScrub = false
@@ -341,6 +343,7 @@ const { reportProgress } = useRemoteBroadcast({
   volumeSupported: env.volumeSupported,
   nextEpisode,
   canSeek: computed(() => duration.value > 0),
+  autoplayBlocked,
   controls: {
     play: () => video.play(),
     pause: () => video.pause(),
@@ -613,6 +616,7 @@ function createController () {
     // The controller is the single writer of `paused`; transport actions call
     // the element directly, so there is no watcher to feed back into it.
     if (state.paused !== undefined) paused.value = state.paused
+    if (state.blocked !== undefined) autoplayBlocked.value = state.blocked
   }))
 }
 
