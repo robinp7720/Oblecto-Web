@@ -139,16 +139,16 @@ export const useMediaStore = defineStore('media', {
       const state = this.library[type]
       const client = type === 'movies' ? oblectoClient.movieLibrary : oblectoClient.seriesLibrary
 
-      await this.ensureLibraries(type)
-
       state.error = null
       state.loading = !append
       state.loadingMore = append
 
       try {
+        await this.ensureLibraries(type)
+
         const response = await client.browse(createBrowseParams(
           state.filters,
-          append ? state.pageInfo?.endCursor || null : null
+          append ? state.pageInfo?.nextCursor || null : null
         ))
 
         const nextItems = Array.isArray(response?.items) ? response.items : []

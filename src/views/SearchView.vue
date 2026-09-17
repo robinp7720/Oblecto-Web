@@ -3,15 +3,39 @@
     <section class="search-hero">
       <span class="eyebrow">Search</span>
       <h1>Find a title, episode, or series instantly.</h1>
-      <form class="search-form" @submit.prevent="submit">
-        <input v-model="query" type="search" placeholder="Search all media" />
-        <button type="submit">Search</button>
+      <form
+        class="search-form"
+        @submit.prevent="submit"
+      >
+        <input
+          v-model="query"
+          type="search"
+          placeholder="Search all media"
+        >
+        <button type="submit">
+          Search
+        </button>
       </form>
     </section>
 
-    <div v-if="searchStore.loading" class="state-card">Searching the catalog…</div>
-    <div v-else-if="searchStore.error" class="state-card">{{ searchStore.error }}</div>
-    <div v-else-if="!hasResults && normalizedQuery" class="state-card">No results found for “{{ normalizedQuery }}”.</div>
+    <div
+      v-if="searchStore.loading"
+      class="state-card"
+    >
+      Searching the catalog…
+    </div>
+    <div
+      v-else-if="searchStore.error"
+      class="state-card"
+    >
+      {{ searchStore.error }}
+    </div>
+    <div
+      v-else-if="!hasResults && normalizedQuery"
+      class="state-card"
+    >
+      No results found for “{{ normalizedQuery }}”.
+    </div>
 
     <MediaShelf
       v-if="searchStore.results.movies.length"

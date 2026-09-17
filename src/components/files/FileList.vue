@@ -5,16 +5,20 @@
       class="file-list"
     >
       <li
-        v-for="(FileIterator, index) in files"
+        v-for="FileIterator in files"
         :key="FileIterator.id"
         class="file-list-item"
       >
-        {{ FileIterator.name }} <span class="badge">{{ FileIterator.extension }}</span>
+        <span class="file-name">{{ FileIterator.name }}</span><span class="badge">{{ FileIterator.extension }}</span>
         <div class="file-item-right">
-          <span
+          <button
+            type="button"
             class="copy"
+            :aria-label="`Copy stream URL for ${FileIterator.name}`"
             @click="copyUrl(FileIterator.id)"
-          ><FontAwesomeIcon :icon="iconCopy" /></span>
+          >
+            <FontAwesomeIcon :icon="iconCopy" />
+          </button>
         </div>
       </li>
     </ul>
@@ -23,7 +27,7 @@
       v-if="files.length === 0"
       class="error"
     >
-      <span class="msg">No files linked</span>
+      <span class="msg">No playable files are linked to this title yet.</span>
     </div>
   </div>
 </template>
@@ -36,15 +40,15 @@ import oblectoClient from '@/oblectoClient'
 export default {
   name: 'FileList',
   components: { FontAwesomeIcon },
-  props: [ 'files' ],
+  props: { files: { type: Array, default: () => [] } },
   computed: {
     iconCopy: () => faCopy
   },
   methods: {
     getUrl: async function (fileId) {
-      let session = await oblectoClient.sessions.create(fileId, { noremux: true })
+      let session = await oblectoClient.sessions.create(fileId, { quality: 'original' })
 
-      return oblectoClient.sessions.getStreamUrl(session.sessionId)
+      return oblectoClient.sessions.mediaUrl(session.mediaUrl)
     },
     copyUrl: async function (fileId) {
       this.$modal.show('CopyText', { title: 'Copy URL', text: await this.getUrl(fileId) })
@@ -54,31 +58,40 @@ export default {
 </script>
 
 <style scoped lang="sass">
-.file-list-container
-  padding: 0 10px
-
 .file-list
-  background: var(--color-surface-card)
-  border: 1px solid var(--color-border)
-  box-shadow: var(--shadow-soft)
-
-  border-spacing: 0
-
   list-style: none
-
   width: 100%
-
-  border-radius: 14px
-  overflow: hidden
-
 .file-list-item
-  padding: 10px 30px
+  display: flex
+  align-items: center
+  gap: 12px
+  padding: 16px 0
+  border-bottom: 1px solid var(--color-border)
+.file-name
+  flex: 1
+  min-width: 0
+  overflow-wrap: anywhere
+  font-size: 0.875rem
+.badge
+  color: var(--color-brand-turquoise)
+  font-size: 0.7rem
+  text-transform: uppercase
+  border: 1px solid var(--color-border)
+  border-radius: 3px
+  padding: 4px 6px
+.copy
+  display: grid
+  place-items: center
+  width: 40px
+  height: 40px
+  border: 1px solid var(--color-border)
+  border-radius: 4px
   color: var(--color-text)
-
-.file-list-item:nth-child(even)
-  background-color: rgba(255, 255, 255, 0.04)
-
-.file-item-right
-  float: right
-  color: var(--color-text-faint)
+  background: var(--color-surface)
+  cursor: pointer
+  &:hover
+    color: var(--color-brand-turquoise)
+.error
+  color: var(--color-text-muted)
+  line-height: 1.6
 </style>

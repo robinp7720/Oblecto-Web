@@ -8,7 +8,11 @@
   >
     <path :d="iconDefinition" />
   </svg>
-  <span v-else class="fa-icon-fallback" aria-hidden="true">•</span>
+  <span
+    v-else
+    class="fa-icon-fallback"
+    aria-hidden="true"
+  >•</span>
 </template>
 
 <script>

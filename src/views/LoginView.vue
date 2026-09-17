@@ -2,30 +2,46 @@
   <section class="login-page">
     <div class="login-panel">
       <div class="panel-copy">
-        <span class="eyebrow">Oblecto</span>
-        <h1>Browse your library like a curated screening room.</h1>
+        <BrandLogo />
+        <h1>Your next great watch starts here.</h1>
         <p>
-          This refresh keeps the Oblecto backend intact while giving the web app a faster
-          discovery flow, cleaner routing, and a better playback handoff.
+          All your movies and TV shows, in one place. Sign in and pick up where you left off.
         </p>
       </div>
 
-      <form class="login-form" @submit.prevent="submit">
+      <form
+        class="login-form"
+        @submit.prevent="submit"
+      >
         <label>
           Host
-          <input v-model="host" type="text" />
+          <input
+            v-model="host"
+            type="text"
+          >
         </label>
         <label>
           Username
-          <input v-model="credentials.username" type="text" autocomplete="username" />
+          <input
+            v-model="credentials.username"
+            type="text"
+            autocomplete="username"
+          >
         </label>
         <label>
           Password
-          <input v-model="credentials.password" type="password" autocomplete="current-password" />
+          <input
+            v-model="credentials.password"
+            type="password"
+            autocomplete="current-password"
+          >
         </label>
 
-        <button type="submit" :disabled="authStore.loggingIn">
-          {{ authStore.loggingIn ? 'Signing In…' : 'Enter Oblecto' }}
+        <button
+          type="submit"
+          :disabled="authStore.loggingIn"
+        >
+          {{ authStore.loggingIn ? 'Signing In…' : 'Sign In' }}
         </button>
       </form>
     </div>
@@ -36,6 +52,7 @@
 import { getCurrentInstance, reactive, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useStore } from 'vuex'
+import BrandLogo from '@/components/system/BrandLogo.vue'
 import { useAuthStore } from '@/stores/auth'
 
 const router = useRouter()
@@ -89,8 +106,8 @@ async function submit () {
   grid-template-columns: minmax(0, 1.1fr) minmax(340px, 420px)
   gap: 28px
   padding: 34px
-  border-radius: 32px
-  background: rgba(28, 23, 26, 0.82)
+  border-radius: 8px
+  background: #181818
   border: 1px solid var(--color-border)
   box-shadow: var(--shadow-strong)
   backdrop-filter: blur(14px)
@@ -112,14 +129,16 @@ async function submit () {
 
 .eyebrow
   text-transform: uppercase
-  letter-spacing: 0.18em
-  color: var(--color-accent-strong)
+  letter-spacing: -0.06em
+  font-size: 2rem
+  font-weight: 900
+  color: var(--color-accent)
 
 .login-form
   display: grid
   gap: 14px
   padding: 24px
-  border-radius: 24px
+  border-radius: 4px
   background: rgba(255, 255, 255, 0.04)
   border: 1px solid rgba(255, 255, 255, 0.08)
 
@@ -131,14 +150,33 @@ async function submit () {
   button
     margin-top: 10px
     min-height: 50px
-    border-radius: 999px
+    border-radius: 4px
     border: none
-    background: linear-gradient(120deg, var(--color-accent), var(--color-accent-strong))
-    color: #1b1616
+    background: var(--color-accent)
+    color: #141414
     font-weight: 800
     cursor: pointer
 
 @media screen and (max-width: 900px)
   .login-panel
     grid-template-columns: 1fr
+</style>
+
+<style scoped lang="sass">
+@media (max-width: 600px)
+  .login-page
+    padding: 20px
+  .login-panel
+    padding: 0
+    border: 0
+    background: transparent
+    box-shadow: none
+  .panel-copy
+    padding: 0
+  .login-form
+    padding: 20px
+    min-width: 0
+    input
+      width: 100%
+      min-width: 0
 </style>

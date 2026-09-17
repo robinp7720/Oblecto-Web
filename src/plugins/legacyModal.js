@@ -72,7 +72,7 @@ export function createLegacyModalPlugin () {
 
   return {
     install (app) {
-      app.component('modal', LegacyModal)
+      app.component('Modal', LegacyModal)
       app.config.globalProperties.$modal = modalApi
       app.provide('legacyModal', modalApi)
     }

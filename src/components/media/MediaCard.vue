@@ -1,36 +1,75 @@
 <template>
-  <article class="media-card">
-    <RouterLink :to="detailsRoute" class="poster-link">
-      <div class="poster" :style="{ backgroundImage: backgroundImage }">
-        <div class="overlay">
-          <button
-            v-if="playable"
-            type="button"
-            class="hero-action"
-            @click.prevent="play"
-          >
-            Play
-          </button>
-          <span v-else class="hero-action secondary">Open</span>
-        </div>
-        <div v-if="progress > 0" class="progress">
-          <span :style="{ width: `${Math.min(progress, 1) * 100}%` }" />
-        </div>
+  <article
+    class="media-card"
+    :class="{ landscape }"
+  >
+    <div class="poster">
+      <RouterLink
+        :to="detailsRoute"
+        class="poster-link"
+        :aria-label="`More info about ${title}`"
+      >
+        <img
+          v-if="!imageFailed"
+          :src="artwork"
+          alt=""
+          loading="lazy"
+          @error="handleImageError"
+        >
+        <span
+          v-else
+          class="artwork-fallback"
+        >{{ title }}</span>
+        <span
+          v-if="landscape && !imageFailed"
+          class="artwork-title"
+        >{{ title }}</span>
+      </RouterLink>
+      <button
+        v-if="playable"
+        type="button"
+        class="play-button"
+        :aria-label="`Play ${title}`"
+        @click="play"
+      >
+        <span aria-hidden="true">▶</span>
+      </button>
+      <div
+        v-if="progress > 0"
+        class="progress"
+        role="progressbar"
+        :aria-label="`Watch progress for ${title}`"
+        :aria-valuenow="Math.round(Math.min(progress, 1) * 100)"
+        :aria-valuemin="0"
+        :aria-valuemax="100"
+      >
+        <span :style="{ width: `${Math.min(progress, 1) * 100}%` }" />
       </div>
-    </RouterLink>
+    </div>
     <div class="body">
-      <RouterLink :to="detailsRoute" class="title">{{ title }}</RouterLink>
-      <p v-if="subtitle" class="subtitle">{{ subtitle }}</p>
+      <RouterLink
+        :to="detailsRoute"
+        class="title"
+      >
+        {{ title }}
+      </RouterLink>
+      <p
+        v-if="subtitle"
+        class="subtitle"
+      >
+        {{ subtitle }}
+      </p>
     </div>
   </article>
 </template>
 
 <script setup>
-import { computed } from 'vue'
+import { computed, ref, watch } from 'vue'
 import { useStore } from 'vuex'
 import { titleForItem, subtitleForItem, imageUrl, progressForItem } from '@/utils/media'
 
 const props = defineProps({
+  landscape: { type: Boolean, default: false },
   item: {
     type: Object,
     required: true
@@ -47,12 +86,20 @@ const title = computed(() => titleForItem(props.type, props.item))
 const subtitle = computed(() => subtitleForItem(props.type, props.item))
 const progress = computed(() => progressForItem(props.type, props.item))
 const host = computed(() => store.state.host)
-const backgroundImage = computed(() => {
-  const variant = props.type === 'episode' ? 'banner' : 'poster'
-  const mediaType = props.type === 'series' ? 'series' : props.type
-  const url = imageUrl(host.value, mediaType, props.item.id, variant)
-  return `linear-gradient(180deg, rgba(10, 8, 10, 0.08), rgba(10, 8, 10, 0.5)), url(${url})`
+const imageFailed = ref(false)
+const posterFallback = ref(false)
+const artwork = computed(() => {
+  const variant = props.type === 'episode' ? 'banner' : props.landscape && !posterFallback.value ? 'fanart' : 'poster'
+  return imageUrl(host.value, props.type, props.item.id, variant)
 })
+watch(() => [props.item.id, props.type, props.landscape, host.value], () => {
+  imageFailed.value = false
+  posterFallback.value = false
+})
+function handleImageError () {
+  if (props.type === 'movie' && props.landscape && !posterFallback.value) posterFallback.value = true
+  else imageFailed.value = true
+}
 const detailsRoute = computed(() => {
   if (props.type === 'movie') {
     return { name: 'MovieInfo', params: { movieId: props.item.id } }
@@ -80,70 +127,99 @@ function play () {
 
 <style scoped lang="sass">
 .media-card
-  display: grid
-  gap: 12px
   min-width: 0
-
-.poster-link
-  display: block
-
+  display: grid
+  align-content: start
+  gap: 10px
 .poster
   position: relative
-  min-height: 270px
-  border-radius: 20px
+  aspect-ratio: 2 / 3
+  border-radius: 4px
   overflow: hidden
-  background-size: cover
-  background-position: center
-  border: 1px solid rgba(255, 255, 255, 0.08)
-  box-shadow: 0 24px 40px rgba(8, 6, 8, 0.35)
+  background: #252525
   transition: transform 0.2s ease, box-shadow 0.2s ease
-
-  &:hover
-    transform: translateY(-3px)
-    box-shadow: 0 28px 44px rgba(8, 6, 8, 0.42)
-
-.overlay
+  &:hover, &:focus-within
+    transform: translateY(-4px)
+    box-shadow: 0 8px 24px #0008
+    .play-button
+      opacity: 1
+.landscape .poster
+  aspect-ratio: 16 / 9
+.poster-link
+  display: block
+  height: 100%
+  img
+    display: block
+    width: 100%
+    height: 100%
+    object-fit: cover
+.artwork-title
   position: absolute
-  inset: auto 14px 14px 14px
+  inset: 35% 0 0
   display: flex
-  justify-content: flex-start
-
-.hero-action
-  border: 1px solid rgba(255, 255, 255, 0.12)
-  background: rgba(18, 15, 18, 0.72)
-  color: var(--color-text)
-  border-radius: 999px
-  padding: 10px 16px
+  align-items: flex-end
+  padding: 16px 60px 16px 16px
+  background: linear-gradient(transparent, #000c)
+  font-size: clamp(1rem, 1.5vw, 1.35rem)
+  font-weight: 800
+  letter-spacing: -0.03em
+  pointer-events: none
+.artwork-fallback
+  display: grid
+  place-items: center
+  height: 100%
+  padding: 24px
+  text-align: center
+  font-size: 1.3rem
+  font-weight: 700
+  background: linear-gradient(135deg, #353535, #202020)
+.play-button
+  position: absolute
+  right: 12px
+  bottom: 14px
+  display: grid
+  place-items: center
+  width: 38px
+  height: 38px
+  border: 0
+  border-radius: 50%
+  background: white
+  color: #141414
   cursor: pointer
-
-  &.secondary
-    display: inline-flex
-    align-items: center
-
+  opacity: 0
+  transition: opacity 0.2s
+  &:hover
+    background: #ddd
 .progress
   position: absolute
-  left: 0
-  right: 0
-  bottom: 0
+  inset: auto 0 0
   height: 4px
-  background: rgba(255, 255, 255, 0.1)
-
+  background: #666
+  pointer-events: none
   span
     display: block
     height: 100%
-    background: linear-gradient(90deg, var(--color-accent), var(--color-accent-strong))
-
+    background: var(--color-accent)
 .body
   min-width: 0
-
 .title
   display: block
-  font-weight: 700
-  color: var(--color-text)
-
+  font-weight: 600
+  font-size: 0.875rem
+  white-space: nowrap
+  overflow: hidden
+  text-overflow: ellipsis
+  &:hover
+    text-decoration: underline
 .subtitle
-  margin: 6px 0 0
-  color: var(--color-text-muted)
-  font-size: 0.92rem
+  margin: 5px 0 0
+  color: var(--color-text-faint)
+  font-size: 0.75rem
   line-height: 1.4
+  white-space: nowrap
+  overflow: hidden
+  text-overflow: ellipsis
+@media (hover: none)
+  .play-button
+    opacity: 1
 </style>

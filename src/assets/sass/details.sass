@@ -1,0 +1,58 @@
+.detail-page
+  .detail-body
+    padding: 0 var(--page-gutter)
+    display: grid
+    gap: 36px
+  .detail-section
+    scroll-margin-top: 130px
+    border-top: 1px solid var(--color-border)
+    padding-top: 28px
+    min-width: 0
+    h2
+      margin: 0 0 20px
+      font-size: 1.4rem
+      letter-spacing: -0.025em
+  .detail-button
+    display: inline-flex
+    align-items: center
+    justify-content: center
+    gap: 10px
+    min-height: 46px
+    padding: 12px 24px
+    border: 0
+    border-radius: 4px
+    background: var(--color-brand-coral)
+    color: #141414
+    font-size: 1rem
+    font-weight: 700
+    cursor: pointer
+    &:hover
+      background: var(--color-brand-orange)
+    &.secondary
+      border: 1px solid var(--color-border-strong)
+      background: rgba(40, 40, 40, 0.8)
+      color: var(--color-text)
+      &:hover
+        background: #383838
+  .detail-state
+    margin: 40px var(--page-gutter)
+    padding: 40px 0
+    color: var(--color-text-muted)
+    h1
+      color: var(--color-text)
+  .detail-notice
+    color: var(--color-text-muted)
+    line-height: 1.6
+  .detail-metadata
+    display: grid
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr))
+    gap: 24px
+    margin: 0
+    dt
+      font-size: 0.8rem
+      color: var(--color-text-faint)
+      margin-bottom: 8px
+    dd
+      margin: 0
+      line-height: 1.5
+      overflow-wrap: anywhere

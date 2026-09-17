@@ -23,11 +23,12 @@ const notificationsState = inject('notificationsState')
 <style scoped lang="sass">
 .notifications
   position: fixed
-  right: 20px
-  bottom: 20px
+  right: max(20px, var(--safe-right))
+  // Sits above the docked mini-player rather than behind it.
+  bottom: calc(20px + var(--safe-bottom) + var(--mini-player-reserve))
   display: grid
   gap: 10px
-  z-index: 40
+  z-index: var(--z-toast)
   width: min(380px, calc(100vw - 32px))
 
 .toast

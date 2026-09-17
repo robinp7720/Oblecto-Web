@@ -1,35 +1,87 @@
 <template>
   <div class="library">
     <section class="toolbar">
-      <div class="toolbar-copy">
-        <span class="eyebrow">{{ isMovieLibrary ? 'Movies' : 'Series' }}</span>
-        <h1>{{ isMovieLibrary ? 'Browse the film catalog.' : 'Browse the series catalog.' }}</h1>
+      <div class="toolbar-header">
+        <div class="toolbar-copy">
+          <span class="eyebrow">{{ isMovieLibrary ? 'Film Catalog' : 'Series Catalog' }}</span>
+          <h1>{{ isMovieLibrary ? 'Movies' : 'TV Shows' }}</h1>
+        </div>
       </div>
 
       <div class="filters">
-        <input v-model="query" type="search" placeholder="Filter by title" @change="applyFilters" />
-        <select v-model="filters.sort" @change="applyFilters">
-          <option v-for="option in sortOptions" :key="option.value" :value="option.value">{{ option.label }}</option>
+        <div class="search-box">
+          <input
+            v-model="query"
+            type="search"
+            placeholder="Filter titles..."
+            @change="applyFilters"
+          >
+        </div>
+        <select
+          v-model="filters.sort"
+          class="select-pill"
+          @change="applyFilters"
+        >
+          <option
+            v-for="option in sortOptions"
+            :key="option.value"
+            :value="option.value"
+          >
+            {{ option.label }}
+          </option>
         </select>
-        <select v-model="filters.order" @change="applyFilters">
-          <option value="desc">Descending</option>
-          <option value="asc">Ascending</option>
+        <select
+          v-model="filters.order"
+          class="select-pill"
+          @change="applyFilters"
+        >
+          <option value="desc">
+            Descending
+          </option>
+          <option value="asc">
+            Ascending
+          </option>
         </select>
-        <select v-model="filters.watched" @change="applyFilters">
-          <option value="all">All watch states</option>
-          <option value="watched">Watched</option>
-          <option value="unwatched">Unwatched</option>
-          <option value="inprogress">In progress</option>
+        <select
+          v-model="filters.watched"
+          class="select-pill"
+          @change="applyFilters"
+        >
+          <option value="all">
+            All watch states
+          </option>
+          <option value="watched">
+            Watched
+          </option>
+          <option value="unwatched">
+            Unwatched
+          </option>
+          <option value="inprogress">
+            In progress
+          </option>
         </select>
-        <select v-model="filters.libraryPath" @change="applyFilters">
-          <option value="">All libraries</option>
-          <option v-for="library in libraryState.libraries" :key="library.path || library" :value="library.path || library">
-            {{ library.path || library }}
+        <select
+          v-model="filters.libraryPath"
+          class="select-pill"
+          @change="applyFilters"
+        >
+          <option value="">
+            All libraries
+          </option>
+          <option
+            v-for="library in libraryState.libraries"
+            :key="library.path || library"
+            :value="library.path || library"
+          >
+            {{ library.name || library.path || library }}
           </option>
         </select>
       </div>
 
-      <div v-if="libraryState.facets.genres?.length" class="genre-list">
+      <div
+        v-if="libraryState.facets.genres?.length"
+        class="genre-list"
+      >
         <button
           v-for="genre in libraryState.facets.genres"
           :key="genre"
@@ -43,11 +95,30 @@
       </div>
     </section>
 
-    <div v-if="libraryState.loading" class="state-card">Loading {{ isMovieLibrary ? 'movies' : 'series' }}…</div>
-    <div v-else-if="libraryState.error" class="state-card">{{ libraryState.error }}</div>
-    <div v-else-if="!libraryState.items.length" class="state-card">No results match the current filter set.</div>
+    <div
+      v-if="libraryState.loading"
+      class="state-card"
+    >
+      <div class="spinner" />
+      <span>Loading {{ isMovieLibrary ? 'movies' : 'series' }}…</span>
+    </div>
+    <div
+      v-else-if="libraryState.error"
+      class="state-card error"
+    >
+      {{ libraryState.error }}
+    </div>
+    <div
+      v-else-if="!libraryState.items.length"
+      class="state-card"
+    >
+      No items match your filter criteria.
+    </div>
 
-    <section v-else class="results-grid">
+    <section
+      v-else
+      class="results-grid"
+    >
       <MediaCard
         v-for="item in libraryState.items"
         :key="`${mediaType}-${item.id}`"
@@ -182,71 +253,123 @@ watch(() => route.query, () => {
 <style scoped lang="sass">
 .library
   display: grid
-  gap: 24px
+  gap: 28px
 
 .toolbar
   display: grid
-  gap: 18px
-  padding: 22px
-  border-radius: 26px
-  background: rgba(30, 25, 28, 0.74)
-  border: 1px solid var(--color-border)
+  gap: 20px
+  padding: 0 0 24px
+  border-bottom: 1px solid var(--color-border)
 
 .toolbar-copy h1
-  margin: 6px 0 0
+  margin: 4px 0 0
   font-family: var(--font-display)
-  font-size: clamp(2rem, 4vw, 3.4rem)
+  font-size: clamp(2rem, 4vw, 3.2rem)
+  letter-spacing: -0.01em
 
 .eyebrow
   text-transform: uppercase
   letter-spacing: 0.18em
   color: var(--color-accent-strong)
+  font-size: 0.78rem
+  font-weight: 700
 
 .filters
   display: grid
-  grid-template-columns: minmax(220px, 1.2fr) repeat(4, minmax(0, 1fr))
+  grid-template-columns: minmax(220px, 1.4fr) repeat(4, minmax(0, 1fr))
   gap: 12px
+
+.select-pill
+  cursor: pointer
 
 .genre-list
   display: flex
   flex-wrap: wrap
-  gap: 10px
+  gap: 8px
 
 .genre-chip
   border: 1px solid var(--color-border)
-  background: rgba(255, 255, 255, 0.06)
-  color: var(--color-text)
+  background: rgba(255, 255, 255, 0.04)
+  color: var(--color-text-muted)
   border-radius: 999px
-  padding: 8px 14px
+  padding: 6px 14px
+  font-size: 0.85rem
+  font-weight: 600
   cursor: pointer
+  transition: all 0.2s ease
+
+  &:hover
+    background: rgba(255, 255, 255, 0.1)
+    color: var(--color-text)
 
   &.active
-    background: rgba(217, 129, 60, 0.18)
-    border-color: rgba(217, 129, 60, 0.5)
+    background: var(--color-accent-soft)
+    border-color: var(--color-accent)
     color: var(--color-accent-strong)
+    box-shadow: 0 2px 10px var(--color-accent-soft)
 
 .results-grid
   display: grid
-  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr))
-  gap: 20px
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr))
+  gap: 28px 16px
 
 .state-card
-  padding: 18px
-  border-radius: 20px
+  padding: 32px
+  border-radius: var(--radius-md)
   border: 1px solid var(--color-border)
-  background: rgba(30, 25, 28, 0.7)
+  background: var(--color-surface)
+  display: flex
+  align-items: center
+  gap: 16px
+  color: var(--color-text-muted)
+
+  &.error
+    border-color: rgba(239, 68, 68, 0.4)
+    color: #ef4444
+
+.spinner
+  width: 20px
+  height: 20px
+  border: 2px solid var(--color-border)
+  border-top-color: var(--color-accent)
+  border-radius: 50%
+  animation: spin 0.8s linear infinite
+
+@keyframes spin
+  to
+    transform: rotate(360deg)
 
 .load-more
   justify-self: center
   min-height: 48px
-  padding: 0 20px
+  padding: 0 28px
   border-radius: 999px
-  border: 1px solid var(--color-border)
+  border: 1px solid var(--color-border-strong)
   background: rgba(255, 255, 255, 0.08)
   color: var(--color-text)
+  font-weight: 700
   cursor: pointer
+  transition: all 0.2s ease
+
+  &:hover
+    background: rgba(255, 255, 255, 0.15)
+    border-color: var(--color-accent)
+    transform: translateY(-2px)
+
+  &:disabled
+    opacity: 0.5
+    cursor: not-allowed
 
 @media screen and (max-width: 980px)
   .filters
     grid-template-columns: 1fr
+</style>
+
+
+<style scoped lang="sass">
+@media (max-width: 480px)
+  .results-grid
+    grid-template-columns: repeat(2, minmax(0, 1fr))
+  .search-box input
+    width: 100%
 </style>

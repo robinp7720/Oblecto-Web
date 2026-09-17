@@ -3,16 +3,25 @@
     <LegacyModalMounts />
     <NotificationsToaster />
 
-    <RouterView v-if="authStore.ready" v-slot="{ Component }">
-      <transition name="fade" mode="out-in">
+    <RouterView
+      v-if="authStore.ready"
+      v-slot="{ Component }"
+    >
+      <transition
+        name="page-fade"
+        mode="out-in"
+      >
         <AppShell v-if="showShell">
           <component :is="Component" />
         </AppShell>
-        <component :is="Component" v-else />
+        <component
+          :is="Component"
+          v-else
+        />
       </transition>
     </RouterView>
 
-    <playBar v-if="showShell" />
+    <PlayerRoot v-if="showShell" />
   </div>
 </template>
 
@@ -21,7 +30,7 @@ import { computed, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import { useStore } from 'vuex'
 import AppShell from '@/layouts/AppShell.vue'
-import playBar from '@/components/playBar'
+import PlayerRoot from '@/components/player/PlayerRoot.vue'
 import { ScreenFormats } from '@/enums/ScreenFormats'
 import NotificationsToaster from '@/components/system/NotificationsToaster.vue'
 import LegacyModalMounts from '@/components/system/LegacyModalMounts.vue'
@@ -35,48 +44,102 @@ const showShell = computed(() => authStore.isAuthenticated && route.meta.layout 
 const playing = computed(() => store.state.playing)
 const playSizeFormat = computed(() => store.state.playSizeFormat)
 
+// Both immersive modes lock the page. FULLSCREEN was previously left out, so
+// the page scrolled behind the video whenever a gesture ran past the stage.
 watch([playing, playSizeFormat], () => {
-  if (playSizeFormat.value === ScreenFormats.LARGE && playing.value?.entity) {
-    document.body.style.overflow = 'hidden'
-    return
-  }
+  const immersive = playSizeFormat.value === ScreenFormats.LARGE ||
+    playSizeFormat.value === ScreenFormats.FULLSCREEN
 
-  document.body.style.overflow = 'auto'
+  const locked = immersive && Boolean(playing.value?.entity)
+
+  // Restore to '' rather than 'auto' so the stylesheet default wins back.
+  document.body.style.overflow = locked ? 'hidden' : ''
+  document.documentElement.style.overflow = locked ? 'hidden' : ''
 }, { immediate: true })
 </script>
 
 <style lang="sass">
   :root
-    --font-body: "Space Grotesk", "Work Sans", sans-serif
-    --font-display: "Fraunces", "Cormorant Garamond", serif
-    --color-bg-1: #6e605f
-    --color-bg-2: #4b4850
-    --color-bg-3: #1d262f
-    --color-surface: #3b3437
-    --color-surface-strong: #453d40
-    --color-surface-glass: rgba(36, 30, 33, 0.72)
-    --color-surface-card: rgba(45, 39, 43, 0.9)
-    --color-text: #f4f1ee
-    --color-text-muted: rgba(244, 241, 238, 0.72)
-    --color-text-faint: rgba(244, 241, 238, 0.55)
-    --color-accent: #d9813c
-    --color-accent-strong: #f2a154
-    --color-accent-soft: rgba(217, 129, 60, 0.35)
+    --font-body: Arial, Helvetica, system-ui, sans-serif
+    --font-display: Arial, Helvetica, system-ui, sans-serif
+    --color-bg-1: #141414
+    --color-bg-2: #141414
+    --color-bg-3: #141414
+    --color-surface: #1c1c1c
+    --color-surface-hover: #292929
+    --color-surface-strong: #262626
+    --color-surface-glass: rgba(20, 20, 20, 0.95)
+    --color-surface-card: #202020
+    --color-text: #f5f5f1
+    --color-text-muted: #bcbcbc
+    --color-text-faint: #999999
+    --color-brand-turquoise: #68e0dc
+    --color-brand-blue: #096f93
+    --color-brand-orange: #f15a24
+    --color-brand-coral: #ff734d
+    --color-accent: var(--color-brand-orange)
+    --color-accent-strong: var(--color-brand-coral)
+    --color-accent-soft: rgba(241, 90, 36, 0.18)
+    --color-accent-glow: rgba(241, 90, 36, 0.22)
     --color-border: rgba(255, 255, 255, 0.12)
-    --color-border-strong: rgba(255, 255, 255, 0.22)
-    --color-shadow: rgba(16, 12, 14, 0.6)
-    --color-shadow-soft: rgba(16, 12, 14, 0.35)
-    --radius-sm: 8px
-    --radius-md: 12px
-    --radius-lg: 18px
-    --shadow-soft: 0 12px 30px var(--color-shadow-soft)
-    --shadow-strong: 0 18px 40px var(--color-shadow)
+    --color-border-strong: rgba(255, 255, 255, 0.3)
+    --color-shadow: rgba(0, 0, 0, 0.7)
+    --color-shadow-soft: rgba(0, 0, 0, 0.4)
+    --radius-sm: 4px
+    --radius-md: 6px
+    --radius-lg: 8px
+    --shadow-soft: 0 8px 24px var(--color-shadow-soft)
+    --shadow-strong: 0 16px 48px var(--color-shadow)
+    --glass-blur: blur(16px)
+    --page-gutter: clamp(20px, 4vw, 80px)
+    --safe-top: env(safe-area-inset-top, 0px)
+    --safe-right: env(safe-area-inset-right, 0px)
+    --safe-bottom: env(safe-area-inset-bottom, 0px)
+    --safe-left: env(safe-area-inset-left, 0px)
+    --control-size: 44px
+    --control-size-lg: 64px
+    --color-scrim-strong: rgba(0, 0, 0, 0.85)
+    --color-scrim-soft: rgba(0, 0, 0, 0.35)
+    --player-scrim: linear-gradient(to top, rgba(0, 0, 0, 0.88) 0%, rgba(0, 0, 0, 0.5) 42%, rgba(0, 0, 0, 0) 100%)
+    --player-scrim-top: linear-gradient(to bottom, rgba(0, 0, 0, 0.7) 0%, rgba(0, 0, 0, 0) 100%)
+    /* Stacking order, in one place. .player-root owns a stacking context, so
+       every player child stays below 10 and only this scale decides layering. */
+    --z-toast: 40
+    --z-player-mini: 45
+    --z-header: 50
+    --z-player: 55
+    --z-modal: 60
+    --z-skip-link: 70
+    /* Raised by the player only while the mini-player is docked, so pages do not
+       reserve dead space when nothing is playing. */
+    --mini-player-reserve: 0px
+
+  *, *::before, *::after
+    box-sizing: border-box
 
   html, body
     font-family: var(--font-body)
     color: var(--color-text)
     background-color: var(--color-bg-3)
     letter-spacing: 0.01em
+    margin: 0
+    padding: 0
+    overflow-x: hidden
+
+  /* Custom sleek scrollbars */
+  ::-webkit-scrollbar
+    width: 8px
+    height: 8px
+
+  ::-webkit-scrollbar-track
+    background: rgba(10, 8, 10, 0.6)
+
+  ::-webkit-scrollbar-thumb
+    background: rgba(255, 255, 255, 0.15)
+    border-radius: 999px
+
+  ::-webkit-scrollbar-thumb:hover
+    background: var(--color-accent-soft)
 
   a
     color: inherit
@@ -86,59 +149,65 @@ watch([playing, playSizeFormat], () => {
     font-family: var(--font-body)
 
   input, select, textarea
-    background-color: rgba(255, 255, 255, 0.12)
-    border: 1px solid transparent
-    border-radius: 12px
+    background-color: rgba(255, 255, 255, 0.07)
+    border: 1px solid var(--color-border)
+    border-radius: var(--radius-sm)
     color: var(--color-text)
+    padding: 10px 14px
+    transition: all 0.2s ease
 
     &:focus
       outline: none
-      border-color: var(--color-accent-soft)
-      background-color: rgba(255, 255, 255, 0.18)
+      border-color: var(--color-accent)
+      box-shadow: 0 0 16px var(--color-accent-glow)
+      background-color: rgba(255, 255, 255, 0.12)
 
   .container
-    max-width: 1400px
+    max-width: 1480px
     margin: 0 auto
-    padding: 0 24px
+    padding: 0 28px
     width: 100%
 
   .system-notification
-    background: rgba(28, 23, 26, 0.95) !important
-    padding: 8px 12px
-    border: 1px solid var(--color-border)
-    border-radius: var(--radius-sm)
-    box-shadow: 0 10px 20px rgba(10, 8, 10, 0.35)
-    margin-bottom: 6px
+    background: #202020 !important
+    padding: 12px 16px
+    border: 1px solid var(--color-border-strong)
+    border-radius: var(--radius-md)
+    box-shadow: var(--shadow-strong)
+    margin-bottom: 8px
+    backdrop-filter: var(--glass-blur)
 
     .notification-title
-      font:
-        size: 0.85em
-        weight: 600
+      font-size: 0.9em
+      font-weight: 700
+      color: var(--color-accent-strong)
 
     .notification-content
-      font:
-        size: 0.95em
+      font-size: 0.95em
+      color: var(--color-text-muted)
 
   #app
-    background-image: radial-gradient(1200px 500px at 10% -10%, rgba(217, 129, 60, 0.18), transparent 60%), radial-gradient(900px 500px at 90% 0%, rgba(118, 141, 168, 0.18), transparent 60%), linear-gradient(180deg, var(--color-bg-1) 0%, var(--color-bg-2) 42%, var(--color-bg-3) 100%)
-    background-position: top
-    background-attachment: fixed
-    background-repeat: no-repeat
-    background-size: cover
-
-    padding: 20px 24px 120px
-
+    background: var(--color-bg-1)
     min-height: 100vh
-
     color: var(--color-text)
 
-    @media screen and (max-width: 700px)
-      padding: 16px 16px 120px
+  :focus-visible
+    outline: 2px solid white
+    outline-offset: 4px
+
+  select
+    color-scheme: dark
+
+  @media (prefers-reduced-motion: reduce)
+    *, *::before, *::after
+      animation-duration: 0.01ms !important
+      transition-duration: 0.01ms !important
+      scroll-behavior: auto !important
 
   .legacy-modal-shell
     position: fixed
     inset: 0
-    z-index: 60
+    z-index: var(--z-modal)
     display: grid
     place-items: center
     padding: 20px
@@ -146,19 +215,19 @@ watch([playing, playSizeFormat], () => {
   .legacy-modal-overlay
     position: fixed
     inset: 0
-    background: rgba(10, 8, 12, 0.6)
-    backdrop-filter: blur(6px)
+    background: rgba(8, 6, 8, 0.75)
+    backdrop-filter: blur(10px)
 
   .legacy-modal-box
     background: var(--color-surface-card) !important
     color: var(--color-text)
-    border: 1px solid var(--color-border) !important
+    border: 1px solid var(--color-border-strong) !important
     border-radius: var(--radius-lg) !important
     box-shadow: var(--shadow-strong) !important
+    backdrop-filter: var(--glass-blur)
     overflow: hidden
     width: min(760px, calc(100vw - 32px))
     max-height: calc(100vh - 40px)
-    overflow: auto
 
     h3
       font-family: var(--font-display)
@@ -168,35 +237,37 @@ watch([playing, playSizeFormat], () => {
       color: var(--color-text-muted)
 
     .container
-      padding: 20px
+      padding: 24px
 
     .body
       padding: 0
 
     .heading
-      margin: -20px -20px 16px
+      margin: -24px -24px 20px
 
     .heading h3
       margin: 0
-      padding: 18px 20px
+      padding: 20px 24px
 
     .footer
-      margin: 16px -20px -20px
-      padding: 12px 20px 16px
-      background: rgba(12, 10, 12, 0.28)
+      margin: 20px -24px -24px
+      padding: 16px 24px
+      background: rgba(12, 10, 12, 0.4)
       border-top: 1px solid var(--color-border)
-
-  @media screen and (max-height: 1200px)
-    #app
-      padding-top: 16px
 
   ul
     margin: 0
     padding: 0
 
-  .fade-enter-active, .fade-leave-active
-    transition: opacity .2s ease
+  /* Page Transition Animations */
+  .page-fade-enter-active, .page-fade-leave-active
+    transition: opacity 0.25s ease, transform 0.25s ease
 
-  .fade-enter-from, .fade-leave-to
+  .page-fade-enter-from
     opacity: 0
+    transform: translateY(8px)
+
+  .page-fade-leave-to
+    opacity: 0
+    transform: translateY(-8px)
 </style>

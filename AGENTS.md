@@ -15,12 +15,19 @@ How to run
 - Install: `npm install`
 - Dev server: `npm run dev` or `npm start`
 - Build: `npm run build` (outputs `dist/`)
-- Tests: `npm run test` (unit + e2e)
+- Tests: from the repo root, `npm run test:player:ui` drives the player UI and
+  `npm run test:playback:browser` covers PlaybackController.
 - Lint: `npm run lint`
 
 Config
 - When not running backend locally, update `config/dev.env.json` with the backend host.
 
 Notes
-- This project uses Vue 2 and an older webpack toolchain; keep changes compatible.
+- This project uses Vue 3 with Vite. Newer components are `<script setup>` with
+  scoped SASS; older ones are still Options API.
+- State is split: playback and legacy data live in Vuex (`src/store/`), auth and
+  newer features in Pinia (`src/stores/`).
+- The video player lives in `src/components/player/` with composables in
+  `src/composables/player/`. `src/playback/PlaybackController.js` owns sessions,
+  hls.js and error recovery; the components only render its state.
 - Built assets are consumed by the backend release (see root `npm run build:web`).

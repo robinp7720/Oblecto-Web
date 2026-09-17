@@ -2,26 +2,33 @@
   <div class="discover">
     <section class="intro">
       <span class="eyebrow">Discover</span>
-      <h1>Jump into the catalog by intent, not by raw list names.</h1>
+      <h1>Find your next great watch.</h1>
       <p>
-        The new IA separates curation from exhaustive library browsing. Use this page for
-        faster editorial entry points, then drop into the full movie or series library when
-        you want precision.
+        Fresh arrivals, popular movies, and shows worth settling in for.
       </p>
     </section>
 
     <section class="discover-cards">
-      <RouterLink class="discover-card" :to="{ name: 'Library', params: { mediaType: 'movies' }, query: { sort: 'popularity' } }">
+      <RouterLink
+        class="discover-card"
+        :to="{ name: 'Library', params: { mediaType: 'movies' }, query: { sort: 'popularity' } }"
+      >
         <strong>Popular Films</strong>
-        <span>Start with the most watched and most visible titles.</span>
+        <span>Explore the popular titles in your collection.</span>
       </RouterLink>
-      <RouterLink class="discover-card" :to="{ name: 'Library', params: { mediaType: 'movies' }, query: { sort: 'releaseDate' } }">
+      <RouterLink
+        class="discover-card"
+        :to="{ name: 'Library', params: { mediaType: 'movies' }, query: { sort: 'releaseDate' } }"
+      >
         <strong>Recent Releases</strong>
-        <span>Find the newest additions and latest release-year arrivals.</span>
+        <span>Catch up on the latest releases in your library.</span>
       </RouterLink>
-      <RouterLink class="discover-card" :to="{ name: 'Library', params: { mediaType: 'series' }, query: { sort: 'siteRating' } }">
+      <RouterLink
+        class="discover-card"
+        :to="{ name: 'Library', params: { mediaType: 'series' }, query: { sort: 'siteRating' } }"
+      >
         <strong>Rated Series</strong>
-        <span>Open highly rated shows and scan directly into episodes.</span>
+        <span>Discover your next favorite series.</span>
       </RouterLink>
     </section>
 
@@ -30,7 +37,7 @@
       :key="section.id"
       :title="section.title"
       :type="section.type"
-      :items="section.items.slice(0, 6)"
+      :items="section.items"
       eyebrow="Discover"
     />
   </div>
@@ -47,7 +54,7 @@ onMounted(() => {
   mediaStore.loadHome()
 })
 
-const discoverRails = computed(() => mediaStore.home.rails.slice(0, 4))
+const discoverRails = computed(() => mediaStore.home.rails.filter(section => ['recent-movies', 'recent-series', 'popular-movies', 'top-series'].includes(section.id)))
 </script>
 
 <style scoped lang="sass">
@@ -82,10 +89,12 @@ const discoverRails = computed(() => mediaStore.home.rails.slice(0, 4))
   display: grid
   gap: 10px
   padding: 24px
-  border-radius: 24px
-  background: rgba(30, 25, 28, 0.72)
+  border-radius: var(--radius-md)
+  background: var(--color-surface)
   border: 1px solid var(--color-border)
-  min-height: 180px
+  min-height: 140px
+  &:hover
+    background: var(--color-surface-hover)
 
   span
     color: var(--color-text-muted)

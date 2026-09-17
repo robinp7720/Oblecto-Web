@@ -23,7 +23,7 @@
           <div class="card-header">
             <div class="card-title">
               <font-awesome-icon icon="play-circle" />
-              <span>{{ getFileName(session.file.path) }}</span>
+              <span>File {{ session.file.id }}</span>
             </div>
             <span :class="['status-badge', session.state]">{{ session.state }}</span>
           </div>
@@ -37,13 +37,28 @@
               <span class="label">Output:</span>
               <span class="value">{{ session.output.format }} ({{ session.output.videoCodec }}/{{ session.output.audioCodec }})</span>
             </div>
-             <div class="info-row">
-              <span class="label">Seek Mode:</span>
-              <span class="value">{{ session.seekMode }}</span>
+            <div class="info-row">
+              <span class="label">Playback:</span>
+              <span class="value">{{ session.method }}</span>
             </div>
             <div class="info-row">
-              <span class="label">Destinations:</span>
-              <span class="value">{{ session.destinationCount }}</span>
+              <span class="label">Queued jobs:</span>
+              <span class="value">{{ session.queueDepth }}</span>
+            </div>
+            <div class="info-row">
+              <span class="label">Startup:</span><span class="value">{{ session.startupMs === null ? 'Preparing' : `${session.startupMs} ms` }}</span>
+            </div>
+            <div class="info-row">
+              <span class="label">Buffering:</span><span class="value">{{ session.bufferingReports }}</span>
+            </div>
+            <div class="info-row">
+              <span class="label">Encoding:</span><span class="value">{{ session.encodingSpeed ? `${session.encodingSpeed.toFixed(1)}×` : '—' }}</span>
+            </div>
+            <div
+              v-if="session.failure"
+              class="info-row"
+            >
+              <span class="label">Last error:</span><span class="value">{{ session.failure }}</span>
             </div>
           </div>
         </div>
@@ -52,7 +67,10 @@
           v-if="!sessions || sessions.length === 0"
           class="empty-state"
         >
-          <font-awesome-icon icon="film" class="empty-icon" />
+          <font-awesome-icon
+            icon="film"
+            class="empty-icon"
+          />
           <p>No active streaming sessions</p>
         </div>
       </div>
@@ -92,21 +110,38 @@
               <span class="value">{{ formatDate(client.connectedAt) }}</span>
             </div>
             
-            <div v-if="hasActivity(client)" class="activity-section">
-              <div class="divider"></div>
-              <div class="activity-title">Now Playing</div>
-              <div v-if="client.activity.movie.length > 0" class="activity-item">
+            <div
+              v-if="hasActivity(client)"
+              class="activity-section"
+            >
+              <div class="divider" />
+              <div class="activity-title">
+                Now Playing
+              </div>
+              <div
+                v-if="client.activity.movie.length > 0"
+                class="activity-item"
+              >
                 <font-awesome-icon icon="film" /> Movie (ID: {{ client.activity.movie[0].movieId }})
                 <div class="progress-bar">
-                  <div class="progress-fill" :style="{ width: (client.activity.movie[0].progress * 100) + '%' }"></div>
+                  <div
+                    class="progress-fill"
+                    :style="{ width: (client.activity.movie[0].progress * 100) + '%' }"
+                  />
                 </div>
               </div>
-               <div v-if="client.activity.series.length > 0" class="activity-item">
+              <div
+                v-if="client.activity.series.length > 0"
+                class="activity-item"
+              >
                 <font-awesome-icon icon="tv" /> Episode
               </div>
             </div>
-             <div v-else class="activity-section idle">
-               <span class="idle-text">Idle</span>
+            <div
+              v-else
+              class="activity-section idle"
+            >
+              <span class="idle-text">Idle</span>
             </div>
           </div>
         </div>
@@ -115,7 +150,10 @@
           v-if="!clients || clients.length === 0"
           class="empty-state"
         >
-          <font-awesome-icon icon="users" class="empty-icon" />
+          <font-awesome-icon
+            icon="users"
+            class="empty-icon"
+          />
           <p>No clients connected</p>
         </div>
       </div>
