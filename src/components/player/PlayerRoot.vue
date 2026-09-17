@@ -146,6 +146,7 @@ import { useMediaSessionBridge } from '@/composables/player/useMediaSessionBridg
 import { usePlayerEnvironment } from '@/composables/player/usePlayerEnvironment'
 import { usePlayerGestures } from '@/composables/player/usePlayerGestures'
 import { usePlayerHotkeys } from '@/composables/player/usePlayerHotkeys'
+import { useRemoteBroadcast } from '@/composables/player/useRemoteBroadcast'
 import { useVideoElement } from '@/composables/player/useVideoElement'
 
 const AUTOPLAY_TIME_LEFT_THRESHOLD = 5
@@ -188,6 +189,8 @@ const nextEpisode = ref(null)
 const initialProgress = ref(0)
 const resumeAfterStreamChange = ref(true)
 const autoplaying = ref(false)
+// The browser refused to start playback and wants a gesture on this device.
+const autoplayBlocked = ref(false)
 
 let controller = null
 let resumeAfterScrub = false
@@ -325,6 +328,35 @@ usePlayerHotkeys({
   rootRef: root
 })
 
+// Publishes what this player is doing to the user's other devices, and lets
+// them drive it. Everything it needs is already in scope, so it adds no
+// playback logic of its own.
+const { reportProgress } = useRemoteBroadcast({
+  playing,
+  paused,
+  loading,
+  playbackError,
+  currentTime: video.currentTime,
+  duration,
+  volume: video.volume,
+  muted: video.muted,
+  volumeSupported: env.volumeSupported,
+  nextEpisode,
+  canSeek: computed(() => duration.value > 0),
+  autoplayBlocked,
+  controls: {
+    play: () => video.play(),
+    pause: () => video.pause(),
+    stop: () => stopPlaying(),
+    seek: position => video.seekTo(position, duration.value),
+    setVolume: value => video.setVolume(value),
+    setMuted: value => {
+      if (video.muted.value !== value) video.toggleMute()
+    },
+    next: () => playNext()
+  }
+})
+
 function setMode (mode) {
   store.commit('setPlaySizeFormat', mode)
 }
@@ -422,6 +454,8 @@ function onTimeUpdate () {
   if (!hasPlayback.value) return
 
   updateLocalTracker()
+  // Throttled inside the transport, so this is one call per second on the wire.
+  reportProgress()
 
   if (autoplay.value && !autoplaying.value && duration.value > 0) {
     if (duration.value - video.currentTime.value <= AUTOPLAY_TIME_LEFT_THRESHOLD) {
@@ -545,7 +579,10 @@ function retry () {
 }
 
 function playNext () {
-  if (nextEpisode.value?.id) store.dispatch('playEpisode', nextEpisode.value.id)
+  // Explicitly local: `playEpisode` would route to whatever remote target this
+  // device has selected, so a device playing under remote control would fling
+  // its own next episode at a third device.
+  if (nextEpisode.value?.id) store.dispatch('playEpisodeLocal', nextEpisode.value.id)
 }
 
 function stopPlaying () {
@@ -579,6 +616,7 @@ function createController () {
     // The controller is the single writer of `paused`; transport actions call
     // the element directly, so there is no watcher to feed back into it.
     if (state.paused !== undefined) paused.value = state.paused
+    if (state.blocked !== undefined) autoplayBlocked.value = state.blocked
   }))
 }
 

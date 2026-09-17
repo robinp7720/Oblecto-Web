@@ -86,11 +86,14 @@ export default class PlaybackController {
     on('loadedmetadata', () => {
       if (generation !== this.generation) return
       video.currentTime = Math.min(this.session.position || 0, Number.isFinite(video.duration) ? video.duration : this.session.duration)
-      if (autoplay) video.play().catch(() => this.emit({ paused: true, loading: false }))
+      // `blocked` distinguishes "the browser refused to start" from "the user
+      // paused it". Locally they look the same; from another device driving
+      // this one they do not, and a refusal there needs saying out loud.
+      if (autoplay) video.play().catch(() => this.emit({ paused: true, loading: false, blocked: true }))
       else video.pause()
     })
     on('waiting', () => { this.emit({ loading: true }); this.report(true) })
-    on('playing', () => { this.autoplay = true; this.emit({ loading: false, paused: false, error: '' }) })
+    on('playing', () => { this.autoplay = true; this.emit({ loading: false, paused: false, error: '', blocked: false }) })
     on('pause', () => { this.autoplay = false; this.emit({ paused: true }); this.report() })
     on('seeked', () => this.report())
     on('ended', () => this.report())

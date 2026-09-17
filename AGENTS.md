@@ -30,4 +30,12 @@ Notes
 - The video player lives in `src/components/player/` with composables in
   `src/composables/player/`. `src/playback/PlaybackController.js` owns sessions,
   hls.js and error recovery; the components only render its state.
+- Remote play lives in `src/remote/`: `device.js` (this device's persisted id and
+  name), `state.js` (the device list and selected target), `transport.js` (the
+  only module that knows the socket event names) and `receiver.js` (executes
+  commands arriving from another device). `src/socket.js` authenticates in the
+  handshake, so it connects only once a token exists. The control surface is
+  `src/components/remote/RemoteControlBar.vue`, which drives the player's own
+  seek bar and volume components rather than duplicating them. Protocol
+  reference: `../docs/REALTIME_API.md`.
 - Built assets are consumed by the backend release (see root `npm run build:web`).

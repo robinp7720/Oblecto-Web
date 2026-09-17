@@ -99,33 +99,70 @@
             <button
               type="button"
               class="device"
-              :class="{ 'device--active': playbackRemote === 'local' }"
+              :class="{ 'device--active': targetDeviceId === 'local' }"
               @click="setRemote('local')"
             >
-              This device
+              <span class="device-copy">
+                <span class="device-name">This device</span>
+                <span class="device-note">{{ thisDeviceName }}</span>
+              </span>
             </button>
             <button
-              v-for="remote in remotes"
-              :key="remote.clientId"
+              v-for="device in targets"
+              :key="device.deviceId"
               type="button"
               class="device"
-              :class="{ 'device--active': playbackRemote === remote.clientId }"
-              @click="setRemote(remote.clientId)"
+              :class="{ 'device--active': targetDeviceId === device.deviceId }"
+              @click="setRemote(device.deviceId)"
             >
-              {{ remote.clientName || 'Unnamed device' }}
+              <span class="device-copy">
+                <span class="device-name">{{ device.name }}</span>
+                <!-- What it is doing right now, so the picker doubles as a
+                     status view and you can tell devices apart by more than
+                     their name. -->
+                <span class="device-note">{{ describeDevice(device) }}</span>
+              </span>
             </button>
             <p
-              v-if="remotesError"
+              v-if="remote.lastError"
               class="menu-note"
             >
-              {{ remotesError }}
+              {{ remote.lastError }}
             </p>
             <p
-              v-else-if="!remotes.length"
+              v-else-if="!targets.length"
               class="menu-note"
             >
               No other devices are connected.
             </p>
+            <!-- Renaming is inline rather than a dialog: the name is stored on
+                 this device, so there is nothing to confirm and nowhere else
+                 to go. -->
+            <form
+              v-if="renaming"
+              class="device-rename"
+              @submit.prevent="commitRename"
+            >
+              <input
+                ref="renameInput"
+                v-model="renameText"
+                type="text"
+                maxlength="64"
+                aria-label="Name for this device"
+                @keydown.esc.stop="renaming = false"
+              >
+              <button type="submit">
+                Save
+              </button>
+            </form>
+            <button
+              v-else
+              type="button"
+              class="device-rename-toggle"
+              @click="startRename"
+            >
+              Rename this device
+            </button>
           </div>
 
           <button
@@ -148,57 +185,82 @@
     <footer class="shell-footer">
       <span class="footer-brand">OBLECTO</span><span>Your library. Your next great watch.</span>
     </footer>
+    <!-- Sits where the local mini-player would, because it is the same job:
+         what is playing, and the controls for it. -->
+    <RemoteControlBar />
   </div>
 </template>
 
 <script setup>
-import { computed, getCurrentInstance, ref, watch } from 'vue'
+import { computed, getCurrentInstance, nextTick, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { useStore } from 'vuex'
 import BrandLogo from '@/components/system/BrandLogo.vue'
 import ConnectionStatus from '@/components/system/ConnectionStatus.vue'
-import oblectoClient from '@/oblectoClient'
+import RemoteControlBar from '@/components/remote/RemoteControlBar.vue'
 import { useAuthStore } from '@/stores/auth'
+import { getDeviceName, setDeviceName } from '@/remote/device'
+import { playbackTargets, remote, setTarget } from '@/remote/state'
+import { getSocket } from '@/socket'
 
 const router = useRouter()
 const route = useRoute()
-const store = useStore()
 const authStore = useAuthStore()
 const vm = getCurrentInstance()
 const accountMenu = ref(null)
 const searchText = ref(String(route.query.q || ''))
-const remotes = ref([])
-const remotesError = ref('')
+const renaming = ref(false)
+const renameText = ref('')
+const renameInput = ref(null)
+const thisDeviceName = ref(getDeviceName())
 
-const playbackRemote = computed(() => store.state.playbackRemote)
+// The server pushes this list whenever anything changes, so the menu is
+// already current when it opens and there is nothing to fetch.
+const targets = playbackTargets
+const targetDeviceId = computed(() => remote.targetDeviceId)
 
 watch(() => route.query.q, value => { searchText.value = String(value || '') })
 watch(() => route.fullPath, closeMenu)
 
 function closeMenu () {
   if (accountMenu.value) accountMenu.value.open = false
+  renaming.value = false
 }
 function submitSearch () {
   router.push({ name: 'Search', query: { q: searchText.value } })
 }
-// Devices are fetched when the menu opens, so the list is current without
-// polling while it is closed.
-async function onMenuToggle (event) {
-  if (!event.target.open) return
-
-  remotesError.value = ''
-
-  try {
-    remotes.value = await oblectoClient.remotes.getClients() || []
-  } catch (e) {
-    console.error('Failed to load playback devices', e)
-    remotes.value = []
-    remotesError.value = 'Could not load playback devices.'
-  }
+function onMenuToggle (event) {
+  if (!event.target.open) renaming.value = false
 }
-function setRemote (clientId) {
-  store.commit('setPlaybackRemote', clientId)
+function describeDevice (device) {
+  const state = device.state
+
+  if (!state || state.status === 'idle' || !state.media) return 'Idle'
+  if (state.status === 'blocked') return 'Waiting to be started on that device'
+  if (state.status === 'error') return state.error || 'Playback failed'
+
+  const title = state.media.title || 'Something'
+
+  return state.status === 'paused' ? `Paused — ${title}` : `Playing — ${title}`
+}
+function setRemote (deviceId) {
+  setTarget(deviceId)
   closeMenu()
+}
+async function startRename () {
+  renameText.value = thisDeviceName.value
+  renaming.value = true
+  await nextTick()
+  renameInput.value?.focus()
+}
+function commitRename () {
+  thisDeviceName.value = setDeviceName(renameText.value)
+  renaming.value = false
+
+  // Reconnect so the server picks the new name up from the handshake; without
+  // it the name would only change on the next reload.
+  const socket = getSocket()
+
+  if (socket) socket.disconnect().connect()
 }
 async function logout () {
   vm?.appContext.config.globalProperties.$socket?.disconnect()
@@ -336,22 +398,66 @@ async function logout () {
 
 .device
   display: flex
-  align-items: center
+  align-items: flex-start
   gap: 8px
 
   &::before
     content: ""
     flex-shrink: 0
+    margin-top: 6px
     width: 6px
     height: 6px
     border-radius: 999px
     background: transparent
 
   &.device--active
-    font-weight: 700
+    .device-name
+      font-weight: 700
 
     &::before
       background: var(--color-brand-turquoise)
+
+.device-copy
+  display: flex
+  flex-direction: column
+  gap: 2px
+  min-width: 0
+
+.device-name
+  overflow: hidden
+  text-overflow: ellipsis
+  white-space: nowrap
+
+.device-note
+  color: var(--color-text-faint)
+  font-size: 0.7rem
+  overflow: hidden
+  text-overflow: ellipsis
+  white-space: nowrap
+
+.device-rename-toggle
+  color: var(--color-text-faint) !important
+  font-size: 0.75rem !important
+
+.device-rename
+  display: flex
+  gap: 6px
+  padding: 8px 18px
+
+  input
+    flex: 1
+    min-width: 0
+    padding: 6px 8px
+    border: 1px solid #555
+    background: #101010
+    color: white
+    font-size: 0.8rem
+
+  button
+    width: auto !important
+    padding: 6px 10px !important
+    border: 1px solid #555 !important
+    font-size: 0.75rem !important
 
 .content
   min-width: 0
