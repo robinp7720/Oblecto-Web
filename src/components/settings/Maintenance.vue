@@ -101,6 +101,12 @@
         </button>
       </div>
     </div>
+
+    <!-- One status line for the page: whichever job was last asked for, the
+         answer appears in the same place. -->
+    <div class="settings-card maintenance-status">
+      <SaveState :state="status" />
+    </div>
   </div>
 </template>
 
@@ -113,55 +119,59 @@
   import faImage from '@fortawesome/fontawesome-free-solid/faImage'
   import fontawesome from '@fortawesome/fontawesome'
   import oblectoClient from '@/oblectoClient'
+  import SaveState from '@/components/system/SaveState.vue'
+  import { createSaveState } from '@/composables/useSaveState'
 
   fontawesome.library.add(faSync, faTv, faFilm, faBroom, faImage)
+
+  const LABELS = {
+    all: 'Full',
+    series: 'Series',
+    movies: 'Movie',
+    episodes: 'Episode',
+    files: 'File'
+  }
 
   export default {
     name: 'Maintenance',
     components: {
-      FontAwesomeIcon
+      FontAwesomeIcon,
+      SaveState
+    },
+    data () {
+      return {
+        status: createSaveState()
+      }
     },
     methods: {
-      async triggerMaintenance (action, target) {
-        await oblectoClient.system.triggerMaintenance(action, target)
-        this.$notify({
-          group: 'system',
-          title: 'Maintenance task started',
-          text: `Action: ${action}, Target: ${target}`,
-          type: 'success'
-        })
+      // These jobs run on the server and report progress over the socket; all
+      // the page can honestly say is that the request was accepted.
+      async triggerMaintenance (action, target, label) {
+        await this.status.run(
+          () => oblectoClient.system.triggerMaintenance(action, target),
+          {
+            busy: 'Starting…',
+            ok: `${label} started. It runs in the background.`,
+            error: `Could not start ${label.toLowerCase()}`
+          }
+        )
       },
       async DownloadTVShowArt () {
-        await this.triggerMaintenance('update_artwork', 'series')
+        await this.triggerMaintenance('update_artwork', 'series', 'TV artwork download')
       },
 
       async DownloadMovieArt () {
-        await this.triggerMaintenance('update_artwork', 'movies')
+        await this.triggerMaintenance('update_artwork', 'movies', 'Movie artwork download')
       },
       async index (type) {
-        await this.triggerMaintenance('scan', type)
+        await this.triggerMaintenance('scan', type, `${LABELS[type]} scan`)
       },
       async clean (type) {
-        await this.triggerMaintenance('clean', type)
+        await this.triggerMaintenance('clean', type, `${LABELS[type]} cleanup`)
       },
       async update (type) {
-        await this.triggerMaintenance('update_metadata', type)
+        await this.triggerMaintenance('update_metadata', type, `${LABELS[type]} metadata update`)
       }
     }
   }
 </script>
-
-<style scoped lang="sass">
-@use "@/assets/sass/settings.sass"
-
-.actions-group
-  display: flex
-  flex-wrap: wrap
-  gap: 10px
-
-  button
-    margin: 0 !important
-    display: flex
-    align-items: center
-    gap: 8px
-</style>

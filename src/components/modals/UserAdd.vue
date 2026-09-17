@@ -1,166 +1,118 @@
 <template>
-  <modal
-    name="UserAdd"
-    height="auto"
-    @before-open="beforeOpen"
+  <AppDialog
+    :open="open"
+    title="Add user"
+    subtitle="Creates an account that can sign in to this server."
+    size="md"
+    @update:open="$emit('update:open', $event)"
+    @submit="addUser"
   >
-    <div class="container">
-      <div class="heading">
-        <h3>Add user</h3>
-      </div>
-      <div class="body">
-        <label for="name">Name:</label>
+    <div class="form-grid">
+      <div
+        v-for="field in fields"
+        :key="field.key"
+        class="form-group"
+        :class="{ 'is-invalid': Boolean(errors[field.key]) }"
+      >
+        <label :for="`user-${field.key}`">{{ field.label }}</label>
         <input
-          id="name"
-          v-model="name"
-          type="text"
-          :class="{invalid: attempted && name === ''}"
+          :id="`user-${field.key}`"
+          v-model.trim="form[field.key]"
+          :type="field.type"
+          :autocomplete="field.autocomplete"
+          :aria-describedby="errors[field.key] ? `user-${field.key}-error` : undefined"
         >
-        <label for="username">Username:</label>
-        <input
-          id="username"
-          v-model="username"
-          type="text"
-          :class="{invalid: attempted && username === ''}"
+        <p
+          v-if="errors[field.key]"
+          :id="`user-${field.key}-error`"
+          class="form-hint form-error"
         >
-        <label for="email">Email:</label>
-        <input
-          id="email"
-          v-model="email"
-          type="text"
-          :class="{invalid: attempted && email === ''}"
-        >
-        <label for="password">Password:</label>
-        <input
-          id="password"
-          v-model="password"
-          type="password"
-          :class="{invalid: attempted && password === ''}"
-        >
-      </div>
-      <div class="footer">
-        <button
-          class="success"
-          @click="addUser"
-        >
-          Add user
-        </button>
+          {{ errors[field.key] }}
+        </p>
       </div>
     </div>
-  </modal>
+
+    <template #status>
+      <SaveState :state="save" />
+    </template>
+
+    <template #footer>
+      <button
+        type="button"
+        class="btn btn-secondary"
+        @click="$emit('update:open', false)"
+      >
+        Cancel
+      </button>
+      <button
+        type="submit"
+        class="btn btn-primary"
+        :disabled="save.status === 'busy'"
+      >
+        Add user
+      </button>
+    </template>
+  </AppDialog>
 </template>
 
-<script>
-  import oblectoClient from '@/oblectoClient'
+<script setup>
+import { reactive, watch } from 'vue'
+import AppDialog from '@/components/system/AppDialog.vue'
+import SaveState from '@/components/system/SaveState.vue'
+import { createSaveState } from '@/composables/useSaveState'
+import oblectoClient from '@/oblectoClient'
 
-  export default {
-    name: 'UserAdd',
-    data () {
-      return {
-        name: '',
-        username: '',
-        email: '',
-        password: '',
-        attempted: false
-      }
-    },
-    methods: {
-      beforeOpen (event) {
-        this.attempted = false
-      },
-      async addUser () {
-        this.attempted = true
-        if (!this.name || !this.username || !this.email || !this.password) {
-          this.$notify({
-            group: 'system',
-            title: 'Missing fields',
-            text: 'Please fill out all fields',
-            type: 'error'
-          })
-          return
-        }
-        try {
-          await oblectoClient.userManager.createUser(this.username, this.password, this.name, this.email)
+const props = defineProps({
+  open: { type: Boolean, default: false }
+})
 
-          this.$notify({
-            group: 'system',
-            title: 'User has been created successfully',
-            text: 'You can now login with the username: ' + this.name,
-            type: 'success'
-          })
-        } catch (e) {
-          this.$notify({
-            group: 'system',
-            title: 'User could not be created',
-            text: 'Maybe not all fields are filled?',
-            type: 'error'
-          })
-        }
-      }
+const emit = defineEmits(['update:open', 'created'])
+
+const fields = [
+  { key: 'name', label: 'Name', type: 'text', autocomplete: 'name' },
+  { key: 'username', label: 'Username', type: 'text', autocomplete: 'off' },
+  { key: 'email', label: 'Email', type: 'email', autocomplete: 'email' },
+  { key: 'password', label: 'Password', type: 'password', autocomplete: 'new-password' }
+]
+
+const save = createSaveState()
+const form = reactive({ name: '', username: '', email: '', password: '' })
+const errors = reactive({})
+
+watch(() => props.open, open => {
+  if (!open) return
+
+  fields.forEach(field => {
+    form[field.key] = ''
+    delete errors[field.key]
+  })
+  save.reset()
+})
+
+async function addUser () {
+  // Validate per field so the message lands on the input that is wrong,
+  // instead of a single "please fill out all fields" toast.
+  let valid = true
+
+  fields.forEach(field => {
+    if (form[field.key]) {
+      delete errors[field.key]
+    } else {
+      errors[field.key] = `${field.label} is required.`
+      valid = false
     }
-  }
+  })
+
+  if (!valid) return
+
+  const ok = await save.run(
+    () => oblectoClient.userManager.createUser(form.username, form.password, form.name, form.email),
+    { busy: 'Creating…', ok: 'User created', error: 'Could not create this user' }
+  )
+
+  if (!ok) return
+
+  emit('created')
+  emit('update:open', false)
+}
 </script>
-
-<style scoped lang="sass">
-
-  .body
-    padding: 10px
-
-  h3
-    width: 100%
-    color: var(--color-text)
-    margin: 0
-    margin-bottom: 10px
-    padding: 20px
-
-    background-color: rgba(255, 255, 255, 0.06)
-
-    box-shadow: var(--shadow-soft)
-
-  label
-    display: block
-    margin: 5px
-    margin-left: 0
-
-  input
-    margin-bottom: 12px
-    border-radius: 12px
-    padding: 12px 14px
-    width: 100%
-    border: 1px solid transparent
-    background-color: rgba(255, 255, 255, 0.12)
-    color: var(--color-text)
-    transition: border-color 0.2s, background-color 0.2s
-    &:focus
-      outline: none
-      border-color: var(--color-accent-soft)
-      background-color: rgba(255, 255, 255, 0.18)
-  .invalid
-    border-color: var(--color-accent-soft)
-
-  .footer
-    background-color: rgba(255, 255, 255, 0.06)
-
-    box-shadow: var(--shadow-soft)
-    padding: 10px
-
-    overflow: hidden
-
-    button
-      float: right
-      background: linear-gradient(120deg, var(--color-accent), var(--color-accent-strong))
-      border: none
-      color: #1b1616
-      padding: 10px 22px
-      border-radius: 999px
-      font-weight: 700
-      letter-spacing: 0.04em
-      cursor: pointer
-      box-shadow: 0 12px 20px rgba(12, 10, 12, 0.35)
-      transition: transform 0.2s, box-shadow 0.2s
-      &:hover
-        transform: translateY(-1px)
-        box-shadow: 0 16px 26px rgba(12, 10, 12, 0.45)
-
-
-</style>

@@ -6,12 +6,13 @@
         <h2 class="settings-title-plain">
           Movie Sets
         </h2>
-        <a
+        <button
+          type="button"
           class="btn"
-          @click="openModal('movie')"
+          @click="openDialog('movie')"
         >
-          <font-awesome-icon icon="plus" /> New Movie Set
-        </a>
+          <font-awesome-icon icon="plus" /> New movie set
+        </button>
       </div>
       <div class="settings-table-scroll">
         <table class="settings-table">
@@ -46,16 +47,22 @@
               <td>{{ set.setName }}</td>
               <td>{{ set.overview || '-' }}</td>
               <td class="actions">
-                <a
-                  title="Delete set"
-                  @click="deleteSet(set.id, 'movie')"
+                <button
+                  type="button"
+                  title="Delete this set"
+                  :aria-label="`Delete ${set.setName}`"
+                  @click="deleteSet(set, 'movie')"
                 >
                   <font-awesome-icon :icon="deleteIcon" />
-                </a>
+                </button>
               </td>
             </tr>
           </tbody>
         </table>
+      </div>
+
+      <div class="settings-card-actions">
+        <SaveState :state="status" />
       </div>
     </div>
 
@@ -65,12 +72,13 @@
         <h2 class="settings-title-plain">
           TV Show Sets
         </h2>
-        <a
+        <button
+          type="button"
           class="btn"
-          @click="openModal('series')"
+          @click="openDialog('series')"
         >
-          <font-awesome-icon icon="plus" /> New TV Show Set
-        </a>
+          <font-awesome-icon icon="plus" /> New TV show set
+        </button>
       </div>
       <div class="settings-table-scroll">
         <table class="settings-table">
@@ -105,65 +113,97 @@
               <td>{{ set.setName }}</td>
               <td>{{ set.overview || '-' }}</td>
               <td class="actions">
-                <a
-                  title="Delete set"
-                  @click="deleteSet(set.id, 'series')"
+                <button
+                  type="button"
+                  title="Delete this set"
+                  :aria-label="`Delete ${set.setName}`"
+                  @click="deleteSet(set, 'series')"
                 >
                   <font-awesome-icon :icon="deleteIcon" />
-                </a>
+                </button>
               </td>
             </tr>
           </tbody>
         </table>
       </div>
-    </div>
 
-    <!-- Simple Modal for creating sets -->
-    <div
-      v-if="showModal"
-      class="modal-overlay"
-      @click.self="closeModal"
-    >
-      <div class="modal-content settings-card">
-        <h3>New {{ modalType === 'movie' ? 'Movie' : 'TV Show' }} Set</h3>
-        <div class="form-group">
-          <label>Name</label>
-          <input
-            v-model="newSet.name"
-            type="text"
-            placeholder="Collection Name"
-          >
-        </div>
-        <div class="form-group">
-          <label>Overview</label>
-          <input
-            v-model="newSet.overview"
-            type="text"
-            placeholder="Description"
-          >
-        </div>
-        <div class="form-group">
-          <label class="checkbox-container">
-            Public
-            <input
-              v-model="newSet.public"
-              type="checkbox"
-            >
-            <span class="checkmark" />
-          </label>
-        </div>
-        <div class="settings-inline-actions">
-          <a
-            class="btn btn-secondary"
-            @click="closeModal"
-          >Cancel</a>
-          <a
-            class="btn"
-            @click="createSet"
-          >Create</a>
-        </div>
+      <div class="settings-card-actions">
+        <SaveState :state="status" />
       </div>
     </div>
+
+    <AppDialog
+      v-model:open="showDialog"
+      :title="dialogType === 'movie' ? 'New movie set' : 'New TV show set'"
+      subtitle="A set groups titles together so they can be browsed as one collection."
+      size="sm"
+      @submit="createSet"
+    >
+      <div
+        class="form-group"
+        :class="{ 'is-invalid': Boolean(nameError) }"
+      >
+        <label for="set-name">Name</label>
+        <input
+          id="set-name"
+          ref="nameInput"
+          v-model.trim="newSet.name"
+          type="text"
+          placeholder="Collection name"
+        >
+        <p
+          v-if="nameError"
+          class="form-hint form-error"
+        >
+          {{ nameError }}
+        </p>
+      </div>
+
+      <div class="form-group">
+        <label for="set-overview">Overview</label>
+        <input
+          id="set-overview"
+          v-model.trim="newSet.overview"
+          type="text"
+          placeholder="What this collection is for"
+        >
+      </div>
+
+      <div class="setting-row">
+        <label class="checkbox-container">
+          Public
+          <input
+            v-model="newSet.public"
+            type="checkbox"
+          >
+          <span class="checkmark" />
+        </label>
+        <p class="checkbox-description">
+          Public sets are visible to every user on this server.
+        </p>
+      </div>
+
+      <template #status>
+        <SaveState :state="createStatus" />
+      </template>
+
+      <template #footer>
+        <button
+          type="button"
+          class="btn btn-secondary"
+          @click="showDialog = false"
+        >
+          Cancel
+        </button>
+        <button
+          type="submit"
+          class="btn btn-primary"
+          :disabled="createStatus.status === 'busy'"
+        >
+          Create set
+        </button>
+      </template>
+    </AppDialog>
   </div>
 </template>
 
@@ -173,20 +213,29 @@
   import faTrash from '@fortawesome/fontawesome-free-solid/faTrash'
   import fontawesome from '@fortawesome/fontawesome'
   import oblectoClient from '@/oblectoClient'
+  import AppDialog from '@/components/system/AppDialog.vue'
+  import SaveState from '@/components/system/SaveState.vue'
+  import { createSaveState } from '@/composables/useSaveState'
+  import { confirm } from '@/composables/useConfirm'
 
   fontawesome.library.add(faPlus, faTrash)
 
   export default {
     name: 'Sets',
     components: {
-      FontAwesomeIcon
+      FontAwesomeIcon,
+      AppDialog,
+      SaveState
     },
     data () {
       return {
         movieSets: [],
         seriesSets: [],
-        showModal: false,
-        modalType: 'movie', // 'movie' or 'series'
+        showDialog: false,
+        dialogType: 'movie', // 'movie' or 'series'
+        nameError: '',
+        status: createSaveState(),
+        createStatus: createSaveState(),
         newSet: {
           name: '',
           overview: '',
@@ -203,138 +252,75 @@
       this.refresh()
     },
     methods: {
-      async refresh() {
-        try {
-          const [movieSets, seriesSets] = await Promise.all([
-             oblectoClient.movieLibrary.getSets(),
-             oblectoClient.seriesLibrary.getSets()
-          ])
-          this.movieSets = movieSets
-          this.seriesSets = seriesSets
-        } catch (e) {
-          console.error("Failed to fetch sets", e)
-          this.$notify({ type: 'error', title: 'Error', text: 'Failed to load sets' })
-        }
+      async refresh () {
+        // An empty `ok` keeps a successful load silent; only failure is news.
+        await this.status.run(
+          async () => {
+            const [movieSets, seriesSets] = await Promise.all([
+              oblectoClient.movieLibrary.getSets(),
+              oblectoClient.seriesLibrary.getSets()
+            ])
+            this.movieSets = movieSets
+            this.seriesSets = seriesSets
+          },
+          { busy: 'Loading sets…', ok: '', error: 'Could not load sets' }
+        )
       },
-      openModal(type) {
-        this.modalType = type
+      async openDialog (type) {
+        this.dialogType = type
+        this.nameError = ''
         this.newSet = { name: '', overview: '', public: true }
-        this.showModal = true
+        this.createStatus.reset()
+        this.showDialog = true
+
+        await this.$nextTick()
+        this.$refs.nameInput?.focus()
       },
-      closeModal() {
-        this.showModal = false
-      },
-      async createSet() {
+      async createSet () {
         if (!this.newSet.name) {
-             this.$notify({ type: 'error', title: 'Error', text: 'Name is required' })
-             return
+          this.nameError = 'A name is required.'
+          return
         }
 
-        try {
-          const payload = {
-             name: this.newSet.name,
-             overview: this.newSet.overview,
-             public: this.newSet.public
-          }
-          if (this.modalType === 'movie') {
-            await oblectoClient.sets.createMovieSet(payload)
-          } else {
-            await oblectoClient.sets.createSeriesSet(payload)
-          }
-          
-          this.$notify({ type: 'success', title: 'Success', text: 'Set created' })
-          this.closeModal()
-          this.refresh()
-        } catch (e) {
-          console.error("Failed to create set", e)
-          this.$notify({ type: 'error', title: 'Error', text: 'Failed to create set' })
+        this.nameError = ''
+
+        const payload = {
+          name: this.newSet.name,
+          overview: this.newSet.overview,
+          public: this.newSet.public
         }
+
+        const ok = await this.createStatus.run(
+          () => (this.dialogType === 'movie'
+            ? oblectoClient.sets.createMovieSet(payload)
+            : oblectoClient.sets.createSeriesSet(payload)),
+          { busy: 'Creating…', ok: 'Set created', error: 'Could not create this set' }
+        )
+
+        if (!ok) return
+
+        this.showDialog = false
+        this.refresh()
       },
-      async deleteSet(id, type) {
-        if (!confirm('Are you sure you want to delete this set?')) return
+      async deleteSet (set, type) {
+        const confirmed = await confirm({
+          title: `Delete ${set.setName}?`,
+          message: 'The set is removed. The movies or shows inside it stay in the library.',
+          confirmLabel: 'Delete set',
+          destructive: true
+        })
 
-        try {
-          if (type === 'movie') {
-            await oblectoClient.sets.deleteMovieSet(id)
-          } else {
-            await oblectoClient.sets.deleteSeriesSet(id)
-          }
-          this.$notify({ type: 'success', title: 'Success', text: 'Set deleted' })
-          this.refresh()
-        } catch (e) {
-           console.error("Failed to delete set", e)
-           this.$notify({ type: 'error', title: 'Error', text: 'Failed to delete set' })
-        }
+        if (!confirmed) return
+
+        const ok = await this.status.run(
+          () => (type === 'movie'
+            ? oblectoClient.sets.deleteMovieSet(set.id)
+            : oblectoClient.sets.deleteSeriesSet(set.id)),
+          { busy: 'Deleting…', ok: `Deleted ${set.setName}`, error: `Could not delete ${set.setName}` }
+        )
+
+        if (ok) this.refresh()
       }
     }
   }
 </script>
-
-<style scoped lang="sass">
-@use "@/assets/sass/settings.sass"
-
-.modal-overlay
-  position: fixed
-  top: 0
-  left: 0
-  right: 0
-  bottom: 0
-  background: rgba(0,0,0,0.7)
-  display: flex
-  align-items: center
-  justify-content: center
-  z-index: 1000
-
-.modal-content
-  width: 400px
-  max-width: 90%
-
-// Reusing settings.sass styles but ensuring locally scoped overrides if needed
-.checkbox-container
-  display: block
-  position: relative
-  padding-left: 30px
-  margin-bottom: 5px
-  cursor: pointer
-  font-size: 16px
-  user-select: none
-
-  input
-    position: absolute
-    opacity: 0
-    cursor: pointer
-    height: 0
-    width: 0
-
-  .checkmark
-    position: absolute
-    top: 2px
-    left: 0
-    height: 18px
-    width: 18px
-    background-color: #333
-    border: 1px solid #555
-    border-radius: 3px
-
-  &:hover input ~ .checkmark
-    background-color: #444
-
-  input:checked ~ .checkmark
-    background-color: #2196F3
-    border-color: #2196F3
-
-  input:checked ~ .checkmark:after
-    display: block
-
-  .checkmark:after
-    content: ""
-    position: absolute
-    display: none
-    left: 6px
-    top: 2px
-    width: 3px
-    height: 8px
-    border: solid white
-    border-width: 0 2px 2px 0
-    transform: rotate(45deg)
-</style>

@@ -1,23 +1,26 @@
 <template>
   <tr>
-    <td>{{ user.id }}</td>
     <td>{{ user.name }}</td>
     <td>{{ user.username }}</td>
     <td>{{ user.email }}</td>
     <td>{{ user.group }}</td>
     <td class="actions">
-      <a
-        class="edit"
-        @click="editUser"
+      <button
+        type="button"
+        :title="`Set a new password for ${user.username}`"
+        :aria-label="`Set a new password for ${user.username}`"
+        @click="$emit('set-password', user)"
       >
         <font-awesome-icon icon="edit" />
-      </a>
-      <a
-        class="delete"
-        @click="deleteUser"
+      </button>
+      <button
+        type="button"
+        :title="`Delete ${user.username}`"
+        :aria-label="`Delete ${user.username}`"
+        @click="$emit('delete', user)"
       >
         <font-awesome-icon icon="trash" />
-      </a>
+      </button>
     </td>
   </tr>
 </template>
@@ -27,10 +30,11 @@
   import faTrash from '@fortawesome/fontawesome-free-solid/faTrash'
   import faEdit from '@fortawesome/fontawesome-free-solid/faEdit'
   import fontawesome from '@fortawesome/fontawesome'
-  import oblectoClient from '@/oblectoClient'
 
   fontawesome.library.add(faTrash, faEdit)
 
+  // A row reports what was clicked; UserManager owns the list, the requests and
+  // the place where their outcome is shown.
   export default {
     name: 'UserEntry',
     components: {
@@ -42,22 +46,6 @@
         required: true
       }
     },
-    methods: {
-      async deleteUser () {
-        if (confirm(`Are you sure you want to delete user ${this.user.username}?`)) {
-          await oblectoClient.userManager.deleteUser(this.user.id)
-          // Ideally emit event to parent to refresh list
-          this.$parent.created() 
-        }
-      },
-      editUser () {
-        // Placeholder for edit functionality
-        // this.$modal.show('UserEdit', { user: this.user })
-      }
-    }
+    emits: ['set-password', 'delete']
   }
 </script>
-
-<style scoped lang="sass">
-@use "@/assets/sass/settings.sass"
-</style>

@@ -6,12 +6,13 @@
         <h2 class="settings-title-plain">
           Movies
         </h2>
-        <a
+        <button
+          type="button"
           class="btn"
           @click="libraryAdd('movies')"
         >
           <font-awesome-icon icon="plus" /> Add movie library
-        </a>
+        </button>
       </div>
       
       <!-- Configuration -->
@@ -44,7 +45,7 @@
           <TagInput
             v-model="moviesConfig.movieIdentifiers"
             :options="capabilities.movies.identifiers"
-            @input="saveMoviesConfig"
+            @update:model-value="saveMoviesConfig"
           />
         </div>
         <div class="form-group">
@@ -52,7 +53,7 @@
           <TagInput
             v-model="moviesConfig.movieUpdaters"
             :options="capabilities.movies.updaters"
-            @input="saveMoviesConfig"
+            @update:model-value="saveMoviesConfig"
           />
         </div>
       </div>
@@ -88,16 +89,22 @@
               </td>
               <td>{{ library.path }}</td>
               <td class="actions">
-                <a
-                  title="Delete library path"
-                  @click="deleteMovieLibrary(library.path)"
+                <button
+                  type="button"
+                  title="Remove this library path"
+                  :aria-label="`Remove ${library.path}`"
+                  @click="removeLibrary('movies', library.path)"
                 >
                   <font-awesome-icon :icon="deleteIcon" />
-                </a>
+                </button>
               </td>
             </tr>
           </tbody>
         </table>
+      </div>
+
+      <div class="settings-card-actions">
+        <SaveState :state="moviesSave" />
       </div>
     </div>
 
@@ -107,12 +114,13 @@
         <h2 class="settings-title-plain">
           TV Shows
         </h2>
-        <a
+        <button
+          type="button"
           class="btn"
           @click="libraryAdd('tvshows')"
         >
           <font-awesome-icon icon="plus" /> Add TV show library
-        </a>
+        </button>
       </div>
 
       <!-- Configuration -->
@@ -157,7 +165,7 @@
             <TagInput
               v-model="tvConfig.seriesIdentifiers"
               :options="capabilities.tvshows.seriesIdentifiers"
-              @input="saveTvConfig"
+              @update:model-value="saveTvConfig"
             />
           </div>
           <div class="form-group">
@@ -165,7 +173,7 @@
             <TagInput
               v-model="tvConfig.episodeIdentifiers"
               :options="capabilities.tvshows.episodeIdentifiers"
-              @input="saveTvConfig"
+              @update:model-value="saveTvConfig"
             />
           </div>
         </div>
@@ -175,7 +183,7 @@
             <TagInput
               v-model="tvConfig.seriesUpdaters"
               :options="capabilities.tvshows.seriesUpdaters"
-              @input="saveTvConfig"
+              @update:model-value="saveTvConfig"
             />
           </div>
           <div class="form-group">
@@ -183,7 +191,7 @@
             <TagInput
               v-model="tvConfig.episodeUpdaters"
               :options="capabilities.tvshows.episodeUpdaters"
-              @input="saveTvConfig"
+              @update:model-value="saveTvConfig"
             />
           </div>
         </div>
@@ -220,18 +228,29 @@
               </td>
               <td>{{ library.path }}</td>
               <td class="actions">
-                <a
-                  title="Delete library path"
-                  @click="deleteSeriesLibrary(library.path)"
+                <button
+                  type="button"
+                  title="Remove this library path"
+                  :aria-label="`Remove ${library.path}`"
+                  @click="removeLibrary('tvshows', library.path)"
                 >
                   <font-awesome-icon :icon="deleteIcon" />
-                </a>
+                </button>
               </td>
             </tr>
           </tbody>
         </table>
       </div>
+
+      <div class="settings-card-actions">
+        <SaveState :state="tvSave" />
+      </div>
     </div>
+
+    <LibraryAdd
+      v-model:open="showAdd"
+      :library-type="addType"
+    />
   </div>
 </template>
 
@@ -244,6 +263,10 @@
   import faPlus from '@fortawesome/fontawesome-free-solid/faPlus'
   import fontawesome from '@fortawesome/fontawesome'
   import TagInput from './TagInput'
+  import LibraryAdd from '@/components/modals/LibraryAdd'
+  import SaveState from '@/components/system/SaveState.vue'
+  import { createSaveState } from '@/composables/useSaveState'
+  import { confirm } from '@/composables/useConfirm'
 
   fontawesome.library.add(faTrash, faPlus)
 
@@ -251,19 +274,16 @@
     name: 'Libraries',
     components: {
       FontAwesomeIcon,
-      TagInput
-    },
-    computed: {
-      ...mapState('libraries', [
-        'shows',
-        'movies'
-      ]),
-      deleteIcon () {
-        return faTrash
-      }
+      TagInput,
+      LibraryAdd,
+      SaveState
     },
     data () {
       return {
+        showAdd: false,
+        addType: 'movies',
+        moviesSave: createSaveState(),
+        tvSave: createSaveState(),
         moviesConfig: {
             doReIndex: false,
             indexBroken: false,
@@ -285,6 +305,15 @@
         }
       }
     },
+    computed: {
+      ...mapState('libraries', [
+        'shows',
+        'movies'
+      ]),
+      deleteIcon () {
+        return faTrash
+      }
+    },
     async created () {
       this.updateAll() // Vuex action for paths
       this.loadConfig()
@@ -295,10 +324,28 @@
         'deleteMovieLibrary',
         'deleteSeriesLibrary'
       ]),
-      async libraryAdd (libraryType) {
-        this.$modal.show('LibraryAdd', {
-          libraryType
+      libraryAdd (libraryType) {
+        this.addType = libraryType
+        this.showAdd = true
+      },
+      async removeLibrary (libraryType, path) {
+        const confirmed = await confirm({
+          title: 'Remove this library path?',
+          message: `${path} stops being scanned. Nothing on disk is deleted, but titles indexed only from this path disappear from the library on the next cleanup.`,
+          confirmLabel: 'Remove path',
+          destructive: true
         })
+
+        if (!confirmed) return
+
+        const save = libraryType === 'movies' ? this.moviesSave : this.tvSave
+
+        await save.run(
+          () => (libraryType === 'movies'
+            ? this.deleteMovieLibrary(path)
+            : this.deleteSeriesLibrary(path)),
+          { busy: 'Removing…', ok: 'Path removed', error: 'Could not remove this path' }
+        )
       },
       async loadConfig() {
           try {
@@ -323,6 +370,7 @@
               }
           } catch (e) {
               console.error('Failed to load library config', e)
+              this.moviesSave.fail('Could not load library settings')
           }
       },
       async saveMoviesConfig() {
@@ -332,12 +380,11 @@
               movieIdentifiers: this.moviesConfig.movieIdentifiers,
               movieUpdaters: this.moviesConfig.movieUpdaters
           }
-          try {
-              await oblectoClient.settings.updateSection('movies', payload)
-              this.$notify({ type: 'success', title: 'Saved', text: 'Movie settings saved' })
-          } catch(e) {
-              this.$notify({ type: 'error', title: 'Error', text: 'Failed to save movie settings' })
-          }
+
+          await this.moviesSave.run(
+            () => oblectoClient.settings.updateSection('movies', payload),
+            { error: 'Could not save movie settings' }
+          )
       },
       async saveTvConfig() {
            const payload = {
@@ -349,76 +396,11 @@
               seriesUpdaters: this.tvConfig.seriesUpdaters,
               episodeUpdaters: this.tvConfig.episodeUpdaters
           }
-          try {
-              await oblectoClient.settings.updateSection('tvshows', payload)
-              this.$notify({ type: 'success', title: 'Saved', text: 'TV settings saved' })
-          } catch(e) {
-              this.$notify({ type: 'error', title: 'Error', text: 'Failed to save TV settings' })
-          }
+          await this.tvSave.run(
+            () => oblectoClient.settings.updateSection('tvshows', payload),
+            { error: 'Could not save TV settings' }
+          )
       }
     }
   }
 </script>
-
-<style scoped lang="sass">
-@use "@/assets/sass/settings.sass"
-
-.setting-row
-  margin-bottom: 15px
-
-.resize-grid
-  display: flex
-  gap: 20px
-  
-  .form-group
-    flex: 1
-
-.checkbox-container
-  display: block
-  position: relative
-  padding-left: 30px
-  margin-bottom: 5px
-  cursor: pointer
-  font-size: 14px
-  user-select: none
-  color: #ddd
-
-  input
-    position: absolute
-    opacity: 0
-    cursor: pointer
-    height: 0
-    width: 0
-
-  .checkmark
-    position: absolute
-    top: 0
-    left: 0
-    height: 18px
-    width: 18px
-    background-color: #333
-    border: 1px solid #555
-    border-radius: 3px
-
-  &:hover input ~ .checkmark
-    background-color: #444
-
-  input:checked ~ .checkmark
-    background-color: #2196F3
-    border-color: #2196F3
-
-  input:checked ~ .checkmark:after
-    display: block
-
-  .checkmark:after
-    content: ""
-    position: absolute
-    display: none
-    left: 6px
-    top: 2px
-    width: 3px
-    height: 8px
-    border: solid white
-    border-width: 0 2px 2px 0
-    transform: rotate(45deg)
-</style>

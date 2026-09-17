@@ -1,155 +1,105 @@
 <template>
-  <modal
-    name="PasswordChange"
-    height="auto"
-    @before-open="beforeOpen"
+  <AppDialog
+    :open="open"
+    title="Set password"
+    :subtitle="user ? `This replaces the password for ${user.username}. They are not notified.` : ''"
+    size="sm"
+    @update:open="$emit('update:open', $event)"
+    @submit="setPassword"
   >
-    <div class="container">
-      <div class="heading">
-        <h3>Change password for {{ username }}</h3>
-      </div>
-      <div class="body">
-        <label for="password">Password:</label>
-        <input
-          id="password"
-          v-model="password"
-          type="password"
-          :class="{invalid: attempted && password === ''}"
-        >
-      </div>
-      <div class="footer">
-        <button
-          class="success"
-          @click="setPassword"
-        >
-          Set password
-        </button>
-      </div>
+    <div
+      class="form-group"
+      :class="{ 'is-invalid': Boolean(error) }"
+    >
+      <label for="new-password">New password</label>
+      <input
+        id="new-password"
+        ref="passwordInput"
+        v-model="password"
+        type="password"
+        autocomplete="new-password"
+        :aria-describedby="error ? 'new-password-error' : undefined"
+      >
+      <p
+        v-if="error"
+        id="new-password-error"
+        class="form-hint form-error"
+      >
+        {{ error }}
+      </p>
     </div>
-  </modal>
+
+    <template #status>
+      <SaveState :state="save" />
+    </template>
+
+    <template #footer>
+      <button
+        type="button"
+        class="btn btn-secondary"
+        @click="$emit('update:open', false)"
+      >
+        Cancel
+      </button>
+      <button
+        type="submit"
+        class="btn btn-primary"
+        :disabled="save.status === 'busy'"
+      >
+        Set password
+      </button>
+    </template>
+  </AppDialog>
 </template>
 
-<script>
-  import oblectoClient from '@/oblectoClient'
+<script setup>
+import { nextTick, ref, watch } from 'vue'
+import AppDialog from '@/components/system/AppDialog.vue'
+import SaveState from '@/components/system/SaveState.vue'
+import { createSaveState } from '@/composables/useSaveState'
+import oblectoClient from '@/oblectoClient'
 
-  export default {
-    name: 'PasswordChange',
-    data () {
-      return {
-        userid: null,
-        name: '',
-        username: '',
-        email: '',
-        password: '',
-        attempted: false
-      }
-    },
-    methods: {
-      beforeOpen (event) {
-        this.userid = event.params.id
-        this.name = event.params.name
-        this.username = event.params.username
-        this.email = event.params.email
-        this.password = ''
-        this.attempted = false
-      },
-      async setPassword () {
-        if (this.userid === null) {
-          return false
-        }
-        this.attempted = true
-        if (!this.password) {
-          this.$notify({
-            group: 'system',
-            title: 'Missing password',
-            text: 'Please enter a password',
-            type: 'error'
-          })
-          return
-        }
+const props = defineProps({
+  open: { type: Boolean, default: false },
+  user: { type: Object, default: null }
+})
 
-        try {
-          await oblectoClient.userManager.updateUser(this.userid, { password: this.password })
+const emit = defineEmits(['update:open', 'changed'])
 
-          this.$notify({
-            group: 'system',
-            title: 'Password has been changed successfully',
-            text: 'You can now login with the username: ' + this.name,
-            type: 'success'
-          })
-        } catch (e) {
-          this.$notify({
-            group: 'system',
-            title: 'Password could not be changed',
-            text: 'Maybe not all fields are filled?',
-            type: 'error'
-          })
-        }
-      }
-    }
+const save = createSaveState()
+const password = ref('')
+const error = ref('')
+const passwordInput = ref(null)
+
+watch(() => props.open, async open => {
+  if (!open) return
+
+  password.value = ''
+  error.value = ''
+  save.reset()
+
+  await nextTick()
+  passwordInput.value?.focus()
+})
+
+async function setPassword () {
+  if (!props.user) return
+
+  if (!password.value) {
+    error.value = 'A password is required.'
+    return
   }
+
+  error.value = ''
+
+  const ok = await save.run(
+    () => oblectoClient.userManager.updateUser(props.user.id, { password: password.value }),
+    { busy: 'Saving…', ok: 'Password changed', error: 'Could not change this password' }
+  )
+
+  if (!ok) return
+
+  emit('changed')
+  emit('update:open', false)
+}
 </script>
-
-<style scoped lang="sass">
-
-  .body
-    padding: 10px
-
-  h3
-    width: 100%
-    color: var(--color-text)
-    margin: 0
-    margin-bottom: 10px
-    padding: 20px
-
-    background-color: rgba(255, 255, 255, 0.06)
-
-    box-shadow: var(--shadow-soft)
-
-  label
-    display: block
-    margin: 5px
-    margin-left: 0
-
-  input
-    margin-bottom: 12px
-    border-radius: 12px
-    padding: 12px 14px
-    width: 100%
-    border: 1px solid transparent
-    background-color: rgba(255, 255, 255, 0.12)
-    color: var(--color-text)
-    transition: border-color 0.2s, background-color 0.2s
-    &:focus
-      outline: none
-      border-color: var(--color-accent-soft)
-      background-color: rgba(255, 255, 255, 0.18)
-  .invalid
-    border-color: var(--color-accent-soft)
-
-  .footer
-    background-color: rgba(255, 255, 255, 0.06)
-
-    box-shadow: var(--shadow-soft)
-    padding: 10px
-
-    overflow: hidden
-
-    button
-      float: right
-      background: linear-gradient(120deg, var(--color-accent), var(--color-accent-strong))
-      border: none
-      color: #1b1616
-      padding: 10px 22px
-      border-radius: 999px
-      font-weight: 700
-      letter-spacing: 0.04em
-      cursor: pointer
-      box-shadow: 0 12px 20px rgba(12, 10, 12, 0.35)
-      transition: transform 0.2s, box-shadow 0.2s
-      &:hover
-        transform: translateY(-1px)
-        box-shadow: 0 16px 26px rgba(12, 10, 12, 0.45)
-
-
-</style>

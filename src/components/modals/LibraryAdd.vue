@@ -1,162 +1,108 @@
 <template>
-  <modal
-    name="LibraryAdd"
-    height="auto"
-    @before-open="beforeOpen"
-    @opened="opened"
+  <AppDialog
+    :open="open"
+    :title="`Add ${typeLabel} library`"
+    subtitle="Point Oblecto at a folder on the server. It is scanned on the next index run."
+    size="md"
+    @update:open="$emit('update:open', $event)"
+    @submit="addLibrary"
   >
-    <div class="container">
-      <div class="heading">
-        <h3>Add {{ libraryType }} library</h3>
-      </div>
-      <div class="body">
-        <label for="name">Path:</label>
-        <input
-          id="name"
-          ref="pathInput"
-          v-model="path"
-          type="text"
-          :class="{invalid: attempted && path === ''}"
-          @keyup.enter="addLibrary"
-        >
-      </div>
-      <div class="footer">
-        <button
-          class="success"
-          @click="addLibrary"
-        >
-          Add library
-        </button>
-      </div>
+    <div
+      class="form-group"
+      :class="{ 'is-invalid': Boolean(pathError) }"
+    >
+      <label for="library-path">Path</label>
+      <input
+        id="library-path"
+        ref="pathInput"
+        v-model.trim="path"
+        type="text"
+        placeholder="/media/movies"
+        :aria-describedby="pathError ? 'library-path-error' : undefined"
+      >
+      <p
+        v-if="pathError"
+        id="library-path-error"
+        class="form-hint form-error"
+      >
+        {{ pathError }}
+      </p>
     </div>
-  </modal>
+
+    <template #status>
+      <SaveState :state="save" />
+    </template>
+
+    <template #footer>
+      <button
+        type="button"
+        class="btn btn-secondary"
+        @click="$emit('update:open', false)"
+      >
+        Cancel
+      </button>
+      <button
+        type="submit"
+        class="btn btn-primary"
+        :disabled="save.status === 'busy'"
+      >
+        Add library
+      </button>
+    </template>
+  </AppDialog>
 </template>
 
-<script>
-  import { mapActions } from 'vuex'
-  import oblectoClient from '@/oblectoClient'
+<script setup>
+import { computed, nextTick, ref, watch } from 'vue'
+import { useStore } from 'vuex'
+import AppDialog from '@/components/system/AppDialog.vue'
+import SaveState from '@/components/system/SaveState.vue'
+import { createSaveState } from '@/composables/useSaveState'
+import oblectoClient from '@/oblectoClient'
 
-  export default {
-    name: 'UserAdd',
-    data () {
-      return {
-        path: '',
-        libraryType: 'movie',
-        attempted: false
-      }
-    },
-    methods: {
-      ...mapActions('libraries', [
-        'updateAll',
-        'deleteMovieLibrary',
-        'deleteSeriesLibrary'
-      ]),
-      beforeOpen (event) {
-        this.libraryType = event.params.libraryType
-        this.path = ''
-        this.attempted = false
-      },
-      opened () {
-        this.$refs.pathInput.focus()
-      },
-      async addLibrary () {
-        this.attempted = true
-        if (!this.path) {
-          this.$notify({
-            group: 'system',
-            title: 'Missing path',
-            text: 'Please provide a library path',
-            type: 'error'
-          })
-          return
-        }
-        try {
-          await oblectoClient.libraries.addPath(this.libraryType, this.path)
+const props = defineProps({
+  open: { type: Boolean, default: false },
+  libraryType: { type: String, default: 'movies' }
+})
 
-          this.$notify({
-            group: 'system',
-            title: 'Library path has been successfully added',
-            text: 'The library will be indexed on next update',
-            type: 'success'
-          })
+const emit = defineEmits(['update:open', 'added'])
 
-          this.updateAll()
+const store = useStore()
+const save = createSaveState()
+const path = ref('')
+const pathError = ref('')
+const pathInput = ref(null)
 
-          this.$modal.hide('LibraryAdd')
-          this.path = ''
-        } catch (e) {
-          this.$notify({
-            group: 'system',
-            title: 'Library path could not be added',
-            text: 'The request to add the path has failed',
-            type: 'error'
-          })
-        }
-      }
-    }
+const typeLabel = computed(() => (props.libraryType === 'movies' ? 'movie' : 'TV show'))
+
+watch(() => props.open, async open => {
+  if (!open) return
+
+  path.value = ''
+  pathError.value = ''
+  save.reset()
+
+  await nextTick()
+  pathInput.value?.focus()
+})
+
+async function addLibrary () {
+  if (!path.value) {
+    pathError.value = 'A library path is required.'
+    return
   }
+
+  pathError.value = ''
+
+  const ok = await save.run(
+    () => oblectoClient.libraries.addPath(props.libraryType, path.value),
+    { busy: 'Adding…', ok: 'Added', error: 'Could not add this path' }
+  )
+
+  if (!ok) return
+
+  await store.dispatch('libraries/updateAll')
+  emit('added', path.value)
+  emit('update:open', false)
+}
 </script>
-
-<style scoped lang="sass">
-
-  .body
-    padding: 10px
-
-  h3
-    width: 100%
-    color: var(--color-text)
-    margin: 0
-    margin-bottom: 10px
-    padding: 20px
-
-    background-color: rgba(255, 255, 255, 0.06)
-
-    box-shadow: var(--shadow-soft)
-
-  label
-    display: block
-    margin: 5px
-    margin-left: 0
-
-  input
-    margin-bottom: 12px
-    border-radius: 12px
-    padding: 12px 14px
-    width: 100%
-    border: 1px solid transparent
-    background-color: rgba(255, 255, 255, 0.12)
-    color: var(--color-text)
-    transition: border-color 0.2s, background-color 0.2s
-    &:focus
-      outline: none
-      border-color: var(--color-accent-soft)
-      background-color: rgba(255, 255, 255, 0.18)
-  .invalid
-    border-color: var(--color-accent-soft)
-
-  .footer
-    background-color: rgba(255, 255, 255, 0.06)
-
-    box-shadow: var(--shadow-soft)
-    padding: 10px
-
-    overflow: hidden
-
-    button
-      float: right
-      background: linear-gradient(120deg, var(--color-accent), var(--color-accent-strong))
-      border: none
-      color: #1b1616
-      padding: 10px 22px
-      border-radius: 999px
-      font-weight: 700
-      letter-spacing: 0.04em
-      cursor: pointer
-      box-shadow: 0 12px 20px rgba(12, 10, 12, 0.35)
-      transition: transform 0.2s, box-shadow 0.2s
-      &:hover
-        transform: translateY(-1px)
-        box-shadow: 0 16px 26px rgba(12, 10, 12, 0.45)
-
-
-</style>

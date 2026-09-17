@@ -1,349 +1,259 @@
 <template>
-  <modal
-    name="SeedboxDialog"
-    height="auto"
-    :scrollable="true"
-    @before-open="beforeOpen"
+  <AppDialog
+    :open="open"
+    :title="isNew ? 'Add seedbox' : 'Edit seedbox'"
+    subtitle="Oblecto connects to this host and imports finished downloads from the directories below."
+    size="lg"
+    @update:open="$emit('update:open', $event)"
+    @submit="submit"
   >
-    <div class="container">
-      <div class="heading">
-        <h3>{{ isNew ? 'Add Seedbox' : 'Edit Seedbox' }}</h3>
-      </div>
-      <div class="body">
-        <div class="resize-grid">
-          <div class="form-group">
-            <label>Name</label>
-            <input
-              v-model="seedboxForm.name"
-              type="text"
-              placeholder="My Seedbox"
-            >
-          </div>
-          <div class="form-group">
-            <label>Storage Driver</label>
-            <select v-model="seedboxForm.storageDriver">
-              <option value="ssh">
-                SSH
-              </option>
-              <option value="ftp">
-                FTP
-              </option>
-              <option value="ftps">
-                FTPS
-              </option>
-            </select>
-          </div>
-        </div>
-
-        <div class="resize-grid">
-          <div class="form-group">
-            <label>Host</label>
-            <input
-              v-model="seedboxForm.storageDriverOptions.host"
-              type="text"
-              placeholder="seedbox.example.com"
-            >
-          </div>
-          <div class="form-group">
-            <label>Username</label>
-            <input
-              v-model="seedboxForm.storageDriverOptions.username"
-              type="text"
-              placeholder="seeduser"
-            >
-          </div>
-        </div>
-
-        <div class="resize-grid">
-          <div class="form-group">
-            <label>Password</label>
-            <input
-              v-model="seedboxForm.storageDriverOptions.password"
-              type="password"
-              placeholder="••••••••"
-            >
-          </div>
-          <div class="form-group">
-            <label>Secure Connection</label>
-            <label class="checkbox-container">
-              Use Secure Connection
-              <input
-                v-model="seedboxForm.storageDriverOptions.secure"
-                type="checkbox"
-              >
-              <span class="checkmark" />
-            </label>
-          </div>
-        </div>
-
-        <div class="resize-grid">
-          <div class="form-group">
-            <label>Movie Directory</label>
-            <input
-              v-model="seedboxForm.mediaImport.movieDirectory"
-              type="text"
-              placeholder="/downloads/finished/movie"
-            >
-          </div>
-          <div class="form-group">
-            <label>Series Directory</label>
-            <input
-              v-model="seedboxForm.mediaImport.seriesDirectory"
-              type="text"
-              placeholder="/downloads/finished/tv"
-            >
-          </div>
-        </div>
-
-        <div class="resize-grid">
-          <div class="form-group">
-            <label class="checkbox-container">
-              Automatic Import
-              <input
-                v-model="seedboxForm.automaticImport"
-                type="checkbox"
-              >
-              <span class="checkmark" />
-            </label>
-            <p class="description">
-              Automatically import media found in the seedbox directories.
-            </p>
-          </div>
-          <div class="form-group">
-            <label class="checkbox-container">
-              Delete On Import
-              <input
-                v-model="seedboxForm.deleteOnImport"
-                type="checkbox"
-              >
-              <span class="checkmark" />
-            </label>
-            <p class="description">
-              Remove files from the seedbox after import completes.
-            </p>
-          </div>
-        </div>
-
-        <div class="setting-row">
-          <label class="checkbox-container">
-            Enabled
-            <input
-              v-model="seedboxForm.enabled"
-              type="checkbox"
-            >
-            <span class="checkmark" />
-          </label>
-        </div>
-      </div>
-      <div class="footer">
-        <button
-          class="success"
-          @click="save"
+    <div class="form-grid">
+      <div
+        class="form-group"
+        :class="{ 'is-invalid': Boolean(errors.name) }"
+      >
+        <label for="seedbox-name">Name</label>
+        <input
+          id="seedbox-name"
+          v-model.trim="form.name"
+          type="text"
+          placeholder="My seedbox"
         >
-          {{ isNew ? 'Add Seedbox' : 'Save Changes' }}
-        </button>
+        <p
+          v-if="errors.name"
+          class="form-hint form-error"
+        >
+          {{ errors.name }}
+        </p>
+      </div>
+
+      <div class="form-group">
+        <label for="seedbox-driver">Storage driver</label>
+        <select
+          id="seedbox-driver"
+          v-model="form.storageDriver"
+        >
+          <option value="ssh">
+            SSH
+          </option>
+          <option value="ftp">
+            FTP
+          </option>
+          <option value="ftps">
+            FTPS
+          </option>
+        </select>
+      </div>
+
+      <div
+        class="form-group"
+        :class="{ 'is-invalid': Boolean(errors.host) }"
+      >
+        <label for="seedbox-host">Host</label>
+        <input
+          id="seedbox-host"
+          v-model.trim="form.storageDriverOptions.host"
+          type="text"
+          placeholder="seedbox.example.com"
+        >
+        <p
+          v-if="errors.host"
+          class="form-hint form-error"
+        >
+          {{ errors.host }}
+        </p>
+      </div>
+
+      <div class="form-group">
+        <label for="seedbox-username">Username</label>
+        <input
+          id="seedbox-username"
+          v-model.trim="form.storageDriverOptions.username"
+          type="text"
+          autocomplete="off"
+        >
+      </div>
+
+      <div class="form-group">
+        <label for="seedbox-password">Password</label>
+        <input
+          id="seedbox-password"
+          v-model="form.storageDriverOptions.password"
+          type="password"
+          autocomplete="new-password"
+          placeholder="••••••••"
+        >
+      </div>
+
+      <div class="form-group">
+        <label for="seedbox-movie-dir">Movie directory</label>
+        <input
+          id="seedbox-movie-dir"
+          v-model.trim="form.mediaImport.movieDirectory"
+          type="text"
+          placeholder="/downloads/finished/movie"
+        >
+      </div>
+
+      <div class="form-group">
+        <label for="seedbox-series-dir">Series directory</label>
+        <input
+          id="seedbox-series-dir"
+          v-model.trim="form.mediaImport.seriesDirectory"
+          type="text"
+          placeholder="/downloads/finished/tv"
+        >
       </div>
     </div>
-  </modal>
+
+    <div class="toggles">
+      <div class="setting-row">
+        <label class="checkbox-container">
+          Enabled
+          <input
+            v-model="form.enabled"
+            type="checkbox"
+          >
+          <span class="checkmark" />
+        </label>
+        <p class="checkbox-description">
+          Disabled seedboxes are kept but never contacted.
+        </p>
+      </div>
+
+      <div class="setting-row">
+        <label class="checkbox-container">
+          Secure connection
+          <input
+            v-model="form.storageDriverOptions.secure"
+            type="checkbox"
+          >
+          <span class="checkmark" />
+        </label>
+        <p class="checkbox-description">
+          Verify TLS when connecting to this host.
+        </p>
+      </div>
+
+      <div class="setting-row">
+        <label class="checkbox-container">
+          Automatic import
+          <input
+            v-model="form.automaticImport"
+            type="checkbox"
+          >
+          <span class="checkmark" />
+        </label>
+        <p class="checkbox-description">
+          Import media found in the directories above without being asked.
+        </p>
+      </div>
+
+      <div class="setting-row">
+        <label class="checkbox-container">
+          Delete on import
+          <input
+            v-model="form.deleteOnImport"
+            type="checkbox"
+          >
+          <span class="checkmark" />
+        </label>
+        <p class="checkbox-description">
+          Remove files from the seedbox once they have been imported.
+        </p>
+      </div>
+    </div>
+
+    <template #footer>
+      <button
+        type="button"
+        class="btn btn-secondary"
+        @click="$emit('update:open', false)"
+      >
+        Cancel
+      </button>
+      <button
+        type="submit"
+        class="btn btn-primary"
+      >
+        {{ isNew ? 'Add seedbox' : 'Save changes' }}
+      </button>
+    </template>
+  </AppDialog>
 </template>
 
-<script>
-  export default {
-    name: 'SeedboxDialog',
-    data () {
-      return {
-        seedboxForm: this.getEmptySeedbox(),
-        isNew: true,
-        callback: null
-      }
+<script setup>
+import { computed, reactive, watch } from 'vue'
+import AppDialog from '@/components/system/AppDialog.vue'
+
+const props = defineProps({
+  open: { type: Boolean, default: false },
+  // null while adding a new seedbox.
+  seedbox: { type: Object, default: null }
+})
+
+const emit = defineEmits(['update:open', 'save'])
+
+function emptySeedbox () {
+  return {
+    name: '',
+    storageDriver: 'ssh',
+    storageDriverOptions: {
+      host: '',
+      username: '',
+      password: '',
+      secure: true
     },
-    methods: {
-      getEmptySeedbox () {
-        return {
-          name: '',
-          storageDriver: 'ssh',
-          storageDriverOptions: {
-            host: '',
-            username: '',
-            password: '',
-            secure: true
-          },
-          mediaImport: {
-            movieDirectory: '',
-            seriesDirectory: ''
-          },
-          automaticImport: true,
-          deleteOnImport: false,
-          enabled: true
-        }
-      },
-      beforeOpen (event) {
-        if (!event || !event.params) {
-          this.seedboxForm = this.getEmptySeedbox()
-          this.isNew = true
-          this.callback = null
-          return
-        }
-
-        this.callback = event.params.callback
-        this.isNew = !event.params.seedbox
-
-        if (event.params.seedbox) {
-          const seedbox = event.params.seedbox
-          const empty = this.getEmptySeedbox()
-          
-          this.seedboxForm = {
-            ...empty,
-            ...seedbox,
-            storageDriver: seedbox.storageDriver || 'ssh',
-            storageDriverOptions: {
-              ...empty.storageDriverOptions,
-              ...(seedbox.storageDriverOptions || {})
-            },
-            mediaImport: {
-              ...empty.mediaImport,
-              ...(seedbox.mediaImport || {})
-            }
-          }
-        } else {
-          this.seedboxForm = this.getEmptySeedbox()
-        }
-      },
-      save () {
-        if (!this.seedboxForm.name || !this.seedboxForm.storageDriverOptions.host) {
-          this.$notify({ type: 'error', title: 'Missing info', text: 'Name and host are required.' })
-          return
-        }
-
-        if (this.callback) {
-          this.callback({ ...this.seedboxForm })
-        }
-        this.$modal.hide('SeedboxDialog')
-      }
-    }
+    mediaImport: {
+      movieDirectory: '',
+      seriesDirectory: ''
+    },
+    automaticImport: true,
+    deleteOnImport: false,
+    enabled: true
   }
+}
+
+const form = reactive(emptySeedbox())
+const errors = reactive({})
+
+const isNew = computed(() => !props.seedbox)
+
+watch(() => props.open, open => {
+  if (!open) return
+
+  const base = emptySeedbox()
+  const source = props.seedbox || {}
+
+  Object.assign(form, base, source, {
+    storageDriver: source.storageDriver || base.storageDriver,
+    storageDriverOptions: { ...base.storageDriverOptions, ...(source.storageDriverOptions || {}) },
+    mediaImport: { ...base.mediaImport, ...(source.mediaImport || {}) }
+  })
+
+  delete errors.name
+  delete errors.host
+})
+
+function submit () {
+  errors.name = form.name ? '' : 'A name is required.'
+  errors.host = form.storageDriverOptions.host ? '' : 'A host is required.'
+
+  if (errors.name || errors.host) return
+
+  // The parent owns persistence: it holds the full seedbox list that has to be
+  // written back as one settings section.
+  emit('save', JSON.parse(JSON.stringify(form)))
+  emit('update:open', false)
+}
 </script>
 
 <style scoped lang="sass">
-.body
-  padding: 10px
-
-h3
-  width: 100%
-  color: var(--color-text)
-  margin: 0
-  margin-bottom: 10px
-  padding: 20px
-  background-color: rgba(255, 255, 255, 0.06)
-  box-shadow: var(--shadow-soft)
-
-label
-  display: block
-  margin: 5px
-  margin-left: 0
-  font-size: 0.9em
-  color: var(--color-text-muted)
-
-input, select
-  margin-bottom: 12px
-  border-radius: 12px
-  padding: 12px 14px
-  width: 100%
-  border: 1px solid transparent
-  background-color: rgba(255, 255, 255, 0.12)
-  color: var(--color-text)
-  font-family: var(--font-body)
-  transition: border-color 0.2s, background-color 0.2s
-  
-  &:focus
-    outline: none
-    border-color: var(--color-accent-soft)
-    background-color: rgba(255, 255, 255, 0.18)
-
-.resize-grid
-  display: flex
-  gap: 20px
-  
-  .form-group
-    flex: 1
-
-.description
-  color: var(--color-text-muted)
-  font-size: 0.85em
-  margin-top: 2px
-  margin-left: 30px
-  margin-bottom: 12px
-  line-height: 1.4
-
-.checkbox-container
-  display: block
-  position: relative
-  padding-left: 30px
-  margin-bottom: 5px
-  cursor: pointer
-  font-size: 1em
-  user-select: none
-  color: var(--color-text)
-
-  input
-    position: absolute
-    opacity: 0
-    cursor: pointer
-    height: 0
-    width: 0
-
-  .checkmark
-    position: absolute
-    top: 2px
-    left: 0
-    height: 18px
-    width: 18px
-    background-color: rgba(255, 255, 255, 0.08)
-    border: 1px solid var(--color-border)
-    border-radius: 6px
-
-  &:hover input ~ .checkmark
-    background-color: rgba(255, 255, 255, 0.16)
-
-  input:checked ~ .checkmark
-    background-color: var(--color-accent)
-    border-color: var(--color-accent)
-
-  input:checked ~ .checkmark:after
-    display: block
-
-  .checkmark:after
-    content: ""
-    position: absolute
-    display: none
-    left: 6px
-    top: 2px
-    width: 3px
-    height: 8px
-    border: solid white
-    border-width: 0 2px 2px 0
-    transform: rotate(45deg)
-
-.footer
-  background-color: rgba(255, 255, 255, 0.06)
-  box-shadow: var(--shadow-soft)
-  padding: 15px 20px
-  overflow: hidden
-  margin-top: 10px
-
-  button
-    float: right
-    background: linear-gradient(120deg, var(--color-accent), var(--color-accent-strong))
-    border: none
-    color: #1b1616
-    padding: 10px 22px
-    border-radius: 999px
-    font-weight: 700
-    letter-spacing: 0.04em
-    cursor: pointer
-    box-shadow: 0 12px 20px rgba(12, 10, 12, 0.35)
-    transition: transform 0.2s, box-shadow 0.2s
-    &:hover
-      transform: translateY(-1px)
-      box-shadow: 0 16px 26px rgba(12, 10, 12, 0.45)
+.toggles
+  display: grid
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr))
+  gap: 4px 24px
+  margin-top: 8px
+  padding-top: 16px
+  border-top: 1px solid var(--color-border)
 </style>
