@@ -1,52 +1,62 @@
 <template>
   <div class="maintenance">
     <div class="settings-card">
-      <h3>Library Indexing</h3>
+      <h3>Library indexing</h3>
       <div class="actions-group">
         <button
           class="btn"
+          :disabled="isActive('scan', 'all')"
           @click="index('all')"
         >
-          <font-awesome-icon icon="sync" /> Full re-index
+          <font-awesome-icon icon="sync" /> Scan all libraries
         </button>
         <button
           class="btn"
+          :disabled="isActive('scan', 'series')"
           @click="index('series')"
         >
-          <font-awesome-icon icon="tv" /> Re-index series
+          <font-awesome-icon icon="tv" /> Scan TV shows
         </button>
         <button
           class="btn"
+          :disabled="isActive('scan', 'movies')"
           @click="index('movies')"
         >
-          <font-awesome-icon icon="film" /> Re-index movies
+          <font-awesome-icon icon="film" /> Scan movies
         </button>
       </div>
     </div>
 
     <div class="settings-card">
-      <h3>Library Cleanup</h3>
+      <h3>Library cleanup</h3>
+      <p class="settings-description">
+        Remove database entries with missing files or links. Media files on disk are not deleted.
+      </p>
       <div class="actions-group">
         <button
           class="btn btn-secondary"
+          :disabled="isActive('clean', 'files')"
           @click="clean('files')"
         >
           <font-awesome-icon icon="broom" /> Clean up files database
         </button>
         <button
           class="btn btn-secondary"
+          :disabled="isActive('clean', 'episodes')"
           @click="clean('episodes')"
         >
           <font-awesome-icon icon="broom" /> Cleanup episodes without linked files
         </button>
         <button
           class="btn btn-secondary"
+          :disabled="isActive('clean', 'movies')"
           @click="clean('movies')"
         >
           <font-awesome-icon icon="broom" /> Cleanup movies without linked files
         </button>
         <button
           class="btn btn-secondary"
+          :disabled="isActive('clean', 'series')"
           @click="clean('series')"
         >
           <font-awesome-icon icon="broom" /> Remove Series without episodes
@@ -59,12 +69,14 @@
       <div class="actions-group">
         <button
           class="btn"
+          :disabled="isActive('update_artwork', 'series')"
           @click="DownloadTVShowArt"
         >
-          <font-awesome-icon icon="image" /> Download artwork for TV Shows and Episodes
+          <font-awesome-icon icon="image" /> Download artwork for TV shows and Episodes
         </button>
         <button
           class="btn"
+          :disabled="isActive('update_artwork', 'movies')"
           @click="DownloadMovieArt"
         >
           <font-awesome-icon icon="image" /> Download artwork for Movies
@@ -73,34 +85,44 @@
     </div>
 
     <div class="settings-card">
-      <h3>Metadata Updates</h3>
+      <h3>Metadata updates</h3>
       <div class="actions-group">
         <button
           class="btn"
+          :disabled="isActive('update_metadata', 'episodes')"
           @click="update('episodes')"
         >
           <font-awesome-icon icon="sync" /> Update episode entries
         </button>
         <button
           class="btn"
+          :disabled="isActive('update_metadata', 'movies')"
           @click="update('movies')"
         >
           <font-awesome-icon icon="sync" /> Update movie entries
         </button>
         <button
           class="btn"
+          :disabled="isActive('update_metadata', 'series')"
           @click="update('series')"
         >
           <font-awesome-icon icon="sync" /> Update series entries
         </button>
         <button
           class="btn"
+          :disabled="isActive('update_metadata', 'files')"
           @click="update('files')"
         >
           <font-awesome-icon icon="sync" /> Update file entries
         </button>
       </div>
     </div>
+
+    <MaintenanceJobs
+      :jobs="jobs"
+      :error="jobsError"
+      :loading="jobsLoading"
+    />
 
     <!-- One status line for the page: whichever job was last asked for, the
          answer appears in the same place. -->
@@ -120,6 +142,8 @@
   import fontawesome from '@fortawesome/fontawesome'
   import oblectoClient from '@/oblectoClient'
   import SaveState from '@/components/system/SaveState.vue'
+  import { useMaintenanceJobs } from '@/composables/useMaintenanceJobs'
+  import MaintenanceJobs from './MaintenanceJobs.vue'
   import { createSaveState } from '@/composables/useSaveState'
 
   fontawesome.library.add(faSync, faTv, faFilm, faBroom, faImage)
@@ -136,25 +160,38 @@
     name: 'Maintenance',
     components: {
       FontAwesomeIcon,
-      SaveState
+      SaveState,
+      MaintenanceJobs
     },
+    setup () { return useMaintenanceJobs() },
     data () {
       return {
+        submitting: {},
         status: createSaveState()
       }
     },
     methods: {
       // These jobs run on the server and report progress over the socket; all
       // the page can honestly say is that the request was accepted.
+      isActive (action, target) {
+        return this.submitting[action + ':' + target] || this.jobs.some(job => job.action === action && (job.target === target || job.target === 'all') && !job.finishedAt)
+      },
       async triggerMaintenance (action, target, label) {
+        if (this.isActive(action, target)) return
+        this.submitting[action + ':' + target] = true
         await this.status.run(
-          () => oblectoClient.system.triggerMaintenance(action, target),
+          async () => {
+            const result = await oblectoClient.system.triggerMaintenance(action, target)
+            if (result.job) this.jobs = [result.job, ...this.jobs.filter(job => job.id !== result.job.id)]
+          },
           {
             busy: 'Starting…',
-            ok: `${label} started. It runs in the background.`,
+            ok: `${label} accepted. Follow its progress below.`,
             error: `Could not start ${label.toLowerCase()}`
           }
         )
+        this.submitting[action + ':' + target] = false
+        this.refreshJobs()
       },
       async DownloadTVShowArt () {
         await this.triggerMaintenance('update_artwork', 'series', 'TV artwork download')

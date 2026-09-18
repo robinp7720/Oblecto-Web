@@ -12,8 +12,7 @@ const getters = {
 
 const actions = {
   async updateAll ({ dispatch }) {
-    dispatch('updateMovies')
-    dispatch('updateTVShows')
+    await Promise.all([dispatch('updateMovies'), dispatch('updateTVShows')])
   },
   async updateMovies ({ commit }) {
     let movies = await oblectoClient.libraries.getLibraryPaths('movies')
@@ -28,12 +27,12 @@ const actions = {
   async deleteMovieLibrary ({ dispatch }, path) {
     await oblectoClient.libraries.removePath('movies', path)
 
-    dispatch('updateAll')
+    await dispatch('updateAll')
   },
   async deleteSeriesLibrary ({ dispatch }, path) {
     await oblectoClient.libraries.removePath('tvshows', path)
 
-    dispatch('updateAll')
+    await dispatch('updateAll')
   }
 }
 

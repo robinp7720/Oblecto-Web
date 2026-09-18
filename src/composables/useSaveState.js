@@ -34,7 +34,6 @@ export function createSaveState () {
       try {
         await task()
       } catch (e) {
-        console.error(error, e)
         if (id === sequence) state.fail(describeError(e, error))
         return false
       }

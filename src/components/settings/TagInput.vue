@@ -1,5 +1,9 @@
 <template>
-  <div class="tag-input">
+  <div
+    :id="availableOptions.length ? undefined : id"
+    class="tag-input"
+    tabindex="-1"
+  >
     <div class="tags-container">
       <div
         v-for="tag in tags"
@@ -21,7 +25,9 @@
         class="add-tag-wrapper"
       >
         <select
+          :id="id"
           v-model="selectedOption"
+          :aria-label="$attrs['aria-label']"
           class="add-select"
           @change="addTag"
         >
@@ -53,6 +59,7 @@
 export default {
   name: 'TagInput',
   props: {
+    id: { type: String, default: undefined },
     modelValue: {
       type: Array,
       default: () => []

@@ -307,7 +307,8 @@
 .checkbox-container
   display: block
   position: relative
-  padding-left: 30px
+  padding: 12px 0 12px 30px
+  min-height: 44px
   margin-bottom: 5px
   color: var(--color-text)
   font-size: 0.95rem
@@ -317,14 +318,17 @@
   input
     position: absolute
     opacity: 0
-    width: 0
-    height: 0
+    top: 13px
+    left: 0
+    width: 20px
+    height: 20px
     cursor: pointer
 
   .checkmark
     position: absolute
-    top: 1px
+    top: 13px
     left: 0
+    pointer-events: none
     width: 18px
     height: 18px
     border: 1px solid var(--color-border)
@@ -375,3 +379,95 @@
 
   .settings-table-scroll
     max-height: none
+
+.settings-fields
+  border: 0
+  margin: 0
+  padding: 0
+  min-width: 0
+
+  &:disabled
+    opacity: 0.65
+
+.settings-layout
+  input, select, button
+    min-height: 44px
+  input, select
+    max-width: 100%
+  :focus-visible
+    outline: 2px solid var(--color-accent)
+    outline-offset: 3px
+  [aria-invalid='true']
+    border-color: #ff8f7a
+  .form-error
+    color: #ff8f7a
+  .form-hint
+    display: block
+    color: var(--color-text-muted)
+    font-size: 0.85rem
+  [id^='setting-'], [id^='provider-']
+    scroll-margin-top: 180px
+
+.settings-search
+  display: block
+  width: 100%
+  margin: 8px 0 16px
+  padding: 8px
+  border: 1px solid var(--color-border)
+  background: var(--color-surface)
+  color: var(--color-text)
+
+.settings-search-results
+  max-height: 45vh
+  overflow-y: auto
+  margin-bottom: 16px
+  a
+    display: block
+    padding: 10px 4px
+
+.settings-section-picker
+  display: none
+
+.autosave-bar
+  position: sticky
+  bottom: 0
+  z-index: 2
+  display: flex
+  flex-wrap: wrap
+  align-items: center
+  gap: 12px
+  padding: 12px 16px
+  border: 1px solid var(--color-border)
+  background: var(--color-surface)
+  p
+    margin: 0
+    font-size: 0.85rem
+
+.maintenance-jobs
+  list-style: none
+  padding: 0
+  li
+    padding: 16px 0
+    border-top: 1px solid var(--color-border)
+  time
+    color: var(--color-text-muted)
+    font-size: 0.85rem
+
+@media screen and (max-width: 900px)
+  .settings-section-picker
+    display: flex
+    align-items: center
+    gap: 12px
+    margin-bottom: 12px
+    select
+      min-width: 0
+      flex: 1
+  .settings-search
+    margin-bottom: 8px
+
+@media (prefers-reduced-motion: reduce)
+  .save-state__dot
+    animation: none !important
+
+.settings-layout .checkbox-container input
+  min-height: 0
