@@ -1,13 +1,13 @@
 <template>
   <div class="settings-layout">
     <aside class="settings-nav">
-      <label for="settings-search">Find a setting</label>
+      <label for="settings-search">{{ t('settings.search.label') }}</label>
       <input
         id="settings-search"
         v-model="query"
         type="search"
         class="settings-search"
-        placeholder="Search settings"
+        :placeholder="t('settings.search.placeholder')"
         @keydown.esc="query = ''"
       >
       <div
@@ -16,7 +16,7 @@
         aria-live="polite"
       >
         <p v-if="!results.length">
-          No matching settings.
+          {{ t('settings.search.empty') }}
         </p>
         <RouterLink
           v-for="result in results"
@@ -28,15 +28,15 @@
         </RouterLink>
       </div>
       <div class="settings-section-picker">
-        <label for="settings-section">Settings section</label>
+        <label for="settings-section">{{ t('settings.sectionPicker') }}</label>
         <select
           id="settings-section"
           :value="route.name"
           @change="$router.push({ name: $event.target.value })"
         >
           <optgroup
-            v-for="group in groups"
-            :key="group.label"
+            v-for="group in navGroups"
+            :key="group.id"
             :label="group.label"
           >
             <option
@@ -51,11 +51,11 @@
       </div>
       <nav
         class="nav-scroller"
-        aria-label="Settings sections"
+        :aria-label="t('settings.sectionNav')"
       >
         <div
-          v-for="group in groups"
-          :key="group.label"
+          v-for="group in navGroups"
+          :key="group.id"
           class="nav-group"
         >
           <h2 class="nav-group-label">
@@ -77,7 +77,7 @@
     <section class="settings-panel">
       <header class="panel-header">
         <p class="eyebrow">
-          Server settings
+          {{ current.eyebrow }}
         </p>
         <h1>{{ current.label }}</h1>
         <p
@@ -95,19 +95,41 @@
 
 <script setup>
 import { computed, nextTick, ref, watch } from 'vue'
-import { groups, settingsFields, focusSetting } from '@/components/settings/registry'
+import { useI18n } from 'vue-i18n'
+import { pages, settingsFields, focusSetting, visibleGroups } from '@/components/settings/registry'
 import { useRoute } from 'vue-router'
+import { useAuthStore } from '@/stores/auth'
 
-// Grouped by what an operator is trying to do, so the sidebar reads as four
+// Grouped by what an operator is trying to do, so the sidebar reads as a few
 // short lists rather than ten equally-weighted cards. The description is the
 // single source for each page's header, so child components no longer have to
-// invent their own title treatment.
+// invent their own title treatment. Only pages the user may use are listed.
 
 const route = useRoute()
+const { t } = useI18n()
+const authStore = useAuthStore()
 const query = ref('')
+
+const describe = item => ({
+  ...item,
+  label: t(`settings.pages.${item.name}.label`),
+  description: t(`settings.pages.${item.name}.description`)
+})
+
+const navGroups = computed(() => visibleGroups(authStore.can).map(group => ({
+  ...group,
+  label: t(`settings.groups.${group.id}`),
+  items: group.items.map(describe)
+})))
+
+const navItems = computed(() => navGroups.value.flatMap(group => group.items))
+
 const results = computed(() => {
   const terms = query.value.toLowerCase().trim().split(/\s+/)
-  return [...groups.flatMap(group => group.items), ...settingsFields].filter(item => terms.every(term => `${item.label} ${item.description || ''} ${item.keywords || ''}`.toLowerCase().includes(term)))
+  const allowed = new Set(navItems.value.map(item => item.name))
+  const fields = settingsFields.filter(field => allowed.has(field.name))
+
+  return [...navItems.value, ...fields].filter(item => terms.every(term => `${item.label} ${item.description || ''} ${item.keywords || ''}`.toLowerCase().includes(term)))
 })
 watch(() => route.fullPath, async () => {
   await nextTick()
@@ -119,11 +141,16 @@ watch(() => route.fullPath, async () => {
   focusSetting(route.hash)
 }, { immediate: true, flush: 'post' })
 
-const items = groups.flatMap(group => group.items)
+const current = computed(() => {
+  const page = pages.find(item => item.name === route.name)
 
-const current = computed(() => (
-  items.find(item => item.name === route.name) || { label: 'Settings', description: '' }
-))
+  if (!page) return { eyebrow: '', label: t('menu.settings'), description: '' }
+
+  return {
+    ...describe(page),
+    eyebrow: t(page.group === 'account' ? 'settings.eyebrow.account' : 'settings.eyebrow.server')
+  }
+})
 </script>
 
 <style scoped lang="sass">

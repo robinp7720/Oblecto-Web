@@ -1,84 +1,69 @@
+// Labels and descriptions live in the locale files under
+// settings.groups.<id> and settings.pages.<name>. `permission` is what the
+// server requires for the page's requests; pages without one are open to
+// every signed-in user.
 export const groups = [
   {
-    label: 'Server',
+    id: 'account',
     items: [
-      { name: 'SettingsOverview', label: 'Overview', description: 'Library setup, background work and issues needing attention.' },
-      {
-        name: 'SettingsMaintenance',
-        label: 'Maintenance',
-        description: 'Run indexing, cleanup, artwork and metadata jobs on demand.'
-      },
-      {
-        name: 'ServerStatus',
-        label: 'Status',
-        description: 'Live streaming sessions and the clients currently connected.'
-      },
-      {
-        name: 'ProblematicFiles',
-        label: 'Problem files',
-        description: 'Files the indexer could not identify or read, why, and a way to retry.'
-      }
+      { name: 'AccountProfile' },
+      { name: 'AccountPassword' },
+      { name: 'AccountPreferences' }
     ]
   },
   {
-    label: 'Library',
+    id: 'server',
     items: [
-      {
-        name: 'SettingsLibraries',
-        label: 'Libraries',
-        description: 'The folders Oblecto scans, and how each library identifies and updates its titles.'
-      },
-      {
-        name: 'SettingsSets',
-        label: 'Sets',
-        description: 'Collections that group movies or TV shows together.'
-      },
-      {
-        name: 'IndexerSettings',
-        label: 'Indexer',
-        description: 'When scans and cleanups run, and which file extensions count as video.'
-      },
-      { name: 'MetadataSettings', label: 'Metadata providers', description: 'Manage API keys and test access to metadata and artwork services.' },
-      {
-        name: 'ArtworkSettings',
-        label: 'Artwork',
-        description: 'Where posters, fanart and banners come from, and the sizes kept on disk.'
-      }
+      { name: 'SettingsOverview', permission: 'settings.manage' },
+      { name: 'SettingsMaintenance', permission: 'system.manage' },
+      { name: 'ServerStatus', permission: 'system.manage' },
+      { name: 'ProblematicFiles', permission: 'libraries.manage' }
     ]
   },
   {
-    label: 'Access',
+    id: 'library',
     items: [
-      {
-        name: 'SettingsUsers',
-        label: 'Users',
-        description: 'Accounts that can sign in to this server.'
-      },
-      {
-        name: 'SignInSettings',
-        label: 'Sign-in',
-        description: 'Profile picker and password-less sign-in on the local network.'
-      }
+      { name: 'SettingsLibraries', permission: 'libraries.manage' },
+      { name: 'SettingsSets', permission: 'libraries.manage' },
+      { name: 'IndexerSettings', permission: 'settings.manage' },
+      { name: 'MetadataSettings', permission: 'settings.manage' },
+      { name: 'ArtworkSettings', permission: 'settings.manage' }
     ]
   },
   {
-    label: 'Network',
+    id: 'access',
     items: [
-      {
-        name: 'FederationSettings',
-        label: 'Federation',
-        description: 'Share libraries and streaming capacity with other Oblecto servers.'
-      },
-      {
-        name: 'SeedboxSettings',
-        label: 'Seedboxes',
-        description: 'Remote hosts Oblecto imports finished downloads from.'
-      }
+      { name: 'SettingsUsers', permission: 'users.manage' },
+      { name: 'SettingsGroups', permission: 'users.manage' },
+      { name: 'SignInSettings', permission: 'settings.manage' }
+    ]
+  },
+  {
+    id: 'network',
+    items: [
+      { name: 'FederationSettings', permission: 'settings.manage' },
+      { name: 'SeedboxSettings', permission: 'settings.manage' }
     ]
   }
 ]
 
+export const pages = groups.flatMap(group => group.items.map(item => ({ ...item, group: group.id })))
 
+export const pagePermission = name => pages.find(page => page.name === name)?.permission
+
+// The groups and pages `can` (the auth store's permission check) allows.
+export function visibleGroups (can) {
+  return groups
+    .map(group => ({ ...group, items: group.items.filter(item => !item.permission || can(item.permission)) }))
+    .filter(group => group.items.length)
+}
+
+// Whether any server page is open to this user, which decides between
+// "Settings" and "Account" in the header menu.
+export const canSeeServerSettings = can => pages.some(page => page.permission && can(page.permission))
+
+// Search index for individual settings. Still English only; the page labels
+// above are translated.
 export const settingsFields = [
   { name: 'SignInSettings', label: 'Show profiles on the sign-in screen', anchor: 'setting-authentication-profilePicker', keywords: 'login profile picker avatar local network' },
   { name: 'SignInSettings', label: 'Password-less sign-in on the local network', anchor: 'setting-authentication-localPasswordlessLogin', keywords: 'login password lan local network' },

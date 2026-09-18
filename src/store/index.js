@@ -41,7 +41,6 @@ export default createStore({
     playing: {
       title: ''
     },
-    autoplay: true,
     playSizeFormat: ScreenFormats.SMALL
   },
   modules: {
