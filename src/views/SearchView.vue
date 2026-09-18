@@ -2,7 +2,7 @@
   <div class="search-page">
     <section class="search-hero">
       <span class="eyebrow">Search</span>
-      <h1>Find a title, episode, or series instantly.</h1>
+      <h1>Search your library.</h1>
       <form
         class="search-form"
         @submit.prevent="submit"
@@ -11,6 +11,7 @@
           v-model="query"
           type="search"
           placeholder="Search all media"
+          aria-label="Search all media"
         >
         <button type="submit">
           Search
@@ -20,6 +21,7 @@
 
     <div
       v-if="searchStore.loading"
+      role="status"
       class="state-card"
     >
       Searching the catalog…
@@ -29,6 +31,12 @@
       class="state-card"
     >
       {{ searchStore.error }}
+      <button
+        type="button"
+        @click="searchStore.runSearch(normalizedQuery)"
+      >
+        Try again
+      </button>
     </div>
     <div
       v-else-if="!hasResults && normalizedQuery"
@@ -37,6 +45,12 @@
       No results found for “{{ normalizedQuery }}”.
     </div>
 
+    <p
+      v-if="normalizedQuery && !searchStore.loading && !searchStore.error"
+      role="status"
+    >
+      {{ resultCount }} {{ resultCount === 1 ? 'result' : 'results' }}
+    </p>
     <MediaShelf
       v-if="searchStore.results.movies.length"
       title="Movie Results"
@@ -73,6 +87,7 @@ const searchStore = useSearchStore()
 const query = ref(String(route.query.q || ''))
 
 const normalizedQuery = computed(() => String(route.query.q || '').trim())
+const resultCount = computed(() => Object.values(searchStore.results).reduce((count, items) => count + items.length, 0))
 const hasResults = computed(() => {
   const results = searchStore.results
   return results.movies.length > 0 || results.series.length > 0 || results.episodes.length > 0
@@ -102,14 +117,14 @@ watch(() => route.query.q, value => {
   display: grid
   gap: 14px
   padding: 24px
-  border-radius: 26px
-  background: rgba(30, 25, 28, 0.74)
+  border-radius: var(--radius-md)
+  background: var(--color-surface)
   border: 1px solid var(--color-border)
 
   h1
     margin: 0
     font-family: var(--font-display)
-    font-size: clamp(2rem, 4vw, 3.5rem)
+    font-size: clamp(1.6rem, 3vw, 2.4rem)
 
 .eyebrow
   text-transform: uppercase
@@ -124,20 +139,33 @@ watch(() => route.query.q, value => {
   button
     min-height: 48px
     padding: 0 18px
-    border-radius: 999px
+    border-radius: var(--radius-sm)
     border: none
-    background: linear-gradient(120deg, var(--color-accent), var(--color-accent-strong))
+    background: var(--color-brand-coral)
     color: #1b1616
     font-weight: 800
     cursor: pointer
 
 .state-card
   padding: 18px
-  border-radius: 20px
+  border-radius: var(--radius-md)
   border: 1px solid var(--color-border)
-  background: rgba(30, 25, 28, 0.7)
+  background: var(--color-surface)
 
 @media screen and (max-width: 720px)
   .search-form
     grid-template-columns: 1fr
+</style>
+
+<style scoped lang="sass">
+.state-card button
+  min-height: var(--control-size)
+  padding: 8px 16px
+  border: 1px solid var(--color-border)
+  border-radius: var(--radius-sm)
+  background: var(--color-surface)
+  color: var(--color-text)
+  cursor: pointer
+.state-card a
+  text-decoration: underline
 </style>

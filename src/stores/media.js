@@ -21,6 +21,9 @@ function createLibraryState () {
     pageInfo: null,
     loading: false,
     loadingMore: false,
+    requestId: 0,
+    moreError: null,
+    librariesLoaded: false,
     error: null,
     libraries: []
   }
@@ -49,6 +52,7 @@ function createBrowseParams (filters, cursor = null) {
 export const useMediaStore = defineStore('media', {
   state: () => ({
     home: {
+      sections: {},
       spotlight: null,
       rails: [],
       loading: false,
@@ -60,67 +64,55 @@ export const useMediaStore = defineStore('media', {
     }
   }),
   actions: {
-    async loadHome () {
-      this.home.loading = true
-      this.home.error = null
-
-      try {
-        const [
-          watchingEpisodes,
-          watchingMovies,
-          nextEpisodes,
-          recentMovies,
-          popularMovies,
-          recentSeries,
-          topSeries,
-          recentEpisodes,
-          movieSets
-        ] = await Promise.all([
-          oblectoClient.episodeLibrary.getWatching(),
-          oblectoClient.movieLibrary.getWatching(),
-          oblectoClient.episodeLibrary.getNextUp(),
-          oblectoClient.movieLibrary.getList('createdAt', 'DESC', 16, 0),
-          oblectoClient.movieLibrary.getList('popularity', 'DESC', 16, 0),
-          oblectoClient.seriesLibrary.getList('createdAt', 'DESC', 16, 0),
-          oblectoClient.seriesLibrary.getList('siteRating', 'DESC', 16, 0),
-          oblectoClient.episodeLibrary.getList('createdAt', 'DESC', 16, 0),
-          oblectoClient.movieLibrary.getSets()
-        ])
-
-        const featuredMovie = recentMovies?.[0] || null
-        const featuredSeries = recentSeries?.[0] || null
-
-        this.home.spotlight = featuredMovie
-          ? { type: 'movie', item: featuredMovie }
-          : (featuredSeries ? { type: 'series', item: featuredSeries } : null)
-
-        this.home.rails = [
-          { id: 'continue-movies', title: 'Continue Watching Movies', type: 'movie', items: watchingMovies || [] },
-          { id: 'next-episodes', title: 'Next Up', type: 'episode', items: nextEpisodes || [] },
-          { id: 'recent-movies', title: 'Recently Added Movies', type: 'movie', items: recentMovies || [] },
-          { id: 'recent-series', title: 'Recently Added Series', type: 'series', items: recentSeries || [] },
-          { id: 'recent-episodes', title: 'Fresh Episodes', type: 'episode', items: recentEpisodes || [] },
-          { id: 'popular-movies', title: 'Popular Movies', type: 'movie', items: popularMovies || [] },
-          { id: 'top-series', title: 'Top Rated Series', type: 'series', items: topSeries || [] },
-          ...(movieSets || []).slice(0, 2).map(set => ({
-            id: `set-${set.id}`,
-            title: set.setName,
-            type: 'movie',
-            items: set.movies || set.Movies || []
-          })),
-          { id: 'continue-episodes', title: 'Continue Watching Episodes', type: 'episode', items: watchingEpisodes || [] }
-        ].filter(section => Array.isArray(section.items) && section.items.length > 0)
-      } catch (error) {
-        this.home.error = error.message || 'Failed to load the home dashboard'
-      } finally {
-        this.home.loading = false
+    async loadHome (onlyId = null) {
+      const definitions = [
+        ['continue-movies', 'Continue Watching Movies', 'movie', () => oblectoClient.movieLibrary.getWatching()],
+        ['continue-episodes', 'Continue Watching Episodes', 'episode', () => oblectoClient.episodeLibrary.getWatching()],
+        ['next-episodes', 'Next Up', 'episode', () => oblectoClient.episodeLibrary.getNextUp()],
+        ['recent-movies', 'Recently Added Movies', 'movie', () => oblectoClient.movieLibrary.getList('createdAt', 'DESC', 16, 0)],
+        ['recent-series', 'Recently Added Series', 'series', () => oblectoClient.seriesLibrary.getList('createdAt', 'DESC', 16, 0)],
+        ['recent-episodes', 'Fresh Episodes', 'episode', () => oblectoClient.episodeLibrary.getList('createdAt', 'DESC', 16, 0)],
+        ['popular-movies', 'Popular Movies', 'movie', () => oblectoClient.movieLibrary.getList('popularity', 'DESC', 16, 0)],
+        ['top-series', 'Top Rated Series', 'series', () => oblectoClient.seriesLibrary.getList('siteRating', 'DESC', 16, 0)],
+        ['sets', 'Collections', 'movie', () => oblectoClient.movieLibrary.getSets()]
+      ]
+      const refresh = () => {
+        const sections = this.home.sections
+        this.home.loading = Object.values(sections).some(section => section.loading)
+        this.home.error = Object.values(sections).some(section => section.error) ? 'Some sections could not be loaded.' : null
+        this.home.rails = definitions.flatMap(([id, title, type]) => {
+          const items = sections[id]?.items || []
+          if (id === 'sets') return items.slice(0, 2).map(set => ({ id: `set-${set.id}`, title: set.setName, type, items: set.movies || set.Movies || [] }))
+          return [{ id, title, type, items }]
+        }).filter(section => section.items.length)
+        const movie = sections['recent-movies']?.items?.[0]
+        const series = sections['recent-series']?.items?.[0]
+        this.home.spotlight = movie ? { type: 'movie', item: movie } : series ? { type: 'series', item: series } : null
       }
+      const jobs = definitions.filter(([id]) => !onlyId || id === onlyId).filter(([id]) => !this.home.sections[id]?.loading)
+      for (const [id, title] of jobs) {
+        this.home.sections[id] = { ...this.home.sections[id], title, loading: true, error: null }
+      }
+      refresh()
+      await Promise.all(jobs.map(async ([id, , , fetch]) => {
+        const section = this.home.sections[id]
+        try {
+          const items = await fetch()
+          section.items = Array.isArray(items) ? items : []
+        } catch {
+          section.error = `Could not load ${section.title.toLowerCase()}.`
+        } finally {
+          section.loading = false
+          refresh()
+        }
+      }))
     },
     async ensureLibraries (type) {
       const state = this.library[type]
-      if (state.libraries.length > 0) return
+      if (state.librariesLoaded && state.libraries.length) return
 
       state.libraries = await oblectoClient.libraries.getLibraryPaths(type === 'movies' ? 'movies' : 'tvshows')
+      state.librariesLoaded = true
     },
     updateLibraryFilters (type, patch) {
       this.library[type].filters = {
@@ -139,17 +131,19 @@ export const useMediaStore = defineStore('media', {
       const state = this.library[type]
       const client = type === 'movies' ? oblectoClient.movieLibrary : oblectoClient.seriesLibrary
 
-      state.error = null
+      if (append && (state.loading || state.loadingMore)) return
+      const requestId = ++state.requestId
+      const params = createBrowseParams(state.filters, append ? state.pageInfo?.nextCursor || null : null)
+      state.moreError = null
+      if (!append) state.error = null
       state.loading = !append
       state.loadingMore = append
 
       try {
         await this.ensureLibraries(type)
 
-        const response = await client.browse(createBrowseParams(
-          state.filters,
-          append ? state.pageInfo?.nextCursor || null : null
-        ))
+        const response = await client.browse(params)
+        if (requestId !== state.requestId) return
 
         const nextItems = Array.isArray(response?.items) ? response.items : []
 
@@ -157,10 +151,13 @@ export const useMediaStore = defineStore('media', {
         state.facets = response?.facets || { genres: [] }
         state.pageInfo = response?.pageInfo || null
       } catch (error) {
-        state.error = error.message || `Failed to load ${type}`
+        if (requestId !== state.requestId) return
+        state[append ? 'moreError' : 'error'] = error.message || `Failed to load ${type}`
       } finally {
-        state.loading = false
-        state.loadingMore = false
+        if (requestId === state.requestId) {
+          state.loading = false
+          state.loadingMore = false
+        }
       }
     }
   }

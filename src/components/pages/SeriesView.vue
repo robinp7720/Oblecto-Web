@@ -31,14 +31,11 @@
         :back-to="{ name: 'Library', params: { mediaType: 'series' } }"
         back-label="TV Shows"
       >
-        <button
+        <PlaybackButton
           v-if="firstEpisode"
-          class="detail-button"
-          type="button"
-          @click="store.dispatch('playEpisode', firstEpisode.id)"
-        >
-          <span aria-hidden="true">▶</span> Play S{{ firstEpisode.airedSeason }} E{{ firstEpisode.airedEpisodeNumber }}
-        </button>
+          :label="`Play S${firstEpisode.airedSeason} E${firstEpisode.airedEpisodeNumber}`"
+          @play="store.dispatch('playEpisode', firstEpisode.id)"
+        />
         <a
           href="#show-episodes"
           class="detail-button secondary"
@@ -105,6 +102,7 @@
   </div>
 </template>
 <script setup>
+import PlaybackButton from '@/components/remote/PlaybackButton.vue'
 import { computed, ref, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import { useStore } from 'vuex'

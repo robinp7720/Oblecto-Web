@@ -30,13 +30,10 @@
         :back-to="seriesRoute"
         :back-label="episode.Series?.seriesName || episode.seriesName || 'TV Shows'"
       >
-        <button
-          class="detail-button"
-          type="button"
-          @click="store.dispatch('playEpisode', episode.id)"
-        >
-          <span aria-hidden="true">▶</span> Play episode
-        </button>
+        <PlaybackButton
+          :label="playbackLabel('episode', episode)"
+          @play="store.dispatch('playEpisode', episode.id)"
+        />
         <RouterLink
           v-if="seriesId"
           :to="seriesRoute"
@@ -67,6 +64,8 @@
   </div>
 </template>
 <script setup>
+import { playbackLabel } from '@/utils/media'
+import PlaybackButton from '@/components/remote/PlaybackButton.vue'
 import { computed } from 'vue'
 import { useRoute } from 'vue-router'
 import { useStore } from 'vuex'

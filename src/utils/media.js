@@ -136,3 +136,16 @@ export function formatStreamLabel (stream, type) {
 
   return `${language} - ${title}${forced} (#${stream.index})`
 }
+
+// Shared with the player so labels never promise a resume the player skips.
+export const IGNORE_RESTORE_PROGRESS_THRESHOLD = 0.9
+
+export function playbackLabel (type, item) {
+  const tracking = (type === 'movie' ? item?.TrackMovies : item?.TrackEpisodes)?.[0]
+  const time = Number(tracking?.time)
+  const progress = Number(tracking?.progress)
+  if (!(time > 0 && progress >= 0 && progress < IGNORE_RESTORE_PROGRESS_THRESHOLD)) return 'Play'
+  const duration = Number(item?.Files?.[0]?.duration) || Number(item?.runtime) * 60
+  if (!Number.isFinite(duration) || duration <= time) return 'Resume'
+  return `Resume · ${Math.ceil((duration - time) / 60)} min left`
+}

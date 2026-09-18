@@ -3,6 +3,7 @@ import oblectoClient from '@/oblectoClient'
 
 export const useSearchStore = defineStore('search', {
   state: () => ({
+    requestId: 0,
     query: '',
     loading: false,
     error: null,
@@ -14,15 +15,18 @@ export const useSearchStore = defineStore('search', {
   }),
   actions: {
     async runSearch (query) {
+      const requestId = ++this.requestId
       const normalized = String(query || '').trim()
       this.query = normalized
 
       if (!normalized) {
         this.results = { movies: [], series: [], episodes: [] }
         this.error = null
+        this.loading = false
         return
       }
 
+      this.results = { movies: [], series: [], episodes: [] }
       this.loading = true
       this.error = null
 
@@ -33,15 +37,17 @@ export const useSearchStore = defineStore('search', {
           oblectoClient.seriesLibrary.search(normalized)
         ])
 
+        if (requestId !== this.requestId) return
         this.results = {
           movies: movies || [],
           series: series || [],
           episodes: episodes || []
         }
       } catch (error) {
+        if (requestId !== this.requestId) return
         this.error = error.message || 'Search failed'
       } finally {
-        this.loading = false
+        if (requestId === this.requestId) this.loading = false
       }
     }
   }

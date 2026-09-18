@@ -29,7 +29,7 @@
         v-if="playable"
         type="button"
         class="play-button"
-        :aria-label="`Play ${title}`"
+        :aria-label="`${playLabel} ${title}`"
         @click="play"
       >
         <span aria-hidden="true">▶</span>
@@ -54,6 +54,12 @@
         {{ title }}
       </RouterLink>
       <p
+        v-if="playLabel.startsWith('Resume')"
+        class="subtitle"
+      >
+        {{ playLabel }}
+      </p>
+      <p
         v-if="subtitle"
         class="subtitle"
       >
@@ -66,7 +72,7 @@
 <script setup>
 import { computed, ref, watch } from 'vue'
 import { useStore } from 'vuex'
-import { titleForItem, subtitleForItem, imageUrl, progressForItem } from '@/utils/media'
+import { titleForItem, subtitleForItem, imageUrl, progressForItem, playbackLabel } from '@/utils/media'
 
 const props = defineProps({
   landscape: { type: Boolean, default: false },
@@ -84,6 +90,7 @@ const store = useStore()
 
 const title = computed(() => titleForItem(props.type, props.item))
 const subtitle = computed(() => subtitleForItem(props.type, props.item))
+const playLabel = computed(() => playbackLabel(props.type, props.item))
 const progress = computed(() => progressForItem(props.type, props.item))
 const host = computed(() => store.state.host)
 const imageFailed = ref(false)
@@ -179,8 +186,8 @@ function play () {
   bottom: 14px
   display: grid
   place-items: center
-  width: 38px
-  height: 38px
+  width: var(--control-size)
+  height: var(--control-size)
   border: 0
   border-radius: 50%
   background: white
