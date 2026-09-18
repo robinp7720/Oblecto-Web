@@ -53,6 +53,11 @@ export const groups = [
         name: 'SettingsUsers',
         label: 'Users',
         description: 'Accounts that can sign in to this server.'
+      },
+      {
+        name: 'SignInSettings',
+        label: 'Sign-in',
+        description: 'Profile picker and password-less sign-in on the local network.'
       }
     ]
   },
@@ -75,6 +80,10 @@ export const groups = [
 
 
 export const settingsFields = [
+  { name: 'SignInSettings', label: 'Show profiles on the sign-in screen', anchor: 'setting-authentication-profilePicker', keywords: 'login profile picker avatar local network' },
+  { name: 'SignInSettings', label: 'Password-less sign-in on the local network', anchor: 'setting-authentication-localPasswordlessLogin', keywords: 'login password lan local network' },
+  { name: 'SignInSettings', label: 'Additional local subnets', anchor: 'setting-authentication-localSubnets', keywords: 'lan vpn cidr network' },
+  { name: 'SignInSettings', label: 'Behind a reverse proxy', anchor: 'setting-authentication-trustProxy', keywords: 'x-forwarded-for proxy nginx' },
   { name: 'IndexerSettings', label: 'Video file extensions', anchor: 'setting-video-extensions', keywords: 'mkv mp4 file types' },
   { name: 'SettingsLibraries', label: 'Movie library folders', anchor: 'setting-movie-folders', keywords: 'directories paths source' },
   { name: 'SettingsLibraries', label: 'TV show library folders', anchor: 'setting-tv-folders', keywords: 'directories paths source' },

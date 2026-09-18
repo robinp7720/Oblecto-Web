@@ -39,12 +39,15 @@ export const useAuthStore = defineStore('auth', {
 
       this.ready = true
     },
-    async login ({ username, password }) {
+    // `credentials` is `{ username, password }`, or `{ userId, password? }`
+    // from the profile picker, where the password may be skipped on the
+    // local network.
+    async login (credentials, displayName = credentials.username) {
       this.loggingIn = true
 
       try {
-        await oblectoClient.authenticate(username, password)
-        this.username = username
+        await oblectoClient.authenticate(credentials)
+        this.username = displayName || null
 
         window.localStorage.setItem(TOKEN_KEY, oblectoClient.accessToken)
         window.localStorage.setItem(HOST_KEY, legacyStore.state.host || oblectoClient.axios.defaults.baseURL || '')

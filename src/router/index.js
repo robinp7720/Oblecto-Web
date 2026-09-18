@@ -16,6 +16,7 @@ import SeriesView from '@/components/pages/SeriesView'
 
 import Maintenance from '@/components/settings/Maintenance'
 import UserManager from '@/components/settings/UserManager'
+import SignInSettings from '@/components/settings/SignInSettings.vue'
 import Libraries from '@/components/settings/Libraries'
 import Sets from '@/components/settings/Sets'
 import IndexerSettings from '@/components/settings/IndexerSettings'
@@ -120,6 +121,11 @@ const router = createRouter({
           name: 'SettingsUsers',
           path: 'users',
           component: UserManager
+        },
+        {
+          name: 'SignInSettings',
+          path: 'sign-in',
+          component: SignInSettings
         },
         {
           name: 'SettingsLibraries',
