@@ -26,40 +26,6 @@
           <p class="settings-description">
             Identifiers match files to titles. Updaters fetch descriptions and other metadata. Changes to these services take effect after a server restart.
           </p>
-          <div class="setting-row">
-            <label class="checkbox-container">
-              Re-index on startup
-              <input
-                id="setting-movies-doReIndex"
-                v-model="moviesConfig.doReIndex"
-                :aria-invalid="Boolean(form.fields['movies.doReIndex'])"
-                :aria-describedby="'setting-movies-doReIndex-error setting-movies-doReIndex-hint'"
-                type="checkbox"
-                @change="saveMoviesConfig"
-              ><span
-                id="setting-movies-doReIndex-hint"
-                class="form-hint"
-              >Revisit already indexed files when scanning; this can take longer.</span>
-              <span class="checkmark" />
-            </label>
-          </div>
-          <div class="setting-row">
-            <label class="checkbox-container">
-              Index broken files
-              <input
-                id="setting-movies-indexBroken"
-                v-model="moviesConfig.indexBroken"
-                :aria-invalid="Boolean(form.fields['movies.indexBroken'])"
-                :aria-describedby="'setting-movies-indexBroken-error setting-movies-indexBroken-hint'"
-                type="checkbox"
-                @change="saveMoviesConfig"
-              ><span
-                id="setting-movies-indexBroken-hint"
-                class="form-hint"
-              >Attempt to index files even when probing reports a problem.</span>
-              <span class="checkmark" />
-            </label>
-          </div>
 
           <div class="form-group">
             <label for="setting-movies-movieIdentifiers">Identifiers</label>
@@ -169,57 +135,6 @@
           <p class="settings-description">
             Identifiers match files to titles. Updaters fetch descriptions and other metadata. Changes to these services take effect after a server restart.
           </p>
-          <div class="setting-row">
-            <label class="checkbox-container">
-              Re-index on startup
-              <input
-                id="setting-tvshows-doReIndex"
-                v-model="tvConfig.doReIndex"
-                :aria-invalid="Boolean(form.fields['tvshows.doReIndex'])"
-                :aria-describedby="'setting-tvshows-doReIndex-error setting-tvshows-doReIndex-hint'"
-                type="checkbox"
-                @change="saveTvConfig"
-              ><span
-                id="setting-tvshows-doReIndex-hint"
-                class="form-hint"
-              >Revisit already indexed files when scanning; this can take longer.</span>
-              <span class="checkmark" />
-            </label>
-          </div>
-          <div class="setting-row">
-            <label class="checkbox-container">
-              Index broken files
-              <input
-                id="setting-tvshows-indexBroken"
-                v-model="tvConfig.indexBroken"
-                :aria-invalid="Boolean(form.fields['tvshows.indexBroken'])"
-                :aria-describedby="'setting-tvshows-indexBroken-error setting-tvshows-indexBroken-hint'"
-                type="checkbox"
-                @change="saveTvConfig"
-              ><span
-                id="setting-tvshows-indexBroken-hint"
-                class="form-hint"
-              >Attempt to index files even when probing reports a problem.</span>
-              <span class="checkmark" />
-            </label>
-          </div>
-          <div class="setting-row">
-            <label class="checkbox-container">
-              Ignore series mismatch
-              <input
-                id="setting-tvshows-ignoreSeriesMismatch"
-                v-model="tvConfig.ignoreSeriesMismatch"
-                :aria-invalid="Boolean(form.fields['tvshows.ignoreSeriesMismatch'])"
-                :aria-describedby="'setting-tvshows-ignoreSeriesMismatch-error setting-tvshows-ignoreSeriesMismatch-hint'"
-                type="checkbox"
-                @change="saveTvConfig"
-              ><span
-                id="setting-tvshows-ignoreSeriesMismatch-hint"
-                class="form-hint"
-              >Allow an episode match even when its series identifier differs from the expected series.</span>
-              <span class="checkmark" />
-            </label>
-          </div>
 
           <div class="resize-grid">
             <div class="form-group">
@@ -394,15 +309,10 @@
         moviesSave: createSaveState(),
         tvSave: createSaveState(),
         moviesConfig: {
-            doReIndex: false,
-            indexBroken: false,
             movieIdentifiers: [],
             movieUpdaters: []
         },
         tvConfig: {
-            doReIndex: false,
-            indexBroken: false,
-            ignoreSeriesMismatch: true,
             seriesIdentifiers: [],
             episodeIdentifiers: [],
             seriesUpdaters: [],
