@@ -13,8 +13,20 @@
         class="login-form"
         @submit.prevent="submit"
       >
-        <label>
-          Host
+        <div
+          v-if="!editingHost"
+          class="server-address"
+        >
+          <span>Server address: {{ host }}</span>
+          <button
+            type="button"
+            @click="editingHost = true"
+          >
+            Change
+          </button>
+        </div>
+        <label v-else>
+          Server address
           <input
             v-model="host"
             type="text"
@@ -77,6 +89,7 @@ const credentials = reactive({
 
 const host = ref(store.state.host || '')
 const error = ref('')
+const editingHost = ref(!host.value)
 
 async function submit () {
   error.value = ''
@@ -197,4 +210,13 @@ async function submit () {
     input
       width: 100%
       min-width: 0
+</style>
+
+<style scoped lang="sass">
+.server-address
+  overflow-wrap: anywhere
+  color: var(--color-text-muted)
+  button
+    margin-left: 12px
+    padding: 8px 14px
 </style>

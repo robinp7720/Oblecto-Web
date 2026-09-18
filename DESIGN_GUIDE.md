@@ -53,7 +53,7 @@ Respect `env(safe-area-inset-*)` on every edge the player touches; the app is `v
 
 ## Other screens
 
-Carry the same neutral surfaces, typography, and Oblecto brand accents through sign-in, discovery, libraries, settings, and legacy detail dialogs using shared tokens. Keep user-facing copy focused on finding and watching their collection.
+Carry the same neutral surfaces, typography, and Oblecto brand accents through sign-in, discovery, libraries, settings, and legacy detail dialogs using shared tokens. Keep user-facing copy focused on finding and watching their collection. Show the configured server address with a Change control at sign-in, and collapse advanced library indexing options by default.
 
 ## Detail pages
 
