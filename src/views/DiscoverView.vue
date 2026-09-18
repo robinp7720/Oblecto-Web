@@ -32,6 +32,12 @@
       </RouterLink>
     </section>
 
+    <HomeLoadState :ids="discoverIds" />
+    <p v-if="!discoverPending && !discoverError && !discoverRails.length">
+      No titles to discover yet. <RouterLink :to="{ name: 'SettingsLibraries' }">
+        Manage libraries
+      </RouterLink>
+    </p>
     <MediaShelf
       v-for="section in discoverRails"
       :key="section.id"
@@ -44,6 +50,7 @@
 </template>
 
 <script setup>
+import HomeLoadState from '@/components/media/HomeLoadState.vue'
 import { computed, onMounted } from 'vue'
 import MediaShelf from '@/components/media/MediaShelf.vue'
 import { useMediaStore } from '@/stores/media'
@@ -54,7 +61,10 @@ onMounted(() => {
   mediaStore.loadHome()
 })
 
-const discoverRails = computed(() => mediaStore.home.rails.filter(section => ['recent-movies', 'recent-series', 'popular-movies', 'top-series'].includes(section.id)))
+const discoverIds = ['recent-movies', 'recent-series', 'popular-movies', 'top-series']
+const discoverPending = computed(() => discoverIds.some(id => mediaStore.home.sections[id]?.loading))
+const discoverError = computed(() => discoverIds.some(id => mediaStore.home.sections[id]?.error))
+const discoverRails = computed(() => mediaStore.home.rails.filter(section => discoverIds.includes(section.id)))
 </script>
 
 <style scoped lang="sass">

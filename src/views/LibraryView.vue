@@ -14,11 +14,28 @@
             v-model="query"
             type="search"
             placeholder="Filter titles..."
-            @change="applyFilters"
+            aria-label="Filter titles"
+            @input="scheduleFilter"
           >
         </div>
+        <button
+          type="button"
+          class="filter-toggle"
+          :aria-expanded="filtersOpen"
+          aria-controls="advanced-filters"
+          @click="filtersOpen = !filtersOpen"
+        >
+          Filters ({{ activeChips.length }})
+        </button>
+      </div>
+      <div
+        id="advanced-filters"
+        class="advanced-filters"
+        :class="{ expanded: filtersOpen }"
+      >
         <select
           v-model="filters.sort"
+          aria-label="Sort by"
           class="select-pill"
           @change="applyFilters"
         >
@@ -32,6 +49,7 @@
         </select>
         <select
           v-model="filters.order"
+          aria-label="Sort direction"
           class="select-pill"
           @change="applyFilters"
         >
@@ -44,6 +62,7 @@
         </select>
         <select
           v-model="filters.watched"
+          aria-label="Watch state"
           class="select-pill"
           @change="applyFilters"
         >
@@ -62,6 +81,7 @@
         </select>
         <select
           v-model="filters.libraryPath"
+          aria-label="Library"
           class="select-pill"
           @change="applyFilters"
         >
@@ -76,21 +96,45 @@
             {{ library.name || library.path || library }}
           </option>
         </select>
-      </div>
 
+        <div
+          v-if="libraryState.facets.genres?.length"
+          class="genre-list"
+        >
+          <button
+            v-for="genre in libraryState.facets.genres"
+            :key="genre"
+            type="button"
+            class="genre-chip"
+            :class="{ active: filters.genre.includes(genre) }"
+            :aria-pressed="filters.genre.includes(genre)"
+            @click="toggleGenre(genre)"
+          >
+            {{ genre }}
+          </button>
+        </div>
+      </div>
       <div
-        v-if="libraryState.facets.genres?.length"
-        class="genre-list"
+        v-if="activeChips.length"
+        class="active-filters"
+        aria-label="Active filters"
       >
         <button
-          v-for="genre in libraryState.facets.genres"
-          :key="genre"
+          v-for="chip in activeChips"
+          :key="chip.key + chip.value"
           type="button"
           class="genre-chip"
-          :class="{ active: filters.genre.includes(genre) }"
-          @click="toggleGenre(genre)"
+          :aria-label="`Remove ${chip.label} filter`"
+          @click="removeFilter(chip)"
         >
-          {{ genre }}
+          {{ chip.label }} ×
+        </button>
+        <button
+          type="button"
+          class="genre-chip"
+          @click="clearFilters"
+        >
+          Clear filters
         </button>
       </div>
     </section>
@@ -107,12 +151,35 @@
       class="state-card error"
     >
       {{ libraryState.error }}
+      <button
+        type="button"
+        @click="mediaStore.loadLibrary(mediaType)"
+      >
+        Try again
+      </button>
     </div>
     <div
       v-else-if="!libraryState.items.length"
       class="state-card"
     >
-      No items match your filter criteria.
+      <template v-if="hasConstraints">
+        No titles match these filters. <button
+          type="button"
+          @click="clearFilters"
+        >
+          Clear filters
+        </button>
+      </template>
+      <template v-else-if="libraryState.librariesLoaded && !libraryState.libraries.length">
+        No libraries configured. <RouterLink :to="{ name: 'SettingsLibraries' }">
+          Add a library
+        </RouterLink>
+      </template>
+      <template v-else>
+        No titles have been indexed yet. <RouterLink :to="{ name: 'SettingsMaintenance' }">
+          Manage library scans
+        </RouterLink>
+      </template>
     </div>
 
     <section
@@ -127,20 +194,26 @@
       />
     </section>
 
+    <p
+      v-if="libraryState.moreError"
+      role="alert"
+    >
+      {{ libraryState.moreError }}
+    </p>
     <button
       v-if="libraryState.pageInfo?.hasNextPage"
       type="button"
       class="load-more"
-      :disabled="libraryState.loadingMore"
+      :disabled="libraryState.loading || libraryState.loadingMore"
       @click="loadMore"
     >
-      {{ libraryState.loadingMore ? 'Loading more…' : 'Load More' }}
+      {{ libraryState.loadingMore ? 'Loading more…' : libraryState.moreError ? 'Retry loading more' : 'Load More' }}
     </button>
   </div>
 </template>
 
 <script setup>
-import { computed, onMounted, reactive, watch } from 'vue'
+import { computed, onBeforeUnmount, reactive, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import MediaCard from '@/components/media/MediaCard.vue'
 import { useMediaStore } from '@/stores/media'
@@ -202,10 +275,7 @@ function syncFromRoute () {
 }
 
 function applyFilters () {
-  mediaStore.updateLibraryFilters(mediaType.value, {
-    ...filters
-  })
-
+  clearTimeout(filterTimer)
   router.replace({
     name: 'Library',
     params: { mediaType: mediaType.value },
@@ -218,8 +288,6 @@ function applyFilters () {
       libraryPath: filters.libraryPath || undefined
     }
   })
-
-  mediaStore.loadLibrary(mediaType.value)
 }
 
 function toggleGenre (genre) {
@@ -235,19 +303,35 @@ function loadMore () {
   mediaStore.loadLibrary(mediaType.value, { append: true })
 }
 
-onMounted(() => {
+const filtersOpen = ref(false)
+let filterTimer
+const hasConstraints = computed(() => Boolean(filters.q || filters.genre.length || filters.watched !== 'all' || filters.libraryPath))
+const activeChips = computed(() => [
+  ...(filters.q ? [{ key: 'q', value: filters.q, label: filters.q }] : []),
+  ...filters.genre.map(value => ({ key: 'genre', value, label: value })),
+  ...['sort', 'order', 'watched', 'libraryPath'].filter(key => filters[key] !== ({ sort: 'createdAt', order: 'desc', watched: 'all', libraryPath: '' })[key]).map(key => ({ key, value: filters[key], label: key === 'sort' ? sortOptions.value.find(option => option.value === filters[key])?.label || filters[key] : filters[key] }))
+])
+function scheduleFilter () {
+  clearTimeout(filterTimer)
+  filterTimer = setTimeout(applyFilters, 300)
+}
+function removeFilter (chip) {
+  clearTimeout(filterTimer)
+  if (chip.key === 'genre') filters.genre = filters.genre.filter(value => value !== chip.value)
+  else filters[chip.key] = ({ q: '', sort: 'createdAt', order: 'desc', watched: 'all', libraryPath: '' })[chip.key]
+  applyFilters()
+}
+function clearFilters () {
+  clearTimeout(filterTimer)
+  Object.assign(filters, { q: '', sort: 'createdAt', order: 'desc', watched: 'all', genre: [], libraryPath: '' })
+  applyFilters()
+}
+watch(() => [route.params.mediaType, route.query], () => {
+  clearTimeout(filterTimer)
   syncFromRoute()
   mediaStore.loadLibrary(mediaType.value)
-})
-
-watch(() => route.params.mediaType, () => {
-  syncFromRoute()
-  mediaStore.loadLibrary(mediaType.value)
-})
-
-watch(() => route.query, () => {
-  syncFromRoute()
-})
+}, { immediate: true })
+onBeforeUnmount(() => clearTimeout(filterTimer))
 </script>
 
 <style scoped lang="sass">
@@ -276,7 +360,7 @@ watch(() => route.query, () => {
 
 .filters
   display: grid
-  grid-template-columns: minmax(220px, 1.4fr) repeat(4, minmax(0, 1fr))
+  grid-template-columns: minmax(0, 1fr) auto
   gap: 12px
 
 .select-pill
@@ -372,4 +456,51 @@ watch(() => route.query, () => {
     grid-template-columns: repeat(2, minmax(0, 1fr))
   .search-box input
     width: 100%
+</style>
+
+<style scoped lang="sass">
+.search-box input
+  width: 100%
+.advanced-filters
+  display: grid
+  grid-template-columns: repeat(4, minmax(0, 1fr))
+  gap: 12px
+  .genre-list
+    grid-column: 1 / -1
+.filter-toggle
+  display: none
+.active-filters
+  display: flex
+  flex-wrap: wrap
+  gap: 8px
+button, select
+  min-height: var(--control-size)
+@media (max-width: 980px)
+  .filters
+    grid-template-columns: minmax(0, 1fr) auto
+  .filter-toggle
+    display: block
+    background: var(--color-surface)
+    color: var(--color-text)
+    border: 1px solid var(--color-border)
+    border-radius: var(--radius-sm)
+    padding: 8px 12px
+  .advanced-filters
+    display: none
+    &.expanded
+      display: grid
+      grid-template-columns: minmax(0, 1fr)
+</style>
+
+<style scoped lang="sass">
+.state-card button
+  min-height: var(--control-size)
+  padding: 8px 16px
+  border: 1px solid var(--color-border)
+  border-radius: var(--radius-sm)
+  background: var(--color-surface)
+  color: var(--color-text)
+  cursor: pointer
+.state-card a
+  text-decoration: underline
 </style>

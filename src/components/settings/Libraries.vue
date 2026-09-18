@@ -1,252 +1,357 @@
 <template>
   <div class="Libraries">
-    <!-- MOVIES SECTION -->
-    <div class="settings-card">
-      <div class="settings-header-row">
-        <h2 class="settings-title-plain">
-          Movies
-        </h2>
-        <button
-          type="button"
-          class="btn"
-          @click="libraryAdd('movies')"
-        >
-          <font-awesome-icon icon="plus" /> Add movie library
-        </button>
-      </div>
-      
-      <!-- Configuration -->
-      <div class="settings-section-gap">
-        <div class="setting-row">
-          <label class="checkbox-container">
-            Re-index on Startup
-            <input
-              v-model="moviesConfig.doReIndex"
-              type="checkbox"
-              @change="saveMoviesConfig"
-            >
-            <span class="checkmark" />
-          </label>
+    <fieldset
+      class="settings-fields"
+      :disabled="!form.ready"
+    >
+      <!-- MOVIES SECTION -->
+      <div class="settings-card">
+        <div class="settings-header-row">
+          <h2 class="settings-title-plain">
+            Movies
+          </h2>
+          <button
+            id="setting-movie-folders"
+            type="button"
+            class="btn"
+            @click="libraryAdd('movies')"
+          >
+            <font-awesome-icon icon="plus" /> Add movie library
+          </button>
         </div>
-        <div class="setting-row">
-          <label class="checkbox-container">
-            Index Broken Files
-            <input
-              v-model="moviesConfig.indexBroken"
-              type="checkbox"
-              @change="saveMoviesConfig"
-            >
-            <span class="checkmark" />
-          </label>
-        </div>
-          
-        <div class="form-group">
-          <label>Identifiers</label>
-          <TagInput
-            v-model="moviesConfig.movieIdentifiers"
-            :options="capabilities.movies.identifiers"
-            @update:model-value="saveMoviesConfig"
-          />
-        </div>
-        <div class="form-group">
-          <label>Updaters</label>
-          <TagInput
-            v-model="moviesConfig.movieUpdaters"
-            :options="capabilities.movies.updaters"
-            @update:model-value="saveMoviesConfig"
-          />
-        </div>
-      </div>
 
-      <div class="settings-table-scroll">
-        <table class="settings-table">
-          <thead>
-            <tr>
-              <th width="50">
-                #
-              </th>
-              <th>Path</th>
-              <th width="100">
-                Actions
-              </th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr v-if="movies.length === 0">
-              <td
-                colspan="3"
-                class="settings-table-center"
-              >
-                No movie libraries configured.
-              </td>
-            </tr>
-            <tr
-              v-for="(library, index) in movies"
-              :key="index"
+        <!-- Configuration -->
+        <details class="settings-section-gap">
+          <summary>Advanced indexing options</summary>
+          <p class="settings-description">
+            Identifiers match files to titles. Updaters fetch descriptions and other metadata. Changes to these services take effect after a server restart.
+          </p>
+          <div class="setting-row">
+            <label class="checkbox-container">
+              Re-index on startup
+              <input
+                id="setting-movies-doReIndex"
+                v-model="moviesConfig.doReIndex"
+                :aria-invalid="Boolean(form.fields['movies.doReIndex'])"
+                :aria-describedby="'setting-movies-doReIndex-error setting-movies-doReIndex-hint'"
+                type="checkbox"
+                @change="saveMoviesConfig"
+              ><span
+                id="setting-movies-doReIndex-hint"
+                class="form-hint"
+              >Revisit already indexed files when scanning; this can take longer.</span>
+              <span class="checkmark" />
+            </label>
+          </div>
+          <div class="setting-row">
+            <label class="checkbox-container">
+              Index broken files
+              <input
+                id="setting-movies-indexBroken"
+                v-model="moviesConfig.indexBroken"
+                :aria-invalid="Boolean(form.fields['movies.indexBroken'])"
+                :aria-describedby="'setting-movies-indexBroken-error setting-movies-indexBroken-hint'"
+                type="checkbox"
+                @change="saveMoviesConfig"
+              ><span
+                id="setting-movies-indexBroken-hint"
+                class="form-hint"
+              >Attempt to index files even when probing reports a problem.</span>
+              <span class="checkmark" />
+            </label>
+          </div>
+
+          <div class="form-group">
+            <label for="setting-movies-movieIdentifiers">Identifiers</label>
+            <TagInput
+              id="setting-movies-movieIdentifiers"
+              v-model="moviesConfig.movieIdentifiers"
+              aria-label="Identifiers"
+              :options="capabilities.movies.identifiers"
+              @update:model-value="saveMoviesConfig"
+            />
+            <p
+              v-if="form.fields['movies.movieIdentifiers']"
+              id="setting-movies-movieIdentifiers-error"
+              class="form-error"
             >
-              <td class="id">
-                {{ index + 1 }}
-              </td>
-              <td>{{ library.path }}</td>
-              <td class="actions">
-                <button
-                  type="button"
-                  title="Remove this library path"
-                  :aria-label="`Remove ${library.path}`"
-                  @click="removeLibrary('movies', library.path)"
+              {{ form.fields['movies.movieIdentifiers'] }}
+            </p>
+          </div>
+          <div class="form-group">
+            <label for="setting-movies-movieUpdaters">Updaters</label>
+            <TagInput
+              id="setting-movies-movieUpdaters"
+              v-model="moviesConfig.movieUpdaters"
+              aria-label="Updaters"
+              :options="capabilities.movies.updaters"
+              @update:model-value="saveMoviesConfig"
+            />
+            <p
+              v-if="form.fields['movies.movieUpdaters']"
+              id="setting-movies-movieUpdaters-error"
+              class="form-error"
+            >
+              {{ form.fields['movies.movieUpdaters'] }}
+            </p>
+          </div>
+        </details>
+
+        <div class="settings-table-scroll">
+          <table class="settings-table">
+            <thead>
+              <tr>
+                <th width="50">
+                  #
+                </th>
+                <th>Path</th>
+                <th width="100">
+                  Actions
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr v-if="movies.length === 0">
+                <td
+                  colspan="3"
+                  class="settings-table-center"
                 >
-                  <font-awesome-icon :icon="deleteIcon" />
-                </button>
-              </td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-
-      <div class="settings-card-actions">
-        <SaveState :state="moviesSave" />
-      </div>
-    </div>
-
-    <!-- TV SHOWS SECTION -->
-    <div class="settings-card">
-      <div class="settings-header-row">
-        <h2 class="settings-title-plain">
-          TV Shows
-        </h2>
-        <button
-          type="button"
-          class="btn"
-          @click="libraryAdd('tvshows')"
-        >
-          <font-awesome-icon icon="plus" /> Add TV show library
-        </button>
-      </div>
-
-      <!-- Configuration -->
-      <div class="settings-section-gap">
-        <div class="setting-row">
-          <label class="checkbox-container">
-            Re-index on Startup
-            <input
-              v-model="tvConfig.doReIndex"
-              type="checkbox"
-              @change="saveTvConfig"
-            >
-            <span class="checkmark" />
-          </label>
-        </div>
-        <div class="setting-row">
-          <label class="checkbox-container">
-            Index Broken Files
-            <input
-              v-model="tvConfig.indexBroken"
-              type="checkbox"
-              @change="saveTvConfig"
-            >
-            <span class="checkmark" />
-          </label>
-        </div>
-        <div class="setting-row">
-          <label class="checkbox-container">
-            Ignore Series Mismatch
-            <input
-              v-model="tvConfig.ignoreSeriesMismatch"
-              type="checkbox"
-              @change="saveTvConfig"
-            >
-            <span class="checkmark" />
-          </label>
-        </div>
-          
-        <div class="resize-grid">
-          <div class="form-group">
-            <label>Series Identifiers</label>
-            <TagInput
-              v-model="tvConfig.seriesIdentifiers"
-              :options="capabilities.tvshows.seriesIdentifiers"
-              @update:model-value="saveTvConfig"
-            />
-          </div>
-          <div class="form-group">
-            <label>Episode Identifiers</label>
-            <TagInput
-              v-model="tvConfig.episodeIdentifiers"
-              :options="capabilities.tvshows.episodeIdentifiers"
-              @update:model-value="saveTvConfig"
-            />
-          </div>
-        </div>
-        <div class="resize-grid">
-          <div class="form-group">
-            <label>Series Updaters</label>
-            <TagInput
-              v-model="tvConfig.seriesUpdaters"
-              :options="capabilities.tvshows.seriesUpdaters"
-              @update:model-value="saveTvConfig"
-            />
-          </div>
-          <div class="form-group">
-            <label>Episode Updaters</label>
-            <TagInput
-              v-model="tvConfig.episodeUpdaters"
-              :options="capabilities.tvshows.episodeUpdaters"
-              @update:model-value="saveTvConfig"
-            />
-          </div>
-        </div>
-      </div>
-
-      <div class="settings-table-scroll">
-        <table class="settings-table">
-          <thead>
-            <tr>
-              <th width="50">
-                #
-              </th>
-              <th>Path</th>
-              <th width="100">
-                Actions
-              </th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr v-if="shows.length === 0">
-              <td
-                colspan="3"
-                class="settings-table-center"
+                  No movie libraries configured.
+                </td>
+              </tr>
+              <tr
+                v-for="(library, index) in movies"
+                :key="index"
               >
-                No TV show libraries configured.
-              </td>
-            </tr>
-            <tr
-              v-for="(library, index) in shows"
-              :key="index"
-            >
-              <td class="id">
-                {{ index + 1 }}
-              </td>
-              <td>{{ library.path }}</td>
-              <td class="actions">
-                <button
-                  type="button"
-                  title="Remove this library path"
-                  :aria-label="`Remove ${library.path}`"
-                  @click="removeLibrary('tvshows', library.path)"
+                <td class="id">
+                  {{ index + 1 }}
+                </td>
+                <td>{{ library.path }}</td>
+                <td class="actions">
+                  <button
+                    type="button"
+                    title="Remove this library path"
+                    :aria-label="`Remove ${library.path}`"
+                    @click="removeLibrary('movies', library.path)"
+                  >
+                    <font-awesome-icon :icon="deleteIcon" />
+                  </button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="settings-card-actions">
+          <SaveState :state="moviesSave" />
+        </div>
+      </div>
+
+      <!-- TV SHOWS SECTION -->
+      <div class="settings-card">
+        <div class="settings-header-row">
+          <h2 class="settings-title-plain">
+            TV shows
+          </h2>
+          <button
+            id="setting-tv-folders"
+            type="button"
+            class="btn"
+            @click="libraryAdd('tvshows')"
+          >
+            <font-awesome-icon icon="plus" /> Add TV show library
+          </button>
+        </div>
+
+        <!-- Configuration -->
+        <details class="settings-section-gap">
+          <summary>Advanced indexing options</summary>
+          <p class="settings-description">
+            Identifiers match files to titles. Updaters fetch descriptions and other metadata. Changes to these services take effect after a server restart.
+          </p>
+          <div class="setting-row">
+            <label class="checkbox-container">
+              Re-index on startup
+              <input
+                id="setting-tvshows-doReIndex"
+                v-model="tvConfig.doReIndex"
+                :aria-invalid="Boolean(form.fields['tvshows.doReIndex'])"
+                :aria-describedby="'setting-tvshows-doReIndex-error setting-tvshows-doReIndex-hint'"
+                type="checkbox"
+                @change="saveTvConfig"
+              ><span
+                id="setting-tvshows-doReIndex-hint"
+                class="form-hint"
+              >Revisit already indexed files when scanning; this can take longer.</span>
+              <span class="checkmark" />
+            </label>
+          </div>
+          <div class="setting-row">
+            <label class="checkbox-container">
+              Index broken files
+              <input
+                id="setting-tvshows-indexBroken"
+                v-model="tvConfig.indexBroken"
+                :aria-invalid="Boolean(form.fields['tvshows.indexBroken'])"
+                :aria-describedby="'setting-tvshows-indexBroken-error setting-tvshows-indexBroken-hint'"
+                type="checkbox"
+                @change="saveTvConfig"
+              ><span
+                id="setting-tvshows-indexBroken-hint"
+                class="form-hint"
+              >Attempt to index files even when probing reports a problem.</span>
+              <span class="checkmark" />
+            </label>
+          </div>
+          <div class="setting-row">
+            <label class="checkbox-container">
+              Ignore series mismatch
+              <input
+                id="setting-tvshows-ignoreSeriesMismatch"
+                v-model="tvConfig.ignoreSeriesMismatch"
+                :aria-invalid="Boolean(form.fields['tvshows.ignoreSeriesMismatch'])"
+                :aria-describedby="'setting-tvshows-ignoreSeriesMismatch-error setting-tvshows-ignoreSeriesMismatch-hint'"
+                type="checkbox"
+                @change="saveTvConfig"
+              ><span
+                id="setting-tvshows-ignoreSeriesMismatch-hint"
+                class="form-hint"
+              >Allow an episode match even when its series identifier differs from the expected series.</span>
+              <span class="checkmark" />
+            </label>
+          </div>
+
+          <div class="resize-grid">
+            <div class="form-group">
+              <label for="setting-tvshows-seriesIdentifiers">Series identifiers</label>
+              <TagInput
+                id="setting-tvshows-seriesIdentifiers"
+                v-model="tvConfig.seriesIdentifiers"
+                aria-label="Series identifiers"
+                :options="capabilities.tvshows.seriesIdentifiers"
+                @update:model-value="saveTvConfig"
+              />
+              <p
+                v-if="form.fields['tvshows.seriesIdentifiers']"
+                id="setting-tvshows-seriesIdentifiers-error"
+                class="form-error"
+              >
+                {{ form.fields['tvshows.seriesIdentifiers'] }}
+              </p>
+            </div>
+            <div class="form-group">
+              <label for="setting-tvshows-episodeIdentifiers">Episode identifiers</label>
+              <TagInput
+                id="setting-tvshows-episodeIdentifiers"
+                v-model="tvConfig.episodeIdentifiers"
+                aria-label="Episode identifiers"
+                :options="capabilities.tvshows.episodeIdentifiers"
+                @update:model-value="saveTvConfig"
+              />
+              <p
+                v-if="form.fields['tvshows.episodeIdentifiers']"
+                id="setting-tvshows-episodeIdentifiers-error"
+                class="form-error"
+              >
+                {{ form.fields['tvshows.episodeIdentifiers'] }}
+              </p>
+            </div>
+          </div>
+          <div class="resize-grid">
+            <div class="form-group">
+              <label for="setting-tvshows-seriesUpdaters">Series updaters</label>
+              <TagInput
+                id="setting-tvshows-seriesUpdaters"
+                v-model="tvConfig.seriesUpdaters"
+                aria-label="Series updaters"
+                :options="capabilities.tvshows.seriesUpdaters"
+                @update:model-value="saveTvConfig"
+              />
+              <p
+                v-if="form.fields['tvshows.seriesUpdaters']"
+                id="setting-tvshows-seriesUpdaters-error"
+                class="form-error"
+              >
+                {{ form.fields['tvshows.seriesUpdaters'] }}
+              </p>
+            </div>
+            <div class="form-group">
+              <label for="setting-tvshows-episodeUpdaters">Episode updaters</label>
+              <TagInput
+                id="setting-tvshows-episodeUpdaters"
+                v-model="tvConfig.episodeUpdaters"
+                aria-label="Episode updaters"
+                :options="capabilities.tvshows.episodeUpdaters"
+                @update:model-value="saveTvConfig"
+              />
+              <p
+                v-if="form.fields['tvshows.episodeUpdaters']"
+                id="setting-tvshows-episodeUpdaters-error"
+                class="form-error"
+              >
+                {{ form.fields['tvshows.episodeUpdaters'] }}
+              </p>
+            </div>
+          </div>
+        </details>
+
+        <div class="settings-table-scroll">
+          <table class="settings-table">
+            <thead>
+              <tr>
+                <th width="50">
+                  #
+                </th>
+                <th>Path</th>
+                <th width="100">
+                  Actions
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr v-if="shows.length === 0">
+                <td
+                  colspan="3"
+                  class="settings-table-center"
                 >
-                  <font-awesome-icon :icon="deleteIcon" />
-                </button>
-              </td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
+                  No TV show libraries configured.
+                </td>
+              </tr>
+              <tr
+                v-for="(library, index) in shows"
+                :key="index"
+              >
+                <td class="id">
+                  {{ index + 1 }}
+                </td>
+                <td>{{ library.path }}</td>
+                <td class="actions">
+                  <button
+                    type="button"
+                    title="Remove this library path"
+                    :aria-label="`Remove ${library.path}`"
+                    @click="removeLibrary('tvshows', library.path)"
+                  >
+                    <font-awesome-icon :icon="deleteIcon" />
+                  </button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
 
-      <div class="settings-card-actions">
-        <SaveState :state="tvSave" />
+        <div class="settings-card-actions">
+          <SaveState :state="tvSave" />
+        </div>
       </div>
-    </div>
-
+    </fieldset>
+    <SettingsFormStatus
+      :state="save"
+      :form="form"
+      :dirty="settingsDirty"
+      @retry="loadConfig"
+      @revert="revertSettings"
+    />
     <LibraryAdd
       v-model:open="showAdd"
       :library-type="addType"
@@ -266,6 +371,8 @@
   import LibraryAdd from '@/components/modals/LibraryAdd'
   import SaveState from '@/components/system/SaveState.vue'
   import { createSaveState } from '@/composables/useSaveState'
+  import { settingsForm } from '@/composables/settingsForm'
+  import SettingsFormStatus from './SettingsFormStatus.vue'
   import { confirm } from '@/composables/useConfirm'
 
   fontawesome.library.add(faTrash, faPlus)
@@ -276,8 +383,10 @@
       FontAwesomeIcon,
       TagInput,
       LibraryAdd,
-      SaveState
+      SaveState,
+      SettingsFormStatus
     },
+    mixins: [settingsForm({ moviesConfig: 'movies', tvConfig: 'tvshows' })],
     data () {
       return {
         showAdd: false,
@@ -315,7 +424,6 @@
       }
     },
     async created () {
-      this.updateAll() // Vuex action for paths
       this.loadConfig()
     },
     methods: {
@@ -347,60 +455,18 @@
           { busy: 'Removing…', ok: 'Path removed', error: 'Could not remove this path' }
         )
       },
-      async loadConfig() {
-          try {
-              // Load capabilities
-              this.capabilities = await oblectoClient.system.getCapabilities()
-
-              const movies = await oblectoClient.settings.getSection('movies')
-              const tv = await oblectoClient.settings.getSection('tvshows')
-              
-              this.moviesConfig = {
-                  ...movies,
-                  movieIdentifiers: movies.movieIdentifiers || [],
-                  movieUpdaters: movies.movieUpdaters || []
-              }
-
-              this.tvConfig = {
-                  ...tv,
-                  seriesIdentifiers: tv.seriesIdentifiers || [],
-                  episodeIdentifiers: tv.episodeIdentifiers || [],
-                  seriesUpdaters: tv.seriesUpdaters || [],
-                  episodeUpdaters: tv.episodeUpdaters || []
-              }
-          } catch (e) {
-              console.error('Failed to load library config', e)
-              this.moviesSave.fail('Could not load library settings')
-          }
+      async loadConfig () {
+        if (this.form.ready) return this.saveSettings()
+        try {
+          await this.updateAll()
+          this.capabilities = await oblectoClient.system.getCapabilities()
+          await this.loadSettings()
+        } catch {
+          this.save.fail('Could not load libraries or available metadata services. Retry to edit settings.')
+        }
       },
-      async saveMoviesConfig() {
-          const payload = {
-              doReIndex: this.moviesConfig.doReIndex,
-              indexBroken: this.moviesConfig.indexBroken,
-              movieIdentifiers: this.moviesConfig.movieIdentifiers,
-              movieUpdaters: this.moviesConfig.movieUpdaters
-          }
-
-          await this.moviesSave.run(
-            () => oblectoClient.settings.updateSection('movies', payload),
-            { error: 'Could not save movie settings' }
-          )
-      },
-      async saveTvConfig() {
-           const payload = {
-              doReIndex: this.tvConfig.doReIndex,
-              indexBroken: this.tvConfig.indexBroken,
-              ignoreSeriesMismatch: this.tvConfig.ignoreSeriesMismatch,
-              seriesIdentifiers: this.tvConfig.seriesIdentifiers,
-              episodeIdentifiers: this.tvConfig.episodeIdentifiers,
-              seriesUpdaters: this.tvConfig.seriesUpdaters,
-              episodeUpdaters: this.tvConfig.episodeUpdaters
-          }
-          await this.tvSave.run(
-            () => oblectoClient.settings.updateSection('tvshows', payload),
-            { error: 'Could not save TV settings' }
-          )
-      }
+      saveMoviesConfig () { return this.saveSettings() },
+      saveTvConfig () { return this.saveSettings() }
     }
   }
 </script>

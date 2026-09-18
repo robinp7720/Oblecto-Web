@@ -33,14 +33,11 @@
           {{ spotlightOverview }}
         </p>
         <div class="hero-actions">
-          <button
+          <PlaybackButton
             v-if="spotlight.type === 'movie'"
-            type="button"
-            class="primary-button"
-            @click="playSpotlight"
-          >
-            <span aria-hidden="true">▶</span> Play
-          </button>
+            :label="playbackLabel('movie', spotlight.item)"
+            @play="playSpotlight"
+          />
           <RouterLink
             :to="spotlightRoute"
             class="secondary-button"
@@ -63,23 +60,8 @@
       <div class="skeleton-hero" />
       <p>Finding your next great watch…</p>
     </div>
-    <div
-      v-else-if="mediaStore.home.error"
-      class="state-card"
-      role="alert"
-    >
-      <h1>We couldn’t load your library.</h1>
-      <p>{{ mediaStore.home.error }}</p>
-      <button
-        class="primary-button"
-        type="button"
-        @click="mediaStore.loadHome()"
-      >
-        Try again
-      </button>
-    </div>
     <section
-      v-else-if="!mediaStore.home.loading && !mediaStore.home.rails.length"
+      v-else-if="!mediaStore.home.loading && !mediaStore.home.error && !mediaStore.home.rails.length"
       class="state-card"
     >
       <span class="eyebrow">MAKE YOURSELF AT HOME</span>
@@ -97,6 +79,7 @@
       class="home-shelves"
       :class="{ 'with-hero': spotlight }"
     >
+      <HomeLoadState />
       <MediaShelf
         v-for="section in mediaStore.home.rails"
         :key="section.id"
@@ -111,6 +94,9 @@
 </template>
 
 <script setup>
+import { playbackLabel } from '@/utils/media'
+import HomeLoadState from '@/components/media/HomeLoadState.vue'
+import PlaybackButton from '@/components/remote/PlaybackButton.vue'
 import { computed, onMounted, ref, watch } from 'vue'
 import { useStore } from 'vuex'
 import MediaShelf from '@/components/media/MediaShelf.vue'
@@ -257,10 +243,10 @@ function playSpotlight () {
   border-radius: 4px
 @media (max-width: 760px)
   .hero
-    min-height: 550px
+    min-height: 360px
     height: auto
     align-items: flex-end
-    padding-top: 140px
+    padding-top: 60px
     padding-bottom: 100px
   .hero-content
     width: 100%

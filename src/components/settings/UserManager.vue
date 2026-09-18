@@ -22,7 +22,19 @@
               <th>Username</th>
               <th>Email</th>
               <th>Group</th>
-              <th width="120">
+              <th
+                class="flag-heading"
+                title="Shown on the profile picker when signing in from the local network"
+              >
+                On sign-in screen
+              </th>
+              <th
+                class="flag-heading"
+                title="Needs “Password-less sign-in on the local network” under Sign-in"
+              >
+                No password on local network
+              </th>
+              <th width="170">
                 Actions
               </th>
             </tr>
@@ -30,7 +42,7 @@
           <tbody>
             <tr v-if="users.length === 0">
               <td
-                colspan="5"
+                colspan="7"
                 class="settings-table-center"
               >
                 No users found.
@@ -42,6 +54,9 @@
               :user="user"
               @set-password="passwordTarget = user"
               @delete="deleteUser"
+              @update="updateUser"
+              @upload-avatar="uploadAvatar"
+              @remove-avatar="removeAvatar"
             />
           </tbody>
         </table>
@@ -126,7 +141,40 @@
         )
 
         if (ok) this.users = this.users.filter(entry => entry.id !== user.id)
+      },
+      replaceUser (updated) {
+        this.users = this.users.map(entry => entry.id === updated.id ? { ...entry, ...updated } : entry)
+      },
+      async updateUser (user, changes) {
+        // Shown at once; put back if the server refuses.
+        this.replaceUser({ ...user, ...changes })
+
+        const ok = await this.status.run(
+          async () => this.replaceUser(await oblectoClient.userManager.updateUser(user.id, changes)),
+          { busy: 'Saving…', ok: `Saved ${user.username}`, error: `Could not update ${user.username}` }
+        )
+
+        if (!ok) this.replaceUser(user)
+      },
+      async uploadAvatar (user, file) {
+        await this.status.run(
+          async () => this.replaceUser(await oblectoClient.userManager.uploadAvatar(user.id, file)),
+          { busy: 'Uploading picture…', ok: `Updated the picture of ${user.username}`, error: `Could not use this picture for ${user.username}` }
+        )
+      },
+      async removeAvatar (user) {
+        await this.status.run(
+          async () => this.replaceUser(await oblectoClient.userManager.removeAvatar(user.id)),
+          { busy: 'Removing picture…', ok: `Removed the picture of ${user.username}`, error: `Could not remove the picture of ${user.username}` }
+        )
       }
     }
   }
 </script>
+
+<style scoped lang="sass">
+.flag-heading
+  max-width: 120px
+  text-align: center
+  white-space: normal
+</style>

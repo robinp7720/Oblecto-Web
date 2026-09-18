@@ -32,13 +32,10 @@
         :back-to="{ name: 'Library', params: { mediaType: 'movies' } }"
         back-label="Movies"
       >
-        <button
-          class="detail-button"
-          type="button"
-          @click="store.dispatch('playMovie', movie.id)"
-        >
-          <span aria-hidden="true">▶</span> Play movie
-        </button>
+        <PlaybackButton
+          :label="playbackLabel('movie', movie)"
+          @play="store.dispatch('playMovie', movie.id)"
+        />
         <a
           href="#movie-files"
           class="detail-button secondary"
@@ -90,6 +87,8 @@
   </div>
 </template>
 <script setup>
+import { playbackLabel } from '@/utils/media'
+import PlaybackButton from '@/components/remote/PlaybackButton.vue'
 import { computed } from 'vue'
 import { useRoute } from 'vue-router'
 import { useStore } from 'vuex'

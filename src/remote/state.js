@@ -44,7 +44,7 @@ export function applyDevices (devices) {
 
   if (isRemote.value && !remote.devices.some(device => device.deviceId === remote.targetDeviceId)) {
     remote.targetDeviceId = LOCAL
-    remote.lastError = 'That device disconnected, so playback moved back to this one.'
+    remote.lastError = 'That device disconnected. New playback will start on this device.'
   }
 }
 

@@ -150,7 +150,7 @@ import { useRemoteBroadcast } from '@/composables/player/useRemoteBroadcast'
 import { useVideoElement } from '@/composables/player/useVideoElement'
 
 const AUTOPLAY_TIME_LEFT_THRESHOLD = 5
-const IGNORE_RESTORE_PROGRESS_THRESHOLD = 0.9
+import { IGNORE_RESTORE_PROGRESS_THRESHOLD } from '@/utils/media'
 const NEXT_EPISODE_PROGRESS_THRESHOLD = 0.9
 
 const store = useStore()

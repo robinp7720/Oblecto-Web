@@ -1,119 +1,139 @@
 <template>
   <div class="wrapper">
-    <div class="settings-card">
-      <h2 class="settings-section-title">
-        General Configuration
-      </h2>
-      
-      <div class="setting-row">
-        <label class="checkbox-container">
-          Run Indexer on Startup
-          <input
-            v-model="indexer.runAtBoot"
-            type="checkbox"
-            @change="saveSettings"
-          >
-          <span class="checkmark" />
-        </label>
-        <p class="checkbox-description">
-          Automatically scan for new files when the server starts.
-        </p>
-      </div>
-
-      <div class="setting-row">
-        <label class="checkbox-container">
-          Run Cleaner on Startup
-          <input
-            v-model="cleaner.runAtBoot"
-            type="checkbox"
-            @change="saveSettings"
-          >
-          <span class="checkmark" />
-        </label>
-        <p class="checkbox-description">
-          Automatically check for removed files when the server starts.
-        </p>
-      </div>
-
-      <div class="setting-row">
-        <label class="checkbox-container">
-          Calculate File Hashes
-          <input
-            v-model="files.doHash"
-            type="checkbox"
-            @change="saveSettings"
-          >
-          <span class="checkmark" />
-        </label>
-        <p class="checkbox-description">
-          Calculate MD5 hashes for files to detect duplicates and changes. (Slower)
-        </p>
-      </div>
-    </div>
-
-    <div class="settings-card">
-      <div class="settings-header-row">
-        <h2 class="settings-title-plain">
-          Video Filetypes
+    <fieldset
+      class="settings-fields"
+      :disabled="!form.ready"
+    >
+      <div class="settings-card">
+        <h2 class="settings-section-title">
+          General configuration
         </h2>
-        <button
-          type="button"
-          class="btn"
-          @click="openFiletypeDialog"
-        >
-          <font-awesome-icon icon="plus" /> Add filetype
-        </button>
-      </div>
-      <p class="settings-description">
-        Only files with one of these extensions are picked up by a scan.
-      </p>
-      <div class="settings-table-scroll">
-        <table class="settings-table">
-          <thead>
-            <tr>
-              <th width="50">
-                #
-              </th>
-              <th>Filetype</th>
-              <th width="100">
-                Actions
-              </th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr v-if="videoFiletypes.length === 0">
-              <td
-                colspan="3"
-                class="settings-table-center"
-              >
-                No video filetypes configured.
-              </td>
-            </tr>
-            <tr
-              v-for="(filetype, index) in videoFiletypes"
-              :key="index"
-            >
-              <td class="id">
-                {{ index + 1 }}
-              </td>
-              <td>{{ filetype }}</td>
-              <td class="actions">
-                <button
-                  type="button"
-                  title="Remove this filetype"
-                  :aria-label="`Remove .${filetype}`"
-                  @click="deleteFiletype(filetype)"
-                >
-                  <FontAwesomeIcon :icon="deleteIcon" />
-                </button>
-              </td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-    </div>
 
-    <AutosaveBar :state="save" />
+        <div class="setting-row">
+          <label class="checkbox-container">
+            Run indexer on startup
+            <input
+              id="setting-indexer-runAtBoot"
+              v-model="indexer.runAtBoot"
+              :aria-invalid="Boolean(form.fields['indexer.runAtBoot'])"
+              :aria-describedby="'setting-indexer-runAtBoot-error'"
+              type="checkbox"
+              @change="saveSettings"
+            >
+            <span class="checkmark" />
+          </label>
+          <p class="checkbox-description">
+            Automatically scan for new files when the server starts.
+          </p>
+        </div>
+
+        <div class="setting-row">
+          <label class="checkbox-container">
+            Run cleaner on startup
+            <input
+              id="setting-cleaner-runAtBoot"
+              v-model="cleaner.runAtBoot"
+              :aria-invalid="Boolean(form.fields['cleaner.runAtBoot'])"
+              :aria-describedby="'setting-cleaner-runAtBoot-error'"
+              type="checkbox"
+              @change="saveSettings"
+            >
+            <span class="checkmark" />
+          </label>
+          <p class="checkbox-description">
+            Automatically check for removed files when the server starts.
+          </p>
+        </div>
+
+        <div class="setting-row">
+          <label class="checkbox-container">
+            Calculate file hashes
+            <input
+              id="setting-files-doHash"
+              v-model="files.doHash"
+              :aria-invalid="Boolean(form.fields['files.doHash'])"
+              :aria-describedby="'setting-files-doHash-error'"
+              type="checkbox"
+              @change="saveSettings"
+            >
+            <span class="checkmark" />
+          </label>
+          <p class="checkbox-description">
+            Calculate MD5 hashes for files to detect duplicates and changes. (Slower)
+          </p>
+        </div>
+      </div>
+
+      <div class="settings-card">
+        <div class="settings-header-row">
+          <h2 class="settings-title-plain">
+            Video file types
+          </h2>
+          <button
+            id="setting-video-extensions"
+            type="button"
+            class="btn"
+            @click="openFiletypeDialog"
+          >
+            <font-awesome-icon icon="plus" /> Add file type
+          </button>
+        </div>
+        <p class="settings-description">
+          Only files with one of these extensions are picked up by a scan.
+        </p>
+        <div class="settings-table-scroll">
+          <table class="settings-table">
+            <thead>
+              <tr>
+                <th width="50">
+                  #
+                </th>
+                <th>Filetype</th>
+                <th width="100">
+                  Actions
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr v-if="videoFiletypes.length === 0">
+                <td
+                  colspan="3"
+                  class="settings-table-center"
+                >
+                  No video filetypes configured.
+                </td>
+              </tr>
+              <tr
+                v-for="(filetype, index) in videoFiletypes"
+                :key="index"
+              >
+                <td class="id">
+                  {{ index + 1 }}
+                </td>
+                <td>{{ filetype }}</td>
+                <td class="actions">
+                  <button
+                    type="button"
+                    title="Remove this filetype"
+                    :aria-label="`Remove .${filetype}`"
+                    @click="deleteFiletype(filetype)"
+                  >
+                    <FontAwesomeIcon :icon="deleteIcon" />
+                  </button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </fieldset>
+    <SettingsFormStatus
+      :state="save"
+      :form="form"
+      :dirty="settingsDirty"
+      @retry="retrySettings"
+      @revert="revertSettings"
+    />
 
     <AppDialog
       v-model:open="showFiletypeDialog"
@@ -155,7 +175,7 @@
           type="submit"
           class="btn btn-primary"
         >
-          Add filetype
+          Add file type
         </button>
       </template>
     </AppDialog>
@@ -167,8 +187,8 @@
   import faTrash from '@fortawesome/fontawesome-free-solid/faTrash'
   import faPlus from '@fortawesome/fontawesome-free-solid/faPlus'
   import fontawesome from '@fortawesome/fontawesome'
-  import oblectoClient from '@/oblectoClient'
-  import AutosaveBar from '@/components/settings/AutosaveBar.vue'
+  import SettingsFormStatus from '@/components/settings/SettingsFormStatus.vue'
+  import { settingsForm } from '@/composables/settingsForm'
   import AppDialog from '@/components/system/AppDialog.vue'
   import { createSaveState } from '@/composables/useSaveState'
   import { confirm } from '@/composables/useConfirm'
@@ -178,23 +198,25 @@
   export default {
     name: 'IndexerSettings',
     components: {
-      AutosaveBar,
+      SettingsFormStatus,
       AppDialog,
       FontAwesomeIcon
     },
+    mixins: [settingsForm({ indexer: 'indexer', cleaner: 'cleaner', files: 'files', extensions: 'fileExtensions' })],
     data () {
       return {
         save: createSaveState(),
         showFiletypeDialog: false,
         newFiletype: '',
         filetypeError: '',
-        videoFiletypes: [],
+        extensions: { video: [] },
         indexer: { runAtBoot: false },
         cleaner: { runAtBoot: false },
         files: { doHash: false }
       }
     },
     computed: {
+      videoFiletypes () { return this.extensions.video },
       deleteIcon () {
         return faTrash
       }
@@ -203,28 +225,7 @@
       this.refresh()
     },
     methods: {
-      async refresh () {
-        await this.save.run(
-          async () => {
-            const config = await oblectoClient.settings.getAll()
-            this.videoFiletypes = config.fileExtensions?.video || []
-            this.indexer = config.indexer || { runAtBoot: false }
-            this.cleaner = config.cleaner || { runAtBoot: false }
-            this.files = config.files || { doHash: false }
-          },
-          { busy: 'Loading…', ok: '', error: 'Could not load indexer settings' }
-        )
-      },
-      async saveSettings () {
-        await this.save.run(
-          () => oblectoClient.settings.update({
-            indexer: this.indexer,
-            cleaner: this.cleaner,
-            files: this.files
-          }),
-          { error: 'Could not save indexer settings' }
-        )
-      },
+      async refresh () { await this.loadSettings() },
       openFiletypeDialog () {
         this.newFiletype = ''
         this.filetypeError = ''
@@ -270,16 +271,12 @@
           { busy: 'Removing…', ok: `Removed .${filetype}`, error: `Could not remove .${filetype}` }
         )
       },
-      async updateFiletypes (videoList, labels) {
-        const ok = await this.save.run(
-          () => oblectoClient.settings.updateSection('fileExtensions', { video: videoList }),
-          labels
-        )
-
-        if (ok) this.videoFiletypes = videoList
-
-        return ok
+      async updateFiletypes (videoList) {
+        this.extensions.video = videoList
+        await this.saveSettings()
+        return this.save.status !== 'error'
       }
+
     }
   }
 </script>

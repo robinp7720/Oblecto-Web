@@ -7,6 +7,8 @@ import LibraryView from '@/views/LibraryView.vue'
 import SearchView from '@/views/SearchView.vue'
 import LoginView from '@/views/LoginView.vue'
 import SettingsView from '@/views/SettingsView.vue'
+import SettingsOverview from '@/components/settings/SettingsOverview.vue'
+import MetadataSettings from '@/components/settings/MetadataSettings.vue'
 
 import MovieInfo from '@/components/pages/MovieInfo'
 import EpisodeInfo from '@/components/pages/EpisodeInfo'
@@ -14,6 +16,7 @@ import SeriesView from '@/components/pages/SeriesView'
 
 import Maintenance from '@/components/settings/Maintenance'
 import UserManager from '@/components/settings/UserManager'
+import SignInSettings from '@/components/settings/SignInSettings.vue'
 import Libraries from '@/components/settings/Libraries'
 import Sets from '@/components/settings/Sets'
 import IndexerSettings from '@/components/settings/IndexerSettings'
@@ -105,10 +108,9 @@ const router = createRouter({
       meta: { requiresAuth: true },
       children: [
         {
-          // Redirect rather than mount Maintenance twice, so /settings resolves
-          // to a named section the sidebar and page header can highlight.
           path: '',
-          redirect: { name: 'SettingsMaintenance' }
+          name: 'SettingsOverview',
+          component: SettingsOverview
         },
         {
           name: 'SettingsMaintenance',
@@ -119,6 +121,11 @@ const router = createRouter({
           name: 'SettingsUsers',
           path: 'users',
           component: UserManager
+        },
+        {
+          name: 'SignInSettings',
+          path: 'sign-in',
+          component: SignInSettings
         },
         {
           name: 'SettingsLibraries',
@@ -134,6 +141,11 @@ const router = createRouter({
           name: 'IndexerSettings',
           path: 'indexer',
           component: IndexerSettings
+        },
+        {
+          name: 'MetadataSettings',
+          path: 'metadata',
+          component: MetadataSettings
         },
         {
           name: 'ArtworkSettings',

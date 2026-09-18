@@ -1,6 +1,54 @@
 <template>
   <div class="settings-layout">
     <aside class="settings-nav">
+      <label for="settings-search">Find a setting</label>
+      <input
+        id="settings-search"
+        v-model="query"
+        type="search"
+        class="settings-search"
+        placeholder="Search settings"
+        @keydown.esc="query = ''"
+      >
+      <div
+        v-if="query.trim()"
+        class="settings-search-results"
+        aria-live="polite"
+      >
+        <p v-if="!results.length">
+          No matching settings.
+        </p>
+        <RouterLink
+          v-for="result in results"
+          :key="result.name + result.anchor"
+          :to="{ name: result.name, hash: result.anchor ? '#' + result.anchor : '' }"
+          @click="query = ''"
+        >
+          {{ result.label }}
+        </RouterLink>
+      </div>
+      <div class="settings-section-picker">
+        <label for="settings-section">Settings section</label>
+        <select
+          id="settings-section"
+          :value="route.name"
+          @change="$router.push({ name: $event.target.value })"
+        >
+          <optgroup
+            v-for="group in groups"
+            :key="group.label"
+            :label="group.label"
+          >
+            <option
+              v-for="item in group.items"
+              :key="item.name"
+              :value="item.name"
+            >
+              {{ item.label }}
+            </option>
+          </optgroup>
+        </select>
+      </div>
       <nav
         class="nav-scroller"
         aria-label="Settings sections"
@@ -46,87 +94,30 @@
 </template>
 
 <script setup>
-import { computed } from 'vue'
+import { computed, nextTick, ref, watch } from 'vue'
+import { groups, settingsFields, focusSetting } from '@/components/settings/registry'
 import { useRoute } from 'vue-router'
 
 // Grouped by what an operator is trying to do, so the sidebar reads as four
 // short lists rather than ten equally-weighted cards. The description is the
 // single source for each page's header, so child components no longer have to
 // invent their own title treatment.
-const groups = [
-  {
-    label: 'Server',
-    items: [
-      {
-        name: 'SettingsMaintenance',
-        label: 'Maintenance',
-        description: 'Run indexing, cleanup, artwork and metadata jobs on demand.'
-      },
-      {
-        name: 'ServerStatus',
-        label: 'Status',
-        description: 'Live streaming sessions and the clients currently connected.'
-      },
-      {
-        name: 'ProblematicFiles',
-        label: 'Problem files',
-        description: 'Files the indexer could not read, with the error it hit and a way to retry.'
-      }
-    ]
-  },
-  {
-    label: 'Library',
-    items: [
-      {
-        name: 'SettingsLibraries',
-        label: 'Libraries',
-        description: 'The folders Oblecto scans, and how each library identifies and updates its titles.'
-      },
-      {
-        name: 'SettingsSets',
-        label: 'Sets',
-        description: 'Collections that group movies or TV shows together.'
-      },
-      {
-        name: 'IndexerSettings',
-        label: 'Indexer',
-        description: 'When scans and cleanups run, and which file extensions count as video.'
-      },
-      {
-        name: 'ArtworkSettings',
-        label: 'Artwork',
-        description: 'Where posters, fanart and banners come from, and the sizes kept on disk.'
-      }
-    ]
-  },
-  {
-    label: 'Access',
-    items: [
-      {
-        name: 'SettingsUsers',
-        label: 'Users',
-        description: 'Accounts that can sign in to this server.'
-      }
-    ]
-  },
-  {
-    label: 'Network',
-    items: [
-      {
-        name: 'FederationSettings',
-        label: 'Federation',
-        description: 'Share libraries and streaming capacity with other Oblecto servers.'
-      },
-      {
-        name: 'SeedboxSettings',
-        label: 'Seedboxes',
-        description: 'Remote hosts Oblecto imports finished downloads from.'
-      }
-    ]
-  }
-]
 
 const route = useRoute()
+const query = ref('')
+const results = computed(() => {
+  const terms = query.value.toLowerCase().trim().split(/\s+/)
+  return [...groups.flatMap(group => group.items), ...settingsFields].filter(item => terms.every(term => `${item.label} ${item.description || ''} ${item.keywords || ''}`.toLowerCase().includes(term)))
+})
+watch(() => route.fullPath, async () => {
+  await nextTick()
+  const nav = document.querySelector('.nav-scroller')
+  const active = nav?.querySelector('.router-link-exact-active')
+  if (active && nav.scrollWidth > nav.clientWidth) {
+    nav.scrollLeft += active.getBoundingClientRect().left - nav.getBoundingClientRect().left
+  }
+  focusSetting(route.hash)
+}, { immediate: true, flush: 'post' })
 
 const items = groups.flatMap(group => group.items)
 
@@ -144,6 +135,8 @@ const current = computed(() => (
 
 .settings-nav
   position: sticky
+  max-height: calc(100dvh - 100px)
+  overflow-y: auto
   // Clears the sticky app header.
   top: calc(76px + 24px)
 
@@ -174,7 +167,7 @@ const current = computed(() => (
     background: var(--color-surface)
     color: var(--color-text)
 
-  &.router-link-active
+  &.router-link-exact-active
     border-left-color: var(--color-accent)
     background: var(--color-surface)
     color: var(--color-text)
@@ -218,6 +211,8 @@ const current = computed(() => (
     gap: 20px
 
   .settings-nav
+    max-height: none
+    overflow-y: visible
     min-width: 0
     top: 0
     z-index: 1
@@ -251,7 +246,7 @@ const current = computed(() => (
     border: 1px solid var(--color-border)
     white-space: nowrap
 
-    &.router-link-active
+    &.router-link-exact-active
       border-color: var(--color-accent)
       background: var(--color-accent-soft)
 

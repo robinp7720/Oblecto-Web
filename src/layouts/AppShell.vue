@@ -81,7 +81,7 @@
           >▾</span>
         </summary>
         <div class="account-options">
-          <RouterLink :to="{ name: 'SettingsMaintenance' }">
+          <RouterLink :to="{ name: 'SettingsOverview' }">
             Settings
           </RouterLink>
 

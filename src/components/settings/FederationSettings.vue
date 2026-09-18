@@ -1,72 +1,116 @@
 <template>
   <div class="wrapper">
-    <div class="settings-card">
-      <h2 class="settings-section-title">
-        Federation
-      </h2>
-      <p class="settings-description">
-        Connect multiple Oblecto servers to share libraries and streaming capabilities.
-      </p>
-      
-      <div class="setting-row">
-        <label class="checkbox-container">
-          Enable Federation
-          <input
-            v-model="federation.enable"
-            type="checkbox"
-            @change="saveSettings"
-          >
-          <span class="checkmark" />
-        </label>
-      </div>
-
-      <div class="resize-grid">
-        <div class="form-group">
-          <label>Data Port</label>
-          <input
-            v-model.number="federation.dataPort"
-            type="number"
-            @change="saveSettings"
-          >
-        </div>
-        <div class="form-group">
-          <label>Media Port</label>
-          <input
-            v-model.number="federation.mediaPort"
-            type="number"
-            @change="saveSettings"
-          >
-        </div>
-      </div>
-
-      <div class="form-group">
-        <label>Private Key Path</label>
-        <input
-          v-model="federation.key"
-          type="text"
-          placeholder="/etc/oblecto/id_rsa"
-          @change="saveSettings"
-        >
-        <p class="settings-description settings-description-tight">
-          Path to the RSA private key for identity.
+    <fieldset
+      class="settings-fields"
+      :disabled="!form.ready"
+    >
+      <div class="settings-card">
+        <h2 class="settings-section-title">
+          Federation
+        </h2>
+        <p class="settings-description">
+          Connect multiple Oblecto servers to share libraries and streaming capabilities.
         </p>
-      </div>
-    </div>
 
-    <AutosaveBar :state="save" />
+        <div class="setting-row">
+          <label class="checkbox-container">
+            Enable federation
+            <input
+              id="setting-federation-enable"
+              v-model="federation.enable"
+              :aria-invalid="Boolean(form.fields['federation.enable'])"
+              :aria-describedby="'setting-federation-enable-error'"
+              type="checkbox"
+              @change="saveSettings"
+            >
+            <span class="checkmark" />
+          </label>
+        </div>
+
+        <div class="resize-grid">
+          <div class="form-group">
+            <label for="setting-federation-dataPort">Data port</label>
+            <input
+              id="setting-federation-dataPort"
+              v-model.number="federation.dataPort"
+              :aria-invalid="Boolean(form.fields['federation.dataPort'])"
+              :aria-describedby="'setting-federation-dataPort-error'"
+              type="number"
+              @change="saveSettings"
+            >
+            <p
+              v-if="form.fields['federation.dataPort']"
+              id="setting-federation-dataPort-error"
+              class="form-error"
+            >
+              {{ form.fields['federation.dataPort'] }}
+            </p>
+          </div>
+          <div class="form-group">
+            <label for="setting-federation-mediaPort">Media port</label>
+            <input
+              id="setting-federation-mediaPort"
+              v-model.number="federation.mediaPort"
+              :aria-invalid="Boolean(form.fields['federation.mediaPort'])"
+              :aria-describedby="'setting-federation-mediaPort-error'"
+              type="number"
+              @change="saveSettings"
+            >
+            <p
+              v-if="form.fields['federation.mediaPort']"
+              id="setting-federation-mediaPort-error"
+              class="form-error"
+            >
+              {{ form.fields['federation.mediaPort'] }}
+            </p>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="setting-federation-key">Private key path</label>
+          <input
+            id="setting-federation-key"
+            v-model="federation.key"
+            :aria-invalid="Boolean(form.fields['federation.key'])"
+            :aria-describedby="'setting-federation-key-error'"
+            type="text"
+            placeholder="/etc/oblecto/id_rsa"
+            @change="saveSettings"
+          >
+          <p
+            v-if="form.fields['federation.key']"
+            id="setting-federation-key-error"
+            class="form-error"
+          >
+            {{ form.fields['federation.key'] }}
+          </p>
+          <p class="settings-description settings-description-tight">
+            Path to the RSA private key for identity.
+          </p>
+        </div>
+      </div>
+    </fieldset>
+    <SettingsFormStatus
+      :state="save"
+      :form="form"
+      :dirty="settingsDirty"
+      @retry="retrySettings"
+      @revert="revertSettings"
+    />
   </div>
 </template>
 
 <script>
-  import oblectoClient from '@/oblectoClient'
-  import AutosaveBar from '@/components/settings/AutosaveBar.vue'
+  import SettingsFormStatus from '@/components/settings/SettingsFormStatus.vue'
+  import { settingsForm } from '@/composables/settingsForm'
   import { createSaveState } from '@/composables/useSaveState'
 
   export default {
     name: 'FederationSettings',
     components: {
-      AutosaveBar
+      SettingsFormStatus
     },
+    mixins: [settingsForm({ federation: 'federation' })],
     data () {
       return {
         save: createSaveState(),
@@ -82,21 +126,8 @@
       this.refresh()
     },
     methods: {
-      async refresh () {
-        await this.save.run(
-          async () => {
-            const config = await oblectoClient.settings.getAll()
-            this.federation = config.federation || this.federation
-          },
-          { busy: 'Loading…', ok: '', error: 'Could not load federation settings' }
-        )
-      },
-      async saveSettings () {
-        await this.save.run(
-          () => oblectoClient.settings.update({ federation: this.federation }),
-          { error: 'Could not save federation settings' }
-        )
-      }
+      async refresh () { await this.loadSettings() }
+
     }
   }
 </script>

@@ -34,7 +34,6 @@ export function createSaveState () {
       try {
         await task()
       } catch (e) {
-        console.error(error, e)
         if (id === sequence) state.fail(describeError(e, error))
         return false
       }
@@ -57,6 +56,21 @@ export function createSaveState () {
       }, OK_TIMEOUT)
 
       return true
+    },
+
+    /**
+     * Reports a success whose wording depends on the result, which the fixed
+     * `ok` label passed to `run` cannot express.
+     */
+    succeed (message) {
+      const id = ++sequence
+
+      window.clearTimeout(timer)
+      state.status = 'ok'
+      state.message = message
+      timer = window.setTimeout(() => {
+        if (id === sequence) state.reset()
+      }, OK_TIMEOUT)
     },
 
     fail (message) {

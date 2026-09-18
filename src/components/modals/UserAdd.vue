@@ -32,6 +32,15 @@
       </div>
     </div>
 
+    <label class="checkbox-container">
+      Show on the sign-in screen
+      <input
+        v-model="publicProfile"
+        type="checkbox"
+      >
+      <span class="checkmark" />
+    </label>
+
     <template #status>
       <SaveState :state="save" />
     </template>
@@ -56,7 +65,7 @@
 </template>
 
 <script setup>
-import { reactive, watch } from 'vue'
+import { reactive, ref, watch } from 'vue'
 import AppDialog from '@/components/system/AppDialog.vue'
 import SaveState from '@/components/system/SaveState.vue'
 import { createSaveState } from '@/composables/useSaveState'
@@ -78,6 +87,7 @@ const fields = [
 const save = createSaveState()
 const form = reactive({ name: '', username: '', email: '', password: '' })
 const errors = reactive({})
+const publicProfile = ref(false)
 
 watch(() => props.open, open => {
   if (!open) return
@@ -86,6 +96,7 @@ watch(() => props.open, open => {
     form[field.key] = ''
     delete errors[field.key]
   })
+  publicProfile.value = false
   save.reset()
 })
 
@@ -106,7 +117,7 @@ async function addUser () {
   if (!valid) return
 
   const ok = await save.run(
-    () => oblectoClient.userManager.createUser(form.username, form.password, form.name, form.email),
+    () => oblectoClient.userManager.createUser(form.username, form.password, form.name, form.email, { publicProfile: publicProfile.value }),
     { busy: 'Creating…', ok: 'User created', error: 'Could not create this user' }
   )
 

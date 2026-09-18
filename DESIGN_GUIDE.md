@@ -19,7 +19,10 @@ Use the CSS variables in `src/App.vue`:
 
 ## Browsing
 
-- Compact, sticky top navigation; account menu holds settings, playback device selection, and sign out.
+- Compact, sticky top navigation; account menu holds settings, playback device selection, and sign out. Hero and detail playback actions use a compact split button: the main area plays or resumes, and a small chevron opens the native device picker. Show the remote destination as a subtle secondary label only when another device is selected. Choosing a device does not start playback.
+- Continue Watching Movies and Episodes lead the shelves, followed by Next Up. Resume labels follow the player’s existing completion threshold and show remaining minutes only when duration is known.
+- Below 980px, keep library title search visible and collapse advanced filters behind Filters (N). Selected filters remain removable outside the panel.
+- Home and Discover load shelves independently; failed sections retry without replacing successful content. Pagination failures keep the existing grid.
 - Home features library artwork with dark readability gradients. Use a coral primary Play button and a gray More Info button.
 - `MediaShelf` provides horizontal scroll snapping, touch scrolling, keyboard arrows, and previous/next controls with disabled boundary states.
 - Movies and episodes use landscape artwork in shelves; shows retain their posters. Library grids retain poster cards; search results use the same horizontal shelves.
@@ -50,7 +53,7 @@ Respect `env(safe-area-inset-*)` on every edge the player touches; the app is `v
 
 ## Other screens
 
-Carry the same neutral surfaces, typography, and Oblecto brand accents through sign-in, discovery, libraries, settings, and legacy detail dialogs using shared tokens. Keep user-facing copy focused on finding and watching their collection.
+Carry the same neutral surfaces, typography, and Oblecto brand accents through sign-in, discovery, libraries, settings, and legacy detail dialogs using shared tokens. Keep user-facing copy focused on finding and watching their collection. Show the configured server address with a Change control at sign-in, and collapse advanced library indexing options by default.
 
 ## Detail pages
 
