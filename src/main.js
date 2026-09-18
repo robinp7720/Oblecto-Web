@@ -32,6 +32,24 @@ applyLocale(null)
 const authStore = useAuthStore(pinia)
 authStore.hydrate()
 
+// The server rejects a token once it expires, the password changes or the
+// account is removed. Sign out and ask again instead of leaving every page
+// failing. Only while signed in: a wrong password at login is also a 401.
+oblectoClient.axios.interceptors.response.use(undefined, async error => {
+  if (error?.response?.status === 401 && oblectoClient.accessToken) {
+    const current = router.currentRoute.value
+
+    app.config.globalProperties.$socket?.disconnect()
+    await authStore.logout()
+
+    if (current.name !== 'login') {
+      router.replace({ name: 'login', query: { redirect: current.fullPath, expired: '1' } })
+    }
+  }
+
+  return Promise.reject(error)
+})
+
 initSocket({ app, store: legacyStore })
 
 app.config.globalProperties.$reconnectSocket = (host) => reconnectSocket({
