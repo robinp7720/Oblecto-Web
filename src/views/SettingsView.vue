@@ -70,7 +70,7 @@ const groups = [
       {
         name: 'ProblematicFiles',
         label: 'Problem files',
-        description: 'Files the indexer could not read, with the error it hit and a way to retry.'
+        description: 'Files the indexer could not identify or read, why, and a way to retry.'
       }
     ]
   },
