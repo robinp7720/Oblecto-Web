@@ -25,6 +25,12 @@ import FederationSettings from '@/components/settings/FederationSettings'
 import SeedboxSettings from '@/components/settings/SeedboxSettings'
 import ProblematicFiles from '@/components/settings/ProblematicFiles'
 import ServerStatus from '@/components/settings/ServerStatus'
+import GroupsSettings from '@/components/settings/GroupsSettings.vue'
+import AccountProfile from '@/components/settings/account/AccountProfile.vue'
+import AccountPassword from '@/components/settings/account/AccountPassword.vue'
+import AccountPreferences from '@/components/settings/account/AccountPreferences.vue'
+import { pagePermission, visibleGroups } from '@/components/settings/registry'
+import { useAuthStore } from '@/stores/auth'
 
 const router = createRouter({
   history: createWebHistory(BASE_PATH),
@@ -113,6 +119,21 @@ const router = createRouter({
           component: SettingsOverview
         },
         {
+          name: 'AccountProfile',
+          path: 'account',
+          component: AccountProfile
+        },
+        {
+          name: 'AccountPassword',
+          path: 'account/password',
+          component: AccountPassword
+        },
+        {
+          name: 'AccountPreferences',
+          path: 'account/preferences',
+          component: AccountPreferences
+        },
+        {
           name: 'SettingsMaintenance',
           path: 'maintenance',
           component: Maintenance
@@ -121,6 +142,11 @@ const router = createRouter({
           name: 'SettingsUsers',
           path: 'users',
           component: UserManager
+        },
+        {
+          name: 'SettingsGroups',
+          path: 'groups',
+          component: GroupsSettings
         },
         {
           name: 'SignInSettings',
@@ -177,7 +203,7 @@ const router = createRouter({
   ]
 })
 
-router.beforeEach((to) => {
+router.beforeEach(async (to) => {
   const hasToken = Boolean(oblectoClient.accessToken || window.localStorage.getItem('oblecto.accessToken'))
 
   if (to.matched.some(record => record.meta.requiresAuth) && !hasToken) {
@@ -189,6 +215,20 @@ router.beforeEach((to) => {
 
   if (to.name === 'login' && hasToken) {
     return { name: 'Main' }
+  }
+
+  // Settings pages the user's group does not allow lead to the first page it
+  // does, which is always one of their own account pages.
+  const permission = pagePermission(to.name)
+
+  if (permission && hasToken) {
+    const authStore = useAuthStore()
+
+    await authStore.loadMe()
+
+    if (!authStore.can(permission)) {
+      return { name: visibleGroups(authStore.can)[0]?.items[0]?.name || 'AccountProfile', replace: true }
+    }
   }
 
   return true

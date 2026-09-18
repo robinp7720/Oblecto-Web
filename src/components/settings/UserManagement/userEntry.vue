@@ -11,7 +11,25 @@
     </td>
     <td>{{ user.username }}</td>
     <td>{{ user.email }}</td>
-    <td>{{ user.group }}</td>
+    <td>
+      <select
+        class="group-select"
+        :value="user.groupId ?? ''"
+        :aria-label="`Group of ${user.username}`"
+        @change="$emit('update', user, { groupId: $event.target.value === '' ? null : Number($event.target.value) })"
+      >
+        <option value="">
+          No group
+        </option>
+        <option
+          v-for="group in groups"
+          :key="group.id"
+          :value="group.id"
+        >
+          {{ group.name }}
+        </option>
+      </select>
+    </td>
     <td class="flag">
       <label class="checkbox-container table-checkbox">
         <input
@@ -61,11 +79,19 @@
       </button>
       <button
         type="button"
+        :title="`Edit the details of ${user.username}`"
+        :aria-label="`Edit the details of ${user.username}`"
+        @click="$emit('edit', user)"
+      >
+        <font-awesome-icon icon="edit" />
+      </button>
+      <button
+        type="button"
         :title="`Set a new password for ${user.username}`"
         :aria-label="`Set a new password for ${user.username}`"
         @click="$emit('set-password', user)"
       >
-        <font-awesome-icon icon="edit" />
+        <font-awesome-icon icon="key" />
       </button>
       <button
         type="button"
@@ -82,13 +108,14 @@
 <script>
   import FontAwesomeIcon from '@fortawesome/vue-fontawesome'
   import faTrash from '@fortawesome/fontawesome-free-solid/faTrash'
+  import faKey from '@fortawesome/fontawesome-free-solid/faKey'
   import faEdit from '@fortawesome/fontawesome-free-solid/faEdit'
   import faCamera from '@fortawesome/fontawesome-free-solid/faCamera'
   import faTimesCircle from '@fortawesome/fontawesome-free-solid/faTimesCircle'
   import fontawesome from '@fortawesome/fontawesome'
   import UserAvatar from '@/components/system/UserAvatar.vue'
 
-  fontawesome.library.add(faTrash, faEdit, faCamera, faTimesCircle)
+  fontawesome.library.add(faTrash, faKey, faEdit, faCamera, faTimesCircle)
 
   // A row reports what was clicked; UserManager owns the list, the requests and
   // the place where their outcome is shown.
@@ -102,9 +129,14 @@
       user: {
         type: Object,
         required: true
+      },
+      // Every group, for the group picker
+      groups: {
+        type: Array,
+        default: () => []
       }
     },
-    emits: ['set-password', 'delete', 'update', 'upload-avatar', 'remove-avatar'],
+    emits: ['edit', 'set-password', 'delete', 'update', 'upload-avatar', 'remove-avatar'],
     methods: {
       pickAvatar (event) {
         const [file] = event.target.files
@@ -126,6 +158,14 @@
 
 .flag
   text-align: center
+
+.group-select
+  padding: 6px 8px
+  border: 1px solid var(--color-border)
+  border-radius: var(--radius-sm)
+  background-color: rgba(255, 255, 255, 0.07)
+  color: var(--color-text)
+  font: inherit
 
 .table-checkbox
   display: inline-block

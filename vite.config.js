@@ -32,6 +32,10 @@ export default defineConfig(({ command, mode }) => {
       'OBLECTO_HOST': JSON.stringify(oblectoHost),
       'BASE_PATH': JSON.stringify(basePath),
       'process.env.NODE_ENV': JSON.stringify(mode),
+      // vue-i18n: composition API only, no devtools hooks in production
+      __VUE_I18N_FULL_INSTALL__: true,
+      __VUE_I18N_LEGACY_API__: false,
+      __INTLIFY_PROD_DEVTOOLS__: false,
     },
     build: {
       outDir: 'dist/web',

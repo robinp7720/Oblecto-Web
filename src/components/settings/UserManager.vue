@@ -52,6 +52,8 @@
               v-for="user in users"
               :key="user.id"
               :user="user"
+              :groups="groups"
+              @edit="editTarget = user"
               @set-password="passwordTarget = user"
               @delete="deleteUser"
               @update="updateUser"
@@ -71,6 +73,12 @@
       v-model:open="showAdd"
       @created="refresh"
     />
+    <UserEdit
+      :open="Boolean(editTarget)"
+      :user="editTarget"
+      @update:open="value => { if (!value) editTarget = null }"
+      @saved="replaceUser"
+    />
     <PasswordChange
       :open="Boolean(passwordTarget)"
       :user="passwordTarget"
@@ -83,6 +91,7 @@
   import userEntry from '@/components/settings/UserManagement/userEntry'
   import UserAdd from '@/components/modals/UserAdd'
   import PasswordChange from '@/components/modals/PasswordChange'
+  import UserEdit from '@/components/modals/UserEdit.vue'
   import SaveState from '@/components/system/SaveState.vue'
   import { createSaveState } from '@/composables/useSaveState'
   import { confirm } from '@/composables/useConfirm'
@@ -90,6 +99,7 @@
   import faPlus from '@fortawesome/fontawesome-free-solid/faPlus'
   import fontawesome from '@fortawesome/fontawesome'
   import oblectoClient from '@/oblectoClient'
+  import { useAuthStore } from '@/stores/auth'
 
   fontawesome.library.add(faPlus)
 
@@ -99,13 +109,17 @@
       userEntry,
       UserAdd,
       PasswordChange,
+      UserEdit,
       SaveState,
       FontAwesomeIcon
     },
     data () {
       return {
         users: [],
+        groups: [],
         showAdd: false,
+        // The user whose details are being edited; null closes the dialog.
+        editTarget: null,
         // The user whose password is being set; null closes the dialog.
         passwordTarget: null,
         status: createSaveState()
@@ -119,8 +133,13 @@
         // An empty `ok` keeps a successful load silent; only the failure is news.
         await this.status.run(
           async () => {
-            const users = await oblectoClient.userManager.getUsers()
+            const [users, groups] = await Promise.all([
+              oblectoClient.userManager.getUsers(),
+              // Older servers have no groups; the picker then only offers "No group".
+              oblectoClient.groups.getGroups().catch(() => [])
+            ])
             this.users = Array.isArray(users) ? users : []
+            this.groups = Array.isArray(groups) ? groups : []
           },
           { busy: 'Loading users…', ok: '', error: 'Could not load users' }
         )
@@ -155,6 +174,9 @@
         )
 
         if (!ok) this.replaceUser(user)
+
+        // Moving yourself to another group changes what you may see.
+        if (ok && 'groupId' in changes && user.id === useAuthStore().me?.id) await useAuthStore().loadMe(true)
       },
       async uploadAvatar (user, file) {
         await this.status.run(

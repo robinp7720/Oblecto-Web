@@ -1,0 +1,195 @@
+{
+  "settings": {
+    "eyebrow": {
+      "account": "Your account",
+      "server": "Server settings"
+    },
+    "search": {
+      "label": "Find a setting",
+      "placeholder": "Search settings",
+      "empty": "No matching settings."
+    },
+    "sectionPicker": "Settings section",
+    "sectionNav": "Settings sections",
+    "groups": {
+      "account": "Your account",
+      "server": "Server",
+      "library": "Library",
+      "access": "Access",
+      "network": "Network"
+    },
+    "pages": {
+      "AccountProfile": {
+        "label": "Profile",
+        "description": "Your name, e-mail address and profile picture."
+      },
+      "AccountPassword": {
+        "label": "Password",
+        "description": "Change the password you sign in with."
+      },
+      "AccountPreferences": {
+        "label": "Language & playback",
+        "description": "The interface language, and how videos start playing for you."
+      },
+      "SettingsOverview": {
+        "label": "Overview",
+        "description": "Library setup, background work and issues needing attention."
+      },
+      "SettingsMaintenance": {
+        "label": "Maintenance",
+        "description": "Run indexing, cleanup, artwork and metadata jobs on demand."
+      },
+      "ServerStatus": {
+        "label": "Status",
+        "description": "Live streaming sessions and the clients currently connected."
+      },
+      "ProblematicFiles": {
+        "label": "Problem files",
+        "description": "Files the indexer could not identify or read, why, and a way to retry."
+      },
+      "SettingsLibraries": {
+        "label": "Libraries",
+        "description": "The folders Oblecto scans, and how each library identifies and updates its titles."
+      },
+      "SettingsSets": {
+        "label": "Sets",
+        "description": "Collections that group movies or TV shows together."
+      },
+      "IndexerSettings": {
+        "label": "Indexer",
+        "description": "When scans and cleanups run, and which file extensions count as video."
+      },
+      "MetadataSettings": {
+        "label": "Metadata providers",
+        "description": "Manage API keys and test access to metadata and artwork services."
+      },
+      "ArtworkSettings": {
+        "label": "Artwork",
+        "description": "Where posters, fanart and banners come from, and the sizes kept on disk."
+      },
+      "SettingsUsers": {
+        "label": "Users",
+        "description": "Accounts that can sign in to this server, and the group each belongs to."
+      },
+      "SettingsGroups": {
+        "label": "Groups",
+        "description": "What the members of each group are allowed to change on this server."
+      },
+      "SignInSettings": {
+        "label": "Sign-in",
+        "description": "Profile picker and password-less sign-in on the local network."
+      },
+      "FederationSettings": {
+        "label": "Federation",
+        "description": "Share libraries and streaming capacity with other Oblecto servers."
+      },
+      "SeedboxSettings": {
+        "label": "Seedboxes",
+        "description": "Remote hosts Oblecto imports finished downloads from."
+      }
+    }
+  },
+  "menu": {
+    "open": "Account and playback options",
+    "settings": "Settings",
+    "account": "Your account",
+    "signOut": "Sign out of Oblecto"
+  },
+  "account": {
+    "profile": {
+      "title": "About you",
+      "name": "Name",
+      "nameHint": "Shown on the sign-in screen and around the app.",
+      "email": "E-mail address",
+      "username": "Username",
+      "usernameHint": "Only an administrator can change your username.",
+      "group": "Group",
+      "noGroup": "None",
+      "save": "Save profile",
+      "saving": "Saving…",
+      "saved": "Profile saved",
+      "saveFailed": "Could not save your profile",
+      "pictureTitle": "Profile picture",
+      "pictureHint": "Square pictures work best. Anything else is cropped to the middle.",
+      "upload": "Choose a picture",
+      "remove": "Remove picture",
+      "uploading": "Uploading picture…",
+      "uploaded": "Picture updated",
+      "uploadFailed": "Could not use this picture",
+      "removing": "Removing picture…",
+      "removed": "Picture removed",
+      "removeFailed": "Could not remove the picture"
+    },
+    "password": {
+      "title": "Change password",
+      "noPassword": "Your account has no password yet. Anyone who can pick your profile can sign in as you, so consider setting one.",
+      "current": "Current password",
+      "new": "New password",
+      "confirm": "Repeat the new password",
+      "tooShort": "Use at least {min} characters.",
+      "mismatch": "The two new passwords are different.",
+      "save": "Change password",
+      "saving": "Changing password…",
+      "saved": "Password changed. Other devices stay signed in.",
+      "saveFailed": "Could not change your password"
+    },
+    "preferences": {
+      "languageTitle": "Language",
+      "language": "Interface language",
+      "browserLanguage": "Same as this browser",
+      "languageHint": "Only parts of Oblecto are translated so far; the rest stays in English.",
+      "playbackTitle": "Playback",
+      "playbackHint": "Starting points for every video. Changing a track while watching only affects that video.",
+      "audioLanguage": "Audio language",
+      "subtitleLanguage": "Subtitle language",
+      "fileDefault": "The file's default",
+      "subtitleMode": "Subtitles",
+      "subtitleModes": {
+        "auto": "When the file or language calls for them",
+        "forced": "Only forced subtitles (signs, foreign dialogue)",
+        "off": "Off"
+      },
+      "quality": "Quality",
+      "qualities": {
+        "original": "Original",
+        "auto": "Automatic",
+        "height": "{height}p"
+      },
+      "autoplayNext": "Play the next episode automatically",
+      "saving": "Saving…",
+      "saved": "Saved",
+      "saveFailed": "Could not save your preferences"
+    }
+  },
+  "groups": {
+    "title": "Groups",
+    "add": "Add group",
+    "name": "Name",
+    "members": "{count} member | {count} members",
+    "builtIn": "Built-in",
+    "permissions": "Permissions",
+    "none": "No extra permissions: members can browse and watch.",
+    "rename": "Rename",
+    "delete": "Delete group",
+    "deleteTitle": "Delete {name}?",
+    "deleteMessage": "Members move to Users and lose what this group allowed.",
+    "newName": "Name of the new group",
+    "create": "Create group",
+    "loading": "Loading groups…",
+    "loadFailed": "Could not load groups",
+    "saving": "Saving…",
+    "saved": "Saved {name}",
+    "saveFailed": "Could not update {name}",
+    "created": "Created {name}",
+    "createFailed": "Could not create the group",
+    "deleting": "Deleting…",
+    "deleted": "Deleted {name}",
+    "deleteFailed": "Could not delete {name}",
+    "permissionNames": {
+      "settings": { "manage": "Change server settings" },
+      "users": { "manage": "Manage users and groups" },
+      "libraries": { "manage": "Manage libraries" },
+      "system": { "manage": "Run maintenance" }
+    }
+  }
+}

@@ -148,6 +148,8 @@ import { usePlayerGestures } from '@/composables/player/usePlayerGestures'
 import { usePlayerHotkeys } from '@/composables/player/usePlayerHotkeys'
 import { useRemoteBroadcast } from '@/composables/player/useRemoteBroadcast'
 import { useVideoElement } from '@/composables/player/useVideoElement'
+import { useAuthStore } from '@/stores/auth'
+import { streamInLanguage } from '@/playback/languages'
 
 const AUTOPLAY_TIME_LEFT_THRESHOLD = 5
 import { IGNORE_RESTORE_PROGRESS_THRESHOLD } from '@/utils/media'
@@ -155,6 +157,7 @@ const NEXT_EPISODE_PROGRESS_THRESHOLD = 0.9
 
 const store = useStore()
 const router = useRouter()
+const authStore = useAuthStore()
 
 const root = ref(null)
 const stage = ref(null)
@@ -162,12 +165,15 @@ const videoEl = ref(null)
 const gestureLayer = ref(null)
 
 const playing = computed(() => store.state.playing || {})
-const autoplay = computed(() => store.state.autoplay)
+const autoplay = computed(() => authStore.preferences.autoplayNext)
 const host = computed(() => store.state.host)
 const playSizeFormat = computed(() => store.state.playSizeFormat)
 
 const playingFileId = ref(0)
-const selectedQuality = ref('original')
+// Starts from the user's preference; a choice made while watching lasts until
+// the preference changes or the page reloads.
+const selectedQuality = ref(authStore.preferences.quality)
+watch(() => authStore.preferences.quality, quality => { selectedQuality.value = quality })
 const selectedAudioStreamIndex = ref(null)
 const selectedSubtitleStreamIndex = ref(null)
 const subtitleMode = ref('auto')
@@ -528,9 +534,7 @@ async function changeFileId (id) {
   const tracking = getTracking()
 
   playingFileId.value = id
-  selectedAudioStreamIndex.value = null
-  selectedSubtitleStreamIndex.value = null
-  subtitleMode.value = 'auto'
+  applyTrackPreferences()
   initialProgress.value = tracking[0]?.time || 0
 
   await updateSession(initialProgress.value)
@@ -538,6 +542,21 @@ async function changeFileId (id) {
   settingsOpen.value = false
   loading.value = true
   attachStream()
+}
+
+// Tracks for the file about to play, from the user's preferences. The file's
+// own stream list is used because the previous session's tracks may still be
+// loaded. No match leaves the choice to the server.
+function applyTrackPreferences () {
+  const preferences = authStore.preferences
+  const streams = (currentFile.value?.Streams || []).filter(stream => Number.isInteger(stream.index))
+  const ofType = type => streams.filter(stream => stream.codec_type === type)
+
+  subtitleMode.value = preferences.subtitleMode
+  selectedAudioStreamIndex.value = streamInLanguage(ofType('audio'), preferences.audioLanguage)
+  selectedSubtitleStreamIndex.value = preferences.subtitleMode === 'off'
+    ? null
+    : streamInLanguage(ofType('subtitle'), preferences.subtitleLanguage)
 }
 
 async function selectQuality (value) {
@@ -665,9 +684,7 @@ watch(playing, async (newState, oldState) => {
   autoplaying.value = false
   playbackError.value = ''
   scrubPreview.value = null
-  selectedAudioStreamIndex.value = null
-  selectedSubtitleStreamIndex.value = null
-  subtitleMode.value = 'auto'
+  applyTrackPreferences()
   nextEpisode.value = null
 
   if (!newState?.entity) {

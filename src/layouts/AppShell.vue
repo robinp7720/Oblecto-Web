@@ -71,8 +71,15 @@
         @toggle="onMenuToggle"
         @keydown.esc="closeMenu"
       >
-        <summary aria-label="Account and playback options">
+        <summary :aria-label="t('menu.open')">
+          <UserAvatar
+            v-if="authStore.me"
+            :user="authStore.me"
+            :size="34"
+            class="avatar avatar--user"
+          />
           <span
+            v-else
             class="avatar"
             aria-hidden="true"
           >O</span><span
@@ -81,8 +88,20 @@
           >▾</span>
         </summary>
         <div class="account-options">
-          <RouterLink :to="{ name: 'SettingsOverview' }">
-            Settings
+          <p
+            v-if="authStore.displayName"
+            class="menu-identity"
+          >
+            {{ authStore.displayName }}
+          </p>
+          <RouterLink :to="{ name: 'AccountProfile' }">
+            {{ t('menu.account') }}
+          </RouterLink>
+          <RouterLink
+            v-if="serverSettings"
+            :to="{ name: 'SettingsOverview' }"
+          >
+            {{ t('menu.settings') }}
           </RouterLink>
 
           <!-- Choosing where to play is a pick from a short list, not a task
@@ -169,7 +188,7 @@
             type="button"
             @click="logout"
           >
-            Sign out of Oblecto
+            {{ t('menu.signOut') }}
           </button>
         </div>
       </details>
@@ -197,7 +216,10 @@ import { useRoute, useRouter } from 'vue-router'
 import BrandLogo from '@/components/system/BrandLogo.vue'
 import ConnectionStatus from '@/components/system/ConnectionStatus.vue'
 import RemoteControlBar from '@/components/remote/RemoteControlBar.vue'
+import { useI18n } from 'vue-i18n'
 import { useAuthStore } from '@/stores/auth'
+import UserAvatar from '@/components/system/UserAvatar.vue'
+import { canSeeServerSettings } from '@/components/settings/registry'
 import { getDeviceName, setDeviceName } from '@/remote/device'
 import { playbackTargets, remote, setTarget } from '@/remote/state'
 import { getSocket } from '@/socket'
@@ -205,6 +227,9 @@ import { getSocket } from '@/socket'
 const router = useRouter()
 const route = useRoute()
 const authStore = useAuthStore()
+const { t } = useI18n()
+// Server settings are only offered to groups allowed to change some of them.
+const serverSettings = computed(() => canSeeServerSettings(authStore.can))
 const vm = getCurrentInstance()
 const accountMenu = ref(null)
 const searchText = ref(String(route.query.q || ''))
@@ -379,6 +404,20 @@ async function logout () {
   padding: 6px 0
   border-top: 1px solid #333
   border-bottom: 1px solid #333
+
+.avatar.avatar--user
+  // UserAvatar brings its own shape and colour.
+  border-radius: 50%
+  background: hsl(var(--avatar-hue), 45%, 38%)
+
+.menu-identity
+  margin: 0
+  padding: 8px 18px 10px
+  overflow: hidden
+  color: var(--color-text)
+  font-weight: 700
+  text-overflow: ellipsis
+  white-space: nowrap
 
 .menu-label
   margin: 0
