@@ -13,6 +13,7 @@ import MetadataSettings from '@/components/settings/MetadataSettings.vue'
 import MovieInfo from '@/components/pages/MovieInfo'
 import EpisodeInfo from '@/components/pages/EpisodeInfo'
 import SeriesView from '@/components/pages/SeriesView'
+import PersonInfo from '@/components/pages/PersonInfo.vue'
 
 import Maintenance from '@/components/settings/Maintenance'
 import UserManager from '@/components/settings/UserManager'
@@ -83,6 +84,12 @@ const router = createRouter({
       path: '/episode/:episodeId',
       name: 'EpisodeInfo',
       component: EpisodeInfo,
+      meta: { requiresAuth: true }
+    },
+    {
+      path: '/person/:personId',
+      name: 'PersonInfo',
+      component: PersonInfo,
       meta: { requiresAuth: true }
     },
     {

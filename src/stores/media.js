@@ -12,6 +12,8 @@ function createLibraryState () {
       libraryPath: '',
       yearFrom: '',
       yearTo: '',
+      personId: '',
+      creditRole: 'any',
       count: 30
     },
     facets: {
@@ -39,7 +41,9 @@ function createBrowseParams (filters, cursor = null) {
     yearFrom: filters.yearFrom ? Number(filters.yearFrom) : undefined,
     yearTo: filters.yearTo ? Number(filters.yearTo) : undefined,
     watched: filters.watched || 'all',
-    libraryPath: filters.libraryPath || undefined
+    libraryPath: filters.libraryPath || undefined,
+    personId: filters.personId || undefined,
+    creditRole: filters.personId ? filters.creditRole || 'any' : undefined
   }
 
   if (cursor) {

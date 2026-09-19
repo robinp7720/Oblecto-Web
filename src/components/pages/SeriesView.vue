@@ -42,6 +42,15 @@
         >Browse episodes</a>
       </MediaDetailHero>
       <div class="detail-body">
+        <PeopleRow
+          title="Cast"
+          :credits="show.credits?.cast || []"
+        />
+        <PeopleRow
+          v-if="creators.length"
+          title="Created by"
+          :credits="creators"
+        />
         <section
           id="show-episodes"
           class="detail-section"
@@ -109,6 +118,7 @@ import { useStore } from 'vuex'
 import oblectoClient from '@/oblectoClient'
 import MediaDetailHero from '@/components/details/MediaDetailHero.vue'
 import EpisodeRow from '@/components/details/EpisodeRow.vue'
+import PeopleRow from '@/components/details/PeopleRow.vue'
 import { useMediaDetails } from '@/composables/useMediaDetails'
 import { imageUrl, normalizeGenres, formatYear, formatRuntime, formatRating } from '@/utils/media'
 import '@/assets/sass/details.sass'
@@ -121,7 +131,8 @@ const { item: show, related: episodes, loading, error, relatedError, reload } = 
   id => oblectoClient.seriesLibrary.getEpisodes(id)
 )
 const poster = computed(() => imageUrl(store.state.host, 'series', show.value?.id, 'poster'))
-const subtitle = computed(() => [formatYear(show.value?.firstAired), show.value?.rating, show.value?.status].filter(Boolean).join(' · '))
+const subtitle = computed(() => [formatYear(show.value?.firstAired), show.value?.rating, show.value?.status, show.value?.siteRating ? `TMDB ${formatRating(show.value.siteRating, show.value.siteRatingCount)}` : null].filter(Boolean).join(' · '))
+const creators = computed(() => (show.value?.credits?.crew || []).filter(credit => credit.roles?.some(role => role.job === 'Creator')))
 const grouped = computed(() => {
   const groups = {}
   for (const episode of episodes.value) {

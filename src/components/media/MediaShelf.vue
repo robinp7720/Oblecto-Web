@@ -5,20 +5,22 @@
   >
     <div class="heading">
       <h2>{{ title }}</h2>
-      <RouterLink
-        v-if="actionLabel && actionTo"
-        :to="actionTo"
-        class="action-link"
-      >
-        {{ actionLabel }} <span aria-hidden="true">›</span>
-      </RouterLink>
+      <slot name="action">
+        <RouterLink
+          v-if="actionLabel && actionTo"
+          :to="actionTo"
+          class="action-link"
+        >
+          {{ actionLabel }} <span aria-hidden="true">›</span>
+        </RouterLink>
+      </slot>
       <div
         v-if="canScroll"
         class="row-controls"
       >
         <button
           type="button"
-          :aria-label="`Previous titles in ${title}`"
+          :aria-label="`Previous ${itemLabel} in ${title}`"
           :disabled="atStart"
           @click="scroll(-1)"
         >
@@ -26,7 +28,7 @@
         </button>
         <button
           type="button"
-          :aria-label="`More titles in ${title}`"
+          :aria-label="`More ${itemLabel} in ${title}`"
           :disabled="atEnd"
           @click="scroll(1)"
         >
@@ -37,25 +39,31 @@
     <div
       ref="track"
       class="track"
+      :class="{ 'people-track': type === 'person' }"
       tabindex="0"
-      :aria-label="`${title}, scrollable titles`"
+      :aria-label="`${title}, scrollable ${itemLabel}`"
       @scroll.passive="updateScroll"
       @keydown.left.prevent="scroll(-1)"
       @keydown.right.prevent="scroll(1)"
     >
-      <MediaCard
+      <slot
         v-for="item in items"
         :key="`${type}-${item.id}`"
+        name="item"
         :item="item"
-        :type="type"
-        :landscape="type !== 'series'"
-      />
+      >
+        <MediaCard
+          :item="item"
+          :type="type"
+          :landscape="type !== 'series'"
+        />
+      </slot>
     </div>
   </section>
 </template>
 
 <script setup>
-import { ref, onMounted, onBeforeUnmount, watch, nextTick } from 'vue'
+import { computed, ref, onMounted, onBeforeUnmount, watch, nextTick } from 'vue'
 import MediaCard from '@/components/media/MediaCard.vue'
 const props = defineProps({
   title: { type: String, required: true },
@@ -66,6 +74,7 @@ const props = defineProps({
   actionTo: { type: [String, Object], default: null }
 })
 const track = ref(null)
+const itemLabel = computed(() => props.type === 'person' ? 'people' : 'titles')
 const atStart = ref(true)
 const atEnd = ref(false)
 const canScroll = ref(false)
@@ -138,9 +147,9 @@ onBeforeUnmount(() => observer?.disconnect())
   padding: 6px 2px 12px
   &::-webkit-scrollbar
     display: none
-  :deep(.media-card)
+  > :deep(*)
     scroll-snap-align: start
-  &:has(.media-card:not(.landscape))
+  &.people-track, &:has(.media-card:not(.landscape))
     grid-auto-columns: clamp(150px, 14vw, 220px)
 @media (max-width: 600px)
   .heading
