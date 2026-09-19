@@ -318,15 +318,32 @@ async function logout () {
   align-items: center
 
 .nav-link
+  position: relative
   white-space: nowrap
   color: #ccc
   font-size: 0.875rem
-  transition: color 0.2s
+  transition: color var(--motion-base)
+  // Grows out from the middle on hover and stays under the current section.
+  &::after
+    content: ""
+    position: absolute
+    left: 0
+    right: 0
+    bottom: -6px
+    height: 2px
+    border-radius: 2px
+    background: currentColor
+    transform: scaleX(0)
+    transition: transform var(--motion-base) var(--ease-out)
   &:hover
     color: white
+    &::after
+      transform: scaleX(0.6)
   &.router-link-active
     color: var(--color-brand-turquoise)
     font-weight: 700
+    &::after
+      transform: scaleX(1)
 
 .search-form
   display: flex
@@ -364,6 +381,13 @@ async function logout () {
     list-style: none
     &::-webkit-details-marker
       display: none
+  &[open] .caret
+    transform: rotate(180deg)
+  &[open] .account-options
+    animation: motion-pop var(--motion-fast) var(--ease-out)
+.caret
+  display: inline-block
+  transition: transform var(--motion-base) var(--ease-out)
 .avatar
   display: grid
   place-items: center
@@ -386,6 +410,7 @@ async function logout () {
   border: 1px solid #444
   background: #181818
   box-shadow: var(--shadow-strong)
+  transform-origin: top right
   a, button
     display: block
     width: 100%

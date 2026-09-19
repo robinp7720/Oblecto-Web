@@ -203,6 +203,10 @@ function playSpotlight () {
   cursor: pointer
   &:hover
     opacity: 0.8
+.primary-button, .secondary-button
+  transition: transform var(--motion-fast) var(--ease-out), background-color var(--motion-fast)
+  &:active
+    transform: scale(0.97)
 .primary-button
   background: var(--color-brand-coral)
   color: #141414

@@ -473,6 +473,9 @@ onBeforeUnmount(() => clearTimeout(peopleTimer))
     background: rgba(255, 255, 255, 0.1)
     color: var(--color-text)
 
+  &:active
+    transform: scale(0.96)
+
   &.active
     background: var(--color-accent-soft)
     border-color: var(--color-accent)
@@ -494,6 +497,8 @@ onBeforeUnmount(() => clearTimeout(peopleTimer))
   border-radius: var(--radius-sm)
   background: var(--color-bg-1)
   box-shadow: var(--shadow-strong)
+  transform-origin: top center
+  animation: motion-pop var(--motion-fast) var(--ease-out)
   button
     padding: 10px
     border: 0
@@ -603,6 +608,7 @@ button, select
     display: none
     &.expanded
       display: grid
+      animation: motion-rise var(--motion-base) var(--ease-out)
       grid-template-columns: minmax(0, 1fr)
 </style>
 

@@ -144,12 +144,13 @@ function play () {
   border-radius: 4px
   overflow: hidden
   background: #252525
-  transition: transform 0.2s ease, box-shadow 0.2s ease
+  transition: transform var(--motion-base) var(--ease-out), box-shadow var(--motion-base) var(--ease-out)
   &:hover, &:focus-within
     transform: translateY(-4px)
     box-shadow: 0 8px 24px #0008
     .play-button
       opacity: 1
+      transform: none
 .landscape .poster
   aspect-ratio: 16 / 9
 .poster-link
@@ -194,9 +195,13 @@ function play () {
   color: #141414
   cursor: pointer
   opacity: 0
-  transition: opacity 0.2s
+  transform: translateY(6px)
+  transition: opacity var(--motion-base) var(--ease-out), transform var(--motion-base) var(--ease-out), background-color var(--motion-fast)
   &:hover
     background: #ddd
+// Beats the hover reveal above, which also sets the transform.
+.poster .play-button:active
+  transform: scale(0.92)
 .progress
   position: absolute
   inset: auto 0 0
@@ -229,4 +234,5 @@ function play () {
 @media (hover: none)
   .play-button
     opacity: 1
+    transform: none
 </style>
