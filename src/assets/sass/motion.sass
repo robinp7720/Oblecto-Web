@@ -115,3 +115,71 @@ $stagger-count: 12
 .slide-up-enter-from, .slide-up-leave-to
   opacity: 0
   transform: translateY(100%)
+
+// Card transitions ------------------------------------------------------------
+//
+// Driven by router/transition.js, which sets the card's rectangle as
+// --vt-top/right/bottom/left on <html> and a vt-card-open or vt-card-close
+// class for the length of the transition. Literal timings: the transition
+// pseudo-elements are not guaranteed to see custom properties everywhere.
+
+// Chrome that should hold still rather than be swept up with the page.
+html.vt-hold-header .shell-header
+  view-transition-name: shell-header
+
+html.vt-card
+  .player-root[data-mode='small']
+    view-transition-name: mini-player
+  .remote-bar
+    view-transition-name: remote-bar
+
+html.vt-card::view-transition-group(shell-header),
+html.vt-card::view-transition-group(mini-player),
+html.vt-card::view-transition-group(remote-bar)
+  animation-duration: 150ms
+
+// Opening: the new page grows out of the card while the one behind recedes,
+// and the artwork swells and fades as the page takes its place.
+html.vt-card-open::view-transition-old(root)
+  animation: vt-recede 460ms cubic-bezier(0.2, 0.8, 0.2, 1) both
+
+html.vt-card-open::view-transition-new(root)
+  animation: vt-expand 460ms cubic-bezier(0.2, 0.8, 0.2, 1) both
+
+html.vt-card-open::view-transition-old(motion-origin)
+  animation: vt-origin-out 460ms cubic-bezier(0.2, 0.8, 0.2, 1) both
+
+// Going back: the page folds into the card it came from.
+html.vt-card-close::view-transition-old(root)
+  z-index: 1
+  animation: vt-collapse 380ms cubic-bezier(0.4, 0, 0.2, 1) both
+
+html.vt-card-close::view-transition-new(root)
+  animation: vt-recede 380ms cubic-bezier(0.2, 0.8, 0.2, 1) reverse both
+
+@keyframes vt-expand
+  from
+    clip-path: inset(var(--vt-top) var(--vt-right) var(--vt-bottom) var(--vt-left) round 6px)
+  to
+    clip-path: inset(0 round 0)
+
+@keyframes vt-collapse
+  from
+    clip-path: inset(0 round 0)
+  80%
+    opacity: 1
+  to
+    clip-path: inset(var(--vt-top) var(--vt-right) var(--vt-bottom) var(--vt-left) round 6px)
+    opacity: 0
+
+@keyframes vt-recede
+  to
+    opacity: 0.35
+    transform: scale(0.97)
+
+@keyframes vt-origin-out
+  from
+    opacity: 1
+  to
+    opacity: 0
+    transform: scale(1.35)

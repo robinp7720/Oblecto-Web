@@ -2,8 +2,12 @@
   <article
     class="media-card"
     :class="{ landscape }"
+    data-motion-card
   >
-    <div class="poster">
+    <div
+      class="poster"
+      data-motion-origin
+    >
       <RouterLink
         :to="detailsRoute"
         class="poster-link"

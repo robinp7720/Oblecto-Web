@@ -18,9 +18,12 @@
           v-if="showShell"
           key="shell"
         >
+          <!-- A card transition animates the page change itself, so this
+               one swaps instantly while it runs. -->
           <Transition
             name="page-fade"
-            mode="out-in"
+            :mode="cardTransitionActive ? 'default' : 'out-in'"
+            :css="!cardTransitionActive"
             @after-leave="pageLeft"
           >
             <component
@@ -50,7 +53,7 @@ import PlayerRoot from '@/components/player/PlayerRoot.vue'
 import { ScreenFormats } from '@/enums/ScreenFormats'
 import ConfirmDialog from '@/components/system/ConfirmDialog.vue'
 import { useAuthStore } from '@/stores/auth'
-import { pageLeft } from '@/router/transition'
+import { cardTransitionActive, pageLeft } from '@/router/transition'
 
 const route = useRoute()
 const store = useStore()

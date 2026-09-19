@@ -2,8 +2,12 @@
   <RouterLink
     class="person-card"
     :to="{ name: 'PersonInfo', params: { personId: credit.person.id } }"
+    data-motion-card
   >
-    <span class="portrait">
+    <span
+      class="portrait"
+      data-motion-origin
+    >
       <img
         v-if="!failed"
         :src="portrait"

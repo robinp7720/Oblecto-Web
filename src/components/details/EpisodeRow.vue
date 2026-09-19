@@ -1,8 +1,12 @@
 <template>
-  <article class="episode-row">
+  <article
+    class="episode-row"
+    data-motion-card
+  >
     <span class="episode-number">{{ episode.airedEpisodeNumber ?? '—' }}</span>
     <button
       class="episode-art"
+      data-motion-origin
       type="button"
       :aria-label="`Play ${title}`"
       @click="play"
