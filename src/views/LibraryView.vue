@@ -462,6 +462,17 @@ onBeforeUnmount(() => clearTimeout(peopleTimer))
   font-size: 0.85rem
   font-weight: 600
   cursor: pointer
+  transition: all 0.2s ease
+
+  &:hover
+    background: rgba(255, 255, 255, 0.1)
+    color: var(--color-text)
+
+  &.active
+    background: var(--color-accent-soft)
+    border-color: var(--color-accent)
+    color: var(--color-accent-strong)
+    box-shadow: 0 2px 10px var(--color-accent-soft)
 
 .person-filter
   position: relative
@@ -489,17 +500,6 @@ onBeforeUnmount(() => clearTimeout(peopleTimer))
       background: var(--color-surface)
     small
       color: var(--color-text-muted)
-  transition: all 0.2s ease
-
-  &:hover
-    background: rgba(255, 255, 255, 0.1)
-    color: var(--color-text)
-
-  &.active
-    background: var(--color-accent-soft)
-    border-color: var(--color-accent)
-    color: var(--color-accent-strong)
-    box-shadow: 0 2px 10px var(--color-accent-soft)
 
 .results-grid
   display: grid
