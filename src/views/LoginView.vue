@@ -204,7 +204,7 @@ const credentials = reactive({
 })
 
 const host = ref(store.state.host || '')
-const error = ref('')
+const error = ref(route.query.expired ? 'Your session has ended. Please sign in again.' : '')
 const editingHost = ref(!host.value)
 
 // The server only lists profiles to clients on its local network; anywhere

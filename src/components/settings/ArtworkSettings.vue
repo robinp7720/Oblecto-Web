@@ -9,23 +9,6 @@
           Asset storage
         </h2>
 
-        <div class="setting-row">
-          <label class="checkbox-container">
-            Store assets with file
-            <input
-              id="setting-assets-storeWithFile"
-              v-model="assets.storeWithFile"
-              :aria-invalid="Boolean(form.fields['assets.storeWithFile'])"
-              :aria-describedby="'setting-assets-storeWithFile-error'"
-              type="checkbox"
-              @change="saveSettings"
-            >
-            <span class="checkmark" />
-          </label>
-          <p class="checkbox-description">
-            If enabled, images will be saved in the same directory as the media file.
-          </p>
-        </div>
 
         <div class="form-group">
           <label for="setting-assets-showPosterLocation">TV show poster folder</label>
@@ -355,7 +338,6 @@
       return {
         save: createSaveState(),
         assets: {
-            storeWithFile: false,
             episodeBannerLocation: '',
             showPosterLocation: '',
             moviePosterLocation: '',

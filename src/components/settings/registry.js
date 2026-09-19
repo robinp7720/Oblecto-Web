@@ -74,13 +74,6 @@ export const settingsFields = [
   { name: 'SettingsLibraries', label: 'TV show library folders', anchor: 'setting-tv-folders', keywords: 'directories paths source' },
   {
     "name": "ArtworkSettings",
-    "label": "Store assets with file",
-    "anchor": "setting-assets-storeWithFile",
-    "description": "",
-    "keywords": "assets.storeWithFile"
-  },
-  {
-    "name": "ArtworkSettings",
     "label": "TV show poster folder",
     "anchor": "setting-assets-showPosterLocation",
     "description": "Server path for stored artwork. Relative paths keep the server\u2019s existing path behavior.",
@@ -221,20 +214,6 @@ export const settingsFields = [
   },
   {
     "name": "SettingsLibraries",
-    "label": "Re-index on startup",
-    "anchor": "setting-movies-doReIndex",
-    "description": "Revisit already indexed files when scanning; this can take longer.",
-    "keywords": "movies.doReIndex"
-  },
-  {
-    "name": "SettingsLibraries",
-    "label": "Index broken files",
-    "anchor": "setting-movies-indexBroken",
-    "description": "Attempt to index files even when probing reports a problem.",
-    "keywords": "movies.indexBroken"
-  },
-  {
-    "name": "SettingsLibraries",
     "label": "Identifiers",
     "anchor": "setting-movies-movieIdentifiers",
     "description": "",
@@ -246,27 +225,6 @@ export const settingsFields = [
     "anchor": "setting-movies-movieUpdaters",
     "description": "",
     "keywords": "movies.movieUpdaters"
-  },
-  {
-    "name": "SettingsLibraries",
-    "label": "Re-index on startup",
-    "anchor": "setting-tvshows-doReIndex",
-    "description": "Revisit already indexed files when scanning; this can take longer.",
-    "keywords": "tvshows.doReIndex"
-  },
-  {
-    "name": "SettingsLibraries",
-    "label": "Index broken files",
-    "anchor": "setting-tvshows-indexBroken",
-    "description": "Attempt to index files even when probing reports a problem.",
-    "keywords": "tvshows.indexBroken"
-  },
-  {
-    "name": "SettingsLibraries",
-    "label": "Ignore series mismatch",
-    "anchor": "setting-tvshows-ignoreSeriesMismatch",
-    "description": "Allow an episode match even when its series identifier differs from the expected series.",
-    "keywords": "tvshows.ignoreSeriesMismatch"
   },
   {
     "name": "SettingsLibraries",
