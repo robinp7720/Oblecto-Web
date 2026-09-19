@@ -58,6 +58,19 @@
       :items="searchStore.results.movies"
       eyebrow="Search"
     />
+    <section
+      v-if="searchStore.results.people.length"
+      class="people-results"
+    >
+      <h2>People</h2>
+      <div class="people-grid">
+        <PersonCard
+          v-for="person in searchStore.results.people"
+          :key="person.id"
+          :credit="{ person, job: person.knownForDepartment }"
+        />
+      </div>
+    </section>
     <MediaShelf
       v-if="searchStore.results.series.length"
       title="Series Results"
@@ -79,6 +92,7 @@
 import { computed, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import MediaShelf from '@/components/media/MediaShelf.vue'
+import PersonCard from '@/components/details/PersonCard.vue'
 import { useSearchStore } from '@/stores/search'
 
 const route = useRoute()
@@ -90,7 +104,7 @@ const normalizedQuery = computed(() => String(route.query.q || '').trim())
 const resultCount = computed(() => Object.values(searchStore.results).reduce((count, items) => count + items.length, 0))
 const hasResults = computed(() => {
   const results = searchStore.results
-  return results.movies.length > 0 || results.series.length > 0 || results.episodes.length > 0
+  return results.movies.length > 0 || results.series.length > 0 || results.episodes.length > 0 || results.people.length > 0
 })
 
 function submit () {
@@ -151,6 +165,14 @@ watch(() => route.query.q, value => {
   border-radius: var(--radius-md)
   border: 1px solid var(--color-border)
   background: var(--color-surface)
+
+.people-results
+  h2
+    margin-bottom: 18px
+.people-grid
+  display: grid
+  grid-template-columns: repeat(auto-fill, minmax(130px, 1fr))
+  gap: 20px
 
 @media screen and (max-width: 720px)
   .search-form

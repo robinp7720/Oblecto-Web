@@ -97,6 +97,52 @@
           </option>
         </select>
 
+        <div class="person-filter">
+          <input
+            v-model="personQuery"
+            type="search"
+            placeholder="Filter by person…"
+            aria-label="Filter by actor or creator"
+            @input="schedulePeopleSearch"
+          >
+          <div
+            v-if="peopleOptions.length && !filters.personId"
+            class="person-options"
+          >
+            <button
+              v-for="person in peopleOptions"
+              :key="person.id"
+              type="button"
+              @click="selectPerson(person)"
+            >
+              {{ person.name }} <small>{{ person.knownForDepartment }}</small>
+            </button>
+          </div>
+        </div>
+        <select
+          v-if="filters.personId"
+          v-model="filters.creditRole"
+          aria-label="Person's role"
+          class="select-pill"
+          @change="applyFilters"
+        >
+          <option value="any">
+            Any role
+          </option>
+          <option value="cast">
+            Actor
+          </option>
+          <option value="director">
+            Director
+          </option>
+          <option value="writer">
+            Writer
+          </option>
+          <option value="creator">
+            Creator
+          </option>
+        </select>
+
         <div
           v-if="libraryState.facets.genres?.length"
           class="genre-list"
@@ -217,6 +263,7 @@ import { computed, onBeforeUnmount, reactive, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import MediaCard from '@/components/media/MediaCard.vue'
 import { useMediaStore } from '@/stores/media'
+import oblectoClient from '@/oblectoClient'
 
 const route = useRoute()
 const router = useRouter()
@@ -233,8 +280,13 @@ const filters = reactive({
   order: 'desc',
   watched: 'all',
   genre: [],
-  libraryPath: ''
+  libraryPath: '',
+  personId: '',
+  personName: '',
+  creditRole: 'any'
 })
+const personQuery = ref('')
+const peopleOptions = ref([])
 
 const query = computed({
   get: () => filters.q,
@@ -268,6 +320,10 @@ function syncFromRoute () {
   filters.watched = String(route.query.watched || 'all')
   filters.genre = route.query.genre ? String(route.query.genre).split(',').filter(Boolean) : []
   filters.libraryPath = String(route.query.libraryPath || '')
+  filters.personId = String(route.query.personId || '')
+  filters.personName = String(route.query.personName || '')
+  filters.creditRole = String(route.query.creditRole || 'any')
+  personQuery.value = filters.personName
 
   mediaStore.updateLibraryFilters(mediaType.value, {
     ...filters
@@ -285,7 +341,10 @@ function applyFilters () {
       order: filters.order !== 'desc' ? filters.order : undefined,
       watched: filters.watched !== 'all' ? filters.watched : undefined,
       genre: filters.genre.length ? filters.genre.join(',') : undefined,
-      libraryPath: filters.libraryPath || undefined
+      libraryPath: filters.libraryPath || undefined,
+      personId: filters.personId || undefined,
+      personName: filters.personId ? filters.personName : undefined,
+      creditRole: filters.personId && filters.creditRole !== 'any' ? filters.creditRole : undefined
     }
   })
 }
@@ -305,10 +364,12 @@ function loadMore () {
 
 const filtersOpen = ref(false)
 let filterTimer
-const hasConstraints = computed(() => Boolean(filters.q || filters.genre.length || filters.watched !== 'all' || filters.libraryPath))
+let peopleTimer
+const hasConstraints = computed(() => Boolean(filters.q || filters.genre.length || filters.watched !== 'all' || filters.libraryPath || filters.personId))
 const activeChips = computed(() => [
   ...(filters.q ? [{ key: 'q', value: filters.q, label: filters.q }] : []),
   ...filters.genre.map(value => ({ key: 'genre', value, label: value })),
+  ...(filters.personId ? [{ key: 'personId', value: filters.personId, label: `${filters.personName}${filters.creditRole !== 'any' ? ` · ${filters.creditRole}` : ''}` }] : []),
   ...['sort', 'order', 'watched', 'libraryPath'].filter(key => filters[key] !== ({ sort: 'createdAt', order: 'desc', watched: 'all', libraryPath: '' })[key]).map(key => ({ key, value: filters[key], label: key === 'sort' ? sortOptions.value.find(option => option.value === filters[key])?.label || filters[key] : filters[key] }))
 ])
 function scheduleFilter () {
@@ -318,12 +379,14 @@ function scheduleFilter () {
 function removeFilter (chip) {
   clearTimeout(filterTimer)
   if (chip.key === 'genre') filters.genre = filters.genre.filter(value => value !== chip.value)
+  else if (chip.key === 'personId') Object.assign(filters, { personId: '', personName: '', creditRole: 'any' })
   else filters[chip.key] = ({ q: '', sort: 'createdAt', order: 'desc', watched: 'all', libraryPath: '' })[chip.key]
   applyFilters()
 }
 function clearFilters () {
   clearTimeout(filterTimer)
-  Object.assign(filters, { q: '', sort: 'createdAt', order: 'desc', watched: 'all', genre: [], libraryPath: '' })
+  Object.assign(filters, { q: '', sort: 'createdAt', order: 'desc', watched: 'all', genre: [], libraryPath: '', personId: '', personName: '', creditRole: 'any' })
+  personQuery.value = ''
   applyFilters()
 }
 watch(() => [route.params.mediaType, route.query], () => {
@@ -332,6 +395,25 @@ watch(() => [route.params.mediaType, route.query], () => {
   mediaStore.loadLibrary(mediaType.value)
 }, { immediate: true })
 onBeforeUnmount(() => clearTimeout(filterTimer))
+
+function schedulePeopleSearch () {
+  clearTimeout(peopleTimer)
+  if (filters.personId && personQuery.value !== filters.personName) {
+    Object.assign(filters, { personId: '', personName: '', creditRole: 'any' })
+  }
+  const query = personQuery.value.trim()
+  if (query.length < 2) { peopleOptions.value = []; return }
+  peopleTimer = setTimeout(async () => {
+    try { peopleOptions.value = await oblectoClient.people.search(query, 8) } catch { peopleOptions.value = [] }
+  }, 250)
+}
+function selectPerson (person) {
+  Object.assign(filters, { personId: String(person.id), personName: person.name, creditRole: 'any' })
+  personQuery.value = person.name
+  peopleOptions.value = []
+  applyFilters()
+}
+onBeforeUnmount(() => clearTimeout(peopleTimer))
 </script>
 
 <style scoped lang="sass">
@@ -380,6 +462,33 @@ onBeforeUnmount(() => clearTimeout(filterTimer))
   font-size: 0.85rem
   font-weight: 600
   cursor: pointer
+
+.person-filter
+  position: relative
+  min-width: 220px
+.person-options
+  position: absolute
+  z-index: 5
+  top: calc(100% + 6px)
+  left: 0
+  right: 0
+  display: grid
+  padding: 6px
+  border: 1px solid var(--color-border)
+  border-radius: var(--radius-sm)
+  background: var(--color-bg-1)
+  box-shadow: var(--shadow-strong)
+  button
+    padding: 10px
+    border: 0
+    text-align: left
+    color: var(--color-text)
+    background: transparent
+    cursor: pointer
+    &:hover
+      background: var(--color-surface)
+    small
+      color: var(--color-text-muted)
   transition: all 0.2s ease
 
   &:hover

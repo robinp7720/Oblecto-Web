@@ -42,6 +42,16 @@
         >Available files</a>
       </MediaDetailHero>
       <div class="detail-body">
+        <PeopleRow
+          title="Cast"
+          :credits="movie.credits?.cast || []"
+        />
+        <PeopleRow
+          v-if="keyCrew.length"
+          title="Directed and written by"
+          :credits="keyCrew"
+          :limit="10"
+        />
         <section
           v-if="metadata.length"
           class="detail-section"
@@ -57,12 +67,12 @@
             </div>
           </dl>
         </section>
-        <section
+        <details
           id="movie-files"
-          class="detail-section"
+          class="detail-section technical-details"
         >
-          <h2>Available files</h2><FileList :files="movie.Files || []" />
-        </section>
+          <summary>Available files</summary><FileList :files="movie.Files || []" />
+        </details>
         <div
           v-if="relatedError"
           class="detail-notice"
@@ -96,8 +106,9 @@ import oblectoClient from '@/oblectoClient'
 import MediaDetailHero from '@/components/details/MediaDetailHero.vue'
 import MediaShelf from '@/components/media/MediaShelf.vue'
 import FileList from '@/components/files/FileList.vue'
+import PeopleRow from '@/components/details/PeopleRow.vue'
 import { useMediaDetails } from '@/composables/useMediaDetails'
-import { imageUrl, normalizeGenres, formatYear, formatRuntime } from '@/utils/media'
+import { imageUrl, normalizeGenres, formatYear, formatRuntime, formatRating } from '@/utils/media'
 import '@/assets/sass/details.sass'
 const route = useRoute()
 const store = useStore()
@@ -107,7 +118,8 @@ const { item: movie, related: sets, loading, error, relatedError, reload } = use
   id => oblectoClient.movieLibrary.getMovieSets(id)
 )
 const genres = computed(() => normalizeGenres(movie.value?.genres || movie.value?.genre))
-const subtitle = computed(() => [formatYear(movie.value?.releaseDate), formatRuntime(movie.value?.runtime)].filter(Boolean).join(' · '))
+const subtitle = computed(() => [formatYear(movie.value?.releaseDate), formatRuntime(movie.value?.runtime), movie.value?.siteRating ? `TMDB ${formatRating(movie.value.siteRating, movie.value.siteRatingCount)}` : null].filter(Boolean).join(' · '))
+const keyCrew = computed(() => (movie.value?.credits?.crew || []).filter(credit => credit.roles?.some(role => ['Director', 'Writer', 'Screenplay', 'Story'].includes(role.job))))
 const collections = computed(() => sets.value.filter(set => (set.Movies || set.movies)?.length))
 const metadata = computed(() => {
   const data = movie.value || {}

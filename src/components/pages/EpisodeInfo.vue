@@ -43,6 +43,15 @@
         </RouterLink>
       </MediaDetailHero>
       <div class="detail-body">
+        <PeopleRow
+          title="Guest stars"
+          :credits="episode.credits?.cast || []"
+        />
+        <PeopleRow
+          v-if="keyCrew.length"
+          title="Directed and written by"
+          :credits="keyCrew"
+        />
         <section
           v-if="metadata.length"
           class="detail-section"
@@ -56,9 +65,9 @@
             </div>
           </dl>
         </section>
-        <section class="detail-section">
-          <h2>Available files</h2><FileList :files="episode.Files || []" />
-        </section>
+        <details class="detail-section technical-details">
+          <summary>Available files</summary><FileList :files="episode.Files || []" />
+        </details>
       </div>
     </template>
   </div>
@@ -72,6 +81,7 @@ import { useStore } from 'vuex'
 import oblectoClient from '@/oblectoClient'
 import MediaDetailHero from '@/components/details/MediaDetailHero.vue'
 import FileList from '@/components/files/FileList.vue'
+import PeopleRow from '@/components/details/PeopleRow.vue'
 import { useMediaDetails } from '@/composables/useMediaDetails'
 import { imageUrl, formatRuntime, formatRating } from '@/utils/media'
 import '@/assets/sass/details.sass'
@@ -84,14 +94,14 @@ const banner = computed(() => imageUrl(store.state.host, 'episode', episode.valu
 const poster = computed(() => seriesId.value ? imageUrl(store.state.host, 'series', seriesId.value, 'poster') : '')
 const subtitle = computed(() => {
   const data = episode.value || {}
-  return [data.Series?.seriesName || data.seriesName, data.airedSeason != null && data.airedEpisodeNumber != null ? `S${data.airedSeason} · E${data.airedEpisodeNumber}` : null, formatRuntime(data.runtime)].filter(Boolean).join(' · ')
+  return [data.Series?.seriesName || data.seriesName, data.airedSeason != null && data.airedEpisodeNumber != null ? `S${data.airedSeason} · E${data.airedEpisodeNumber}` : null, formatRuntime(data.runtime), data.siteRating ? `TMDB ${formatRating(data.siteRating, data.siteRatingCount)}` : null].filter(Boolean).join(' · ')
 })
+const keyCrew = computed(() => (episode.value?.credits?.crew || []).filter(credit => credit.roles?.some(role => ['Director', 'Writer', 'Screenplay', 'Story'].includes(role.job))))
 const metadata = computed(() => {
   const data = episode.value || {}
   return [
     { label: 'First aired', value: data.firstAired || data.aired || data.airDate },
     { label: 'Runtime', value: formatRuntime(data.runtime) },
-    { label: 'Content rating', value: data.rating },
     { label: 'Community rating', value: formatRating(data.siteRating, data.siteRatingCount) }
   ].filter(entry => entry.value)
 })
