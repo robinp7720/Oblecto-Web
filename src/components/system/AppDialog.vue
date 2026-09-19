@@ -159,7 +159,11 @@ export default { name: 'AppDialog' }
     backdrop-filter: blur(6px)
 
   &[open]
-    animation: dialog-in 0.16s ease
+    animation: dialog-in var(--motion-base) var(--ease-out)
+
+  // Literal timing: ::backdrop does not inherit custom properties everywhere.
+  &[open]::backdrop
+    animation: motion-fade 220ms ease-out
 
 .app-dialog--sm
   --dialog-width: 420px
@@ -248,7 +252,7 @@ export default { name: 'AppDialog' }
 @keyframes dialog-in
   from
     opacity: 0
-    transform: translateY(8px)
+    transform: translateY(12px) scale(0.98)
   to
     opacity: 1
     transform: none

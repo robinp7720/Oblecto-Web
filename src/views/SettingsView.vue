@@ -75,20 +75,40 @@
     </aside>
 
     <section class="settings-panel">
-      <header class="panel-header">
-        <p class="eyebrow">
-          {{ current.eyebrow }}
-        </p>
-        <h1>{{ current.label }}</h1>
-        <p
-          v-if="current.description"
-          class="panel-description"
+      <Transition
+        name="fade"
+        mode="out-in"
+      >
+        <header
+          :key="route.name"
+          class="panel-header"
         >
-          {{ current.description }}
-        </p>
-      </header>
+          <p class="eyebrow">
+            {{ current.eyebrow }}
+          </p>
+          <h1>{{ current.label }}</h1>
+          <p
+            v-if="current.description"
+            class="panel-description"
+          >
+            {{ current.description }}
+          </p>
+        </header>
+      </Transition>
 
-      <RouterView />
+      <RouterView v-slot="{ Component }">
+        <Transition
+          name="rise"
+          mode="out-in"
+          @after-leave="pageLeft"
+          @after-enter="focusSetting(route.hash)"
+        >
+          <component
+            :is="Component"
+            :key="route.name"
+          />
+        </Transition>
+      </RouterView>
     </section>
   </div>
 </template>
@@ -99,6 +119,7 @@ import { useI18n } from 'vue-i18n'
 import { pages, settingsFields, focusSetting, visibleGroups } from '@/components/settings/registry'
 import { useRoute } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
+import { pageLeft } from '@/router/transition'
 
 // Grouped by what an operator is trying to do, so the sidebar reads as a few
 // short lists rather than ten equally-weighted cards. The description is the

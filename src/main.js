@@ -13,6 +13,7 @@ import { applyLocale, i18n } from '@/i18n'
 // Loaded once for the whole app. Every settings component used to `@use` this
 // from inside its own scoped block, which shipped a dozen copies of it.
 import '@/assets/sass/settings.sass'
+import '@/assets/sass/motion.sass'
 
 const app = createApp(App)
 const pinia = createPinia()

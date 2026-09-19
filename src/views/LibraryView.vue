@@ -185,60 +185,65 @@
       </div>
     </section>
 
-    <div
-      v-if="libraryState.loading"
-      class="state-card"
+    <Transition
+      name="fade"
+      mode="out-in"
     >
-      <div class="spinner" />
-      <span>Loading {{ isMovieLibrary ? 'movies' : 'series' }}…</span>
-    </div>
-    <div
-      v-else-if="libraryState.error"
-      class="state-card error"
-    >
-      {{ libraryState.error }}
-      <button
-        type="button"
-        @click="mediaStore.loadLibrary(mediaType)"
+      <div
+        v-if="libraryState.loading"
+        class="state-card"
       >
-        Try again
-      </button>
-    </div>
-    <div
-      v-else-if="!libraryState.items.length"
-      class="state-card"
-    >
-      <template v-if="hasConstraints">
-        No titles match these filters. <button
+        <div class="spinner" />
+        <span>Loading {{ isMovieLibrary ? 'movies' : 'series' }}…</span>
+      </div>
+      <div
+        v-else-if="libraryState.error"
+        class="state-card error"
+      >
+        {{ libraryState.error }}
+        <button
           type="button"
-          @click="clearFilters"
+          @click="mediaStore.loadLibrary(mediaType)"
         >
-          Clear filters
+          Try again
         </button>
-      </template>
-      <template v-else-if="libraryState.librariesLoaded && !libraryState.libraries.length">
-        No libraries configured. <RouterLink :to="{ name: 'SettingsLibraries' }">
-          Add a library
-        </RouterLink>
-      </template>
-      <template v-else>
-        No titles have been indexed yet. <RouterLink :to="{ name: 'SettingsMaintenance' }">
-          Manage library scans
-        </RouterLink>
-      </template>
-    </div>
+      </div>
+      <div
+        v-else-if="!libraryState.items.length"
+        class="state-card"
+      >
+        <template v-if="hasConstraints">
+          No titles match these filters. <button
+            type="button"
+            @click="clearFilters"
+          >
+            Clear filters
+          </button>
+        </template>
+        <template v-else-if="libraryState.librariesLoaded && !libraryState.libraries.length">
+          No libraries configured. <RouterLink :to="{ name: 'SettingsLibraries' }">
+            Add a library
+          </RouterLink>
+        </template>
+        <template v-else>
+          No titles have been indexed yet. <RouterLink :to="{ name: 'SettingsMaintenance' }">
+            Manage library scans
+          </RouterLink>
+        </template>
+      </div>
 
-    <section
-      v-else
-      class="results-grid"
-    >
-      <MediaCard
-        v-for="item in libraryState.items"
-        :key="`${mediaType}-${item.id}`"
-        :item="item"
-        :type="mediaCardType"
-      />
-    </section>
+      <section
+        v-else
+        class="results-grid motion-stagger"
+      >
+        <MediaCard
+          v-for="item in libraryState.items"
+          :key="`${mediaType}-${item.id}`"
+          :item="item"
+          :type="mediaCardType"
+        />
+      </section>
+    </Transition>
 
     <p
       v-if="libraryState.moreError"
@@ -462,6 +467,20 @@ onBeforeUnmount(() => clearTimeout(peopleTimer))
   font-size: 0.85rem
   font-weight: 600
   cursor: pointer
+  transition: all 0.2s ease
+
+  &:hover
+    background: rgba(255, 255, 255, 0.1)
+    color: var(--color-text)
+
+  &:active
+    transform: scale(0.96)
+
+  &.active
+    background: var(--color-accent-soft)
+    border-color: var(--color-accent)
+    color: var(--color-accent-strong)
+    box-shadow: 0 2px 10px var(--color-accent-soft)
 
 .person-filter
   position: relative
@@ -478,6 +497,8 @@ onBeforeUnmount(() => clearTimeout(peopleTimer))
   border-radius: var(--radius-sm)
   background: var(--color-bg-1)
   box-shadow: var(--shadow-strong)
+  transform-origin: top center
+  animation: motion-pop var(--motion-fast) var(--ease-out)
   button
     padding: 10px
     border: 0
@@ -489,17 +510,6 @@ onBeforeUnmount(() => clearTimeout(peopleTimer))
       background: var(--color-surface)
     small
       color: var(--color-text-muted)
-  transition: all 0.2s ease
-
-  &:hover
-    background: rgba(255, 255, 255, 0.1)
-    color: var(--color-text)
-
-  &.active
-    background: var(--color-accent-soft)
-    border-color: var(--color-accent)
-    color: var(--color-accent-strong)
-    box-shadow: 0 2px 10px var(--color-accent-soft)
 
 .results-grid
   display: grid
@@ -598,6 +608,7 @@ button, select
     display: none
     &.expanded
       display: grid
+      animation: motion-rise var(--motion-base) var(--ease-out)
       grid-template-columns: minmax(0, 1fr)
 </style>
 

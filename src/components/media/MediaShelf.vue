@@ -38,7 +38,7 @@
     </div>
     <div
       ref="track"
-      class="track"
+      class="track motion-stagger"
       :class="{ 'people-track': type === 'person' }"
       tabindex="0"
       :aria-label="`${title}, scrollable ${itemLabel}`"
@@ -130,8 +130,11 @@ onBeforeUnmount(() => observer?.disconnect())
     color: white
     font-size: 1.5rem
     cursor: pointer
+    transition: background-color var(--motion-fast), transform var(--motion-fast) var(--ease-out), opacity var(--motion-base)
     &:hover:not(:disabled)
       background: #444
+    &:active:not(:disabled)
+      transform: scale(0.92)
     &:disabled
       opacity: 0.3
       cursor: default

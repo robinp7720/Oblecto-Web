@@ -1,89 +1,92 @@
 <template>
-  <div
-    v-if="visible"
-    class="remote-bar"
-    role="region"
-    :aria-label="`Remote control for ${device.name}`"
-  >
-    <div class="remote-head">
-      <div
-        v-if="artwork"
-        class="art"
-      >
-        <img
-          v-if="!artFailed"
-          :src="artwork"
-          alt=""
-          @error="artFailed = true"
+  <!-- Slides up from the bottom edge, where it docks. -->
+  <Transition name="slide-up">
+    <div
+      v-if="visible"
+      class="remote-bar"
+      role="region"
+      :aria-label="`Remote control for ${device.name}`"
+    >
+      <div class="remote-head">
+        <div
+          v-if="artwork"
+          class="art"
         >
+          <img
+            v-if="!artFailed"
+            :src="artwork"
+            alt=""
+            @error="artFailed = true"
+          >
+        </div>
+
+        <div class="copy">
+          <p class="title">
+            {{ title }}
+          </p>
+          <p class="target">
+            {{ statusLine }}
+          </p>
+        </div>
+
+        <PlayerVolume
+          v-if="state.canSetVolume"
+          class="volume"
+          :volume="state.volume"
+          :muted="state.muted"
+          :supported="state.canSetVolume"
+          @set-volume="setVolume"
+          @toggle-mute="toggleMute"
+        />
+
+        <button
+          type="button"
+          class="icon-button"
+          :aria-label="paused ? 'Play' : 'Pause'"
+          @click="togglePlay"
+        >
+          <PlayerIcon :name="paused ? 'play' : 'pause'" />
+        </button>
+
+        <button
+          v-if="state.hasNext"
+          type="button"
+          class="icon-button"
+          aria-label="Next episode"
+          @click="send({ type: 'next' })"
+        >
+          <PlayerIcon name="next" />
+        </button>
+
+        <button
+          type="button"
+          class="icon-button"
+          aria-label="Stop playback"
+          @click="send({ type: 'stop' })"
+        >
+          <PlayerIcon name="close" />
+        </button>
       </div>
 
-      <div class="copy">
-        <p class="title">
-          {{ title }}
-        </p>
-        <p class="target">
-          {{ statusLine }}
-        </p>
-      </div>
-
-      <PlayerVolume
-        v-if="state.canSetVolume"
-        class="volume"
-        :volume="state.volume"
-        :muted="state.muted"
-        :supported="state.canSetVolume"
-        @set-volume="setVolume"
-        @toggle-mute="toggleMute"
+      <PlayerSeekBar
+        :current-time="position"
+        :duration="state.duration"
+        :buffered-end="0"
+        :scrub-position="scrubPosition"
+        :disabled="!state.canSeek"
+        @scrub-start="onScrubStart"
+        @scrub="onScrub"
+        @scrub-end="onScrubEnd"
       />
 
-      <button
-        type="button"
-        class="icon-button"
-        :aria-label="paused ? 'Play' : 'Pause'"
-        @click="togglePlay"
+      <p
+        v-if="notice"
+        class="notice"
       >
-        <PlayerIcon :name="paused ? 'play' : 'pause'" />
-      </button>
-
-      <button
-        v-if="state.hasNext"
-        type="button"
-        class="icon-button"
-        aria-label="Next episode"
-        @click="send({ type: 'next' })"
-      >
-        <PlayerIcon name="next" />
-      </button>
-
-      <button
-        type="button"
-        class="icon-button"
-        aria-label="Stop playback"
-        @click="send({ type: 'stop' })"
-      >
-        <PlayerIcon name="close" />
-      </button>
+        {{ notice }}
+      </p>
     </div>
-
-    <PlayerSeekBar
-      :current-time="position"
-      :duration="state.duration"
-      :buffered-end="0"
-      :scrub-position="scrubPosition"
-      :disabled="!state.canSeek"
-      @scrub-start="onScrubStart"
-      @scrub="onScrub"
-      @scrub-end="onScrubEnd"
-    />
-
-    <p
-      v-if="notice"
-      class="notice"
-    >
-      {{ notice }}
-    </p>
-  </div>
+  </Transition>
 </template>
 
 <script setup>

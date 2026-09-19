@@ -4,20 +4,40 @@
 
     <RouterView
       v-if="authStore.ready"
-      v-slot="{ Component }"
+      v-slot="{ Component, route: viewRoute }"
     >
-      <transition
+      <!-- The outer transition only swaps between the sign-in screen and the
+           app; the inner one moves between pages while the header and footer
+           stay put. -->
+      <Transition
         name="page-fade"
         mode="out-in"
+        @after-leave="pageLeft"
       >
-        <AppShell v-if="showShell">
-          <component :is="Component" />
+        <AppShell
+          v-if="showShell"
+          key="shell"
+        >
+          <!-- A card transition animates the page change itself, so this
+               one swaps instantly while it runs. -->
+          <Transition
+            name="page-fade"
+            :mode="cardTransitionActive ? 'default' : 'out-in'"
+            :css="!cardTransitionActive"
+            @after-leave="pageLeft"
+          >
+            <component
+              :is="Component"
+              :key="pageKey(viewRoute)"
+            />
+          </Transition>
         </AppShell>
         <component
           :is="Component"
           v-else
+          key="bare"
         />
-      </transition>
+      </Transition>
     </RouterView>
 
     <PlayerRoot v-if="showShell" />
@@ -33,10 +53,18 @@ import PlayerRoot from '@/components/player/PlayerRoot.vue'
 import { ScreenFormats } from '@/enums/ScreenFormats'
 import ConfirmDialog from '@/components/system/ConfirmDialog.vue'
 import { useAuthStore } from '@/stores/auth'
+import { cardTransitionActive, pageLeft } from '@/router/transition'
 
 const route = useRoute()
 const store = useStore()
 const authStore = useAuthStore()
+
+// Nested routes (settings) keep their layout and animate their own panel, so
+// they share one key. Everything else is keyed by path: another movie is a new
+// page, but a changed search or filter query is not.
+function pageKey (target) {
+  return target.matched.length > 1 ? target.matched[0].path : target.path
+}
 
 const showShell = computed(() => authStore.isAuthenticated && route.meta.layout !== 'auth')
 const playing = computed(() => store.state.playing)
@@ -187,22 +215,11 @@ watch([playing, playSizeFormat], () => {
   @media (prefers-reduced-motion: reduce)
     *, *::before, *::after
       animation-duration: 0.01ms !important
+      animation-delay: 0s !important
       transition-duration: 0.01ms !important
       scroll-behavior: auto !important
 
   ul
     margin: 0
     padding: 0
-
-  /* Page Transition Animations */
-  .page-fade-enter-active, .page-fade-leave-active
-    transition: opacity 0.25s ease, transform 0.25s ease
-
-  .page-fade-enter-from
-    opacity: 0
-    transform: translateY(8px)
-
-  .page-fade-leave-to
-    opacity: 0
-    transform: translateY(-8px)
 </style>

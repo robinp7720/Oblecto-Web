@@ -63,7 +63,7 @@
       class="people-results"
     >
       <h2>People</h2>
-      <div class="people-grid">
+      <div class="people-grid motion-stagger">
         <PersonCard
           v-for="person in searchStore.results.people"
           :key="person.id"

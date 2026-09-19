@@ -775,6 +775,16 @@ video
   height: 100vh
   height: 100dvh
 
+// Each mode has its own entrance, so switching mode replays it. The large one
+// is opacity only: a transform here would briefly re-anchor the fixed-position
+// settings sheet inside it.
+.player-root[data-mode='large'] .stage,
+.player-root[data-mode='fullscreen'] .stage
+  animation: motion-fade var(--motion-base) var(--ease-out)
+
+.player-root[data-mode='small'] .stage
+  animation: motion-rise var(--motion-slow) var(--ease-out)
+
 .player-root[data-mode='small']
   z-index: var(--z-player-mini)
   right: calc(20px + var(--safe-right))

@@ -87,6 +87,9 @@ const deviceName = computed(() => activeDevice.value?.name || '')
   border-radius: var(--radius-sm)
   background: var(--color-brand-coral)
   color: #141414
+  transition: transform var(--motion-fast) var(--ease-out)
+  &:has(.play:active)
+    transform: scale(0.97)
 .play
   display: flex
   align-items: center
