@@ -36,6 +36,8 @@
         background: #383838
   .detail-state
     margin: 40px var(--page-gutter)
+    // A short hold, so a fast load never flashes "Loading…".
+    animation: motion-fade var(--motion-base) var(--ease-out) 150ms both
     padding: 40px 0
     color: var(--color-text-muted)
     h1

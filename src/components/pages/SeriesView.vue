@@ -87,11 +87,17 @@
           >
             No episodes have been added to this show yet.
           </p>
-          <EpisodeRow
-            v-for="episode in selectedEpisodes"
-            :key="episode.id"
-            :episode="episode"
-          />
+          <!-- Keyed by season so picking another one replays the entrance. -->
+          <div
+            :key="selectedSeason"
+            class="motion-stagger"
+          >
+            <EpisodeRow
+              v-for="episode in selectedEpisodes"
+              :key="episode.id"
+              :episode="episode"
+            />
+          </div>
         </section>
         <section
           v-if="metadata.length"

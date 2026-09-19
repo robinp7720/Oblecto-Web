@@ -8,8 +8,10 @@
       v-if="backdrop && !backdropFailed"
       :key="backdrop"
       class="detail-backdrop"
+      :class="{ loaded: backdropLoaded }"
       :src="backdrop"
       alt=""
+      @load="backdropLoaded = true"
       @error="backdropFailed = true"
     >
     <div class="detail-shade" />
@@ -21,7 +23,7 @@
         ‹ {{ backLabel }}
       </RouterLink>
       <div class="detail-layout">
-        <div class="detail-copy">
+        <div class="detail-copy motion-stagger">
           <span class="detail-eyebrow">{{ type === 'movie' ? 'MOVIE' : type === 'series' ? 'TV SHOW' : 'EPISODE' }} · YOUR OBLECTO LIBRARY</span>
           <h1 id="detail-title">
             {{ title }}
@@ -81,8 +83,9 @@ const props = defineProps({
   backLabel: { type: String, required: true }
 })
 const backdropFailed = ref(false)
+const backdropLoaded = ref(false)
 const posterFailed = ref(false)
-watch(() => props.backdrop, () => { backdropFailed.value = false })
+watch(() => props.backdrop, () => { backdropFailed.value = false; backdropLoaded.value = false })
 watch(() => props.poster, () => { posterFailed.value = false })
 </script>
 <style scoped lang="sass">
@@ -102,6 +105,12 @@ watch(() => props.poster, () => { posterFailed.value = false })
 .portrait-backdrop .detail-backdrop
   opacity: 0.25
   object-position: center 35%
+// Held back until the image has decoded, so it settles in rather than painting
+// top to bottom. After the portrait rule, which it has to beat.
+.detail-backdrop
+  transition: opacity var(--motion-slow) var(--ease-out)
+  &:not(.loaded)
+    opacity: 0
 .detail-shade
   background: linear-gradient(0deg, var(--color-bg-1), transparent 60%), linear-gradient(90deg, rgba(20, 20, 20, 0.96), rgba(20, 20, 20, 0.75) 50%, rgba(20, 20, 20, 0.3))
 .detail-content

@@ -9,13 +9,15 @@
         v-if="!heroFailed"
         :key="heroImage"
         class="hero-backdrop"
+        :class="{ loaded: heroLoaded }"
         :src="heroImage"
         alt=""
         fetchpriority="high"
+        @load="heroLoaded = true"
         @error="heroFailed = true"
       >
       <div class="hero-overlay" />
-      <div class="hero-content">
+      <div class="hero-content motion-stagger">
         <span class="eyebrow"><span class="oblecto-mark">O</span> FEATURED {{ spotlight.type === 'movie' ? 'FILM' : 'SERIES' }}</span>
         <h1
           id="spotlight-title"
@@ -57,7 +59,7 @@
       class="loading-state"
       role="status"
     >
-      <div class="skeleton-hero" />
+      <div class="skeleton-hero motion-skeleton" />
       <p>Finding your next great watch…</p>
     </div>
     <section
@@ -106,13 +108,14 @@ import { imageUrl, titleForItem, subtitleForItem } from '@/utils/media'
 const mediaStore = useMediaStore()
 const store = useStore()
 const heroFailed = ref(false)
+const heroLoaded = ref(false)
 onMounted(() => { mediaStore.loadHome() })
 const spotlight = computed(() => mediaStore.home.spotlight)
 const spotlightTitle = computed(() => spotlight.value ? titleForItem(spotlight.value.type, spotlight.value.item) : '')
 const spotlightSubtitle = computed(() => spotlight.value ? subtitleForItem(spotlight.value.type, spotlight.value.item) : '')
 const spotlightOverview = computed(() => spotlight.value?.item?.overview || 'Settle in and discover something great from your collection.')
 const heroImage = computed(() => spotlight.value ? imageUrl(store.state.host, spotlight.value.type, spotlight.value.item.id, spotlight.value.type === 'movie' ? 'fanart' : 'poster') : '')
-watch(heroImage, () => { heroFailed.value = false })
+watch(heroImage, () => { heroFailed.value = false; heroLoaded.value = false })
 const spotlightRoute = computed(() => {
   if (!spotlight.value) return { name: 'Main' }
   if (spotlight.value.type === 'movie') return { name: 'MovieInfo', params: { movieId: spotlight.value.item.id } }
@@ -140,6 +143,11 @@ function playSpotlight () {
 .hero-backdrop
   object-fit: cover
   object-position: center 30%
+  transition: opacity var(--motion-slow) var(--ease-out)
+  // Held back until the image has decoded, so it settles in rather than
+  // painting top to bottom.
+  &:not(.loaded)
+    opacity: 0
 .hero-overlay
   background: linear-gradient(0deg, #141414 0%, transparent 35%), linear-gradient(90deg, rgba(0, 0, 0, 0.85), rgba(0, 0, 0, 0.4) 45%, rgba(0, 0, 0, 0.05) 80%)
 .hero-content
@@ -239,7 +247,6 @@ function playSpotlight () {
   color: var(--color-text-muted)
 .skeleton-hero
   height: 50vh
-  background: linear-gradient(110deg, #202020, #292929, #202020)
   border-radius: 4px
 @media (max-width: 760px)
   .hero

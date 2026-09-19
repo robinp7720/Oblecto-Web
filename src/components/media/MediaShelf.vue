@@ -38,7 +38,7 @@
     </div>
     <div
       ref="track"
-      class="track"
+      class="track motion-stagger"
       :class="{ 'people-track': type === 'person' }"
       tabindex="0"
       :aria-label="`${title}, scrollable ${itemLabel}`"

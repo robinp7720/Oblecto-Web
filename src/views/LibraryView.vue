@@ -185,60 +185,65 @@
       </div>
     </section>
 
-    <div
-      v-if="libraryState.loading"
-      class="state-card"
+    <Transition
+      name="fade"
+      mode="out-in"
     >
-      <div class="spinner" />
-      <span>Loading {{ isMovieLibrary ? 'movies' : 'series' }}…</span>
-    </div>
-    <div
-      v-else-if="libraryState.error"
-      class="state-card error"
-    >
-      {{ libraryState.error }}
-      <button
-        type="button"
-        @click="mediaStore.loadLibrary(mediaType)"
+      <div
+        v-if="libraryState.loading"
+        class="state-card"
       >
-        Try again
-      </button>
-    </div>
-    <div
-      v-else-if="!libraryState.items.length"
-      class="state-card"
-    >
-      <template v-if="hasConstraints">
-        No titles match these filters. <button
+        <div class="spinner" />
+        <span>Loading {{ isMovieLibrary ? 'movies' : 'series' }}…</span>
+      </div>
+      <div
+        v-else-if="libraryState.error"
+        class="state-card error"
+      >
+        {{ libraryState.error }}
+        <button
           type="button"
-          @click="clearFilters"
+          @click="mediaStore.loadLibrary(mediaType)"
         >
-          Clear filters
+          Try again
         </button>
-      </template>
-      <template v-else-if="libraryState.librariesLoaded && !libraryState.libraries.length">
-        No libraries configured. <RouterLink :to="{ name: 'SettingsLibraries' }">
-          Add a library
-        </RouterLink>
-      </template>
-      <template v-else>
-        No titles have been indexed yet. <RouterLink :to="{ name: 'SettingsMaintenance' }">
-          Manage library scans
-        </RouterLink>
-      </template>
-    </div>
+      </div>
+      <div
+        v-else-if="!libraryState.items.length"
+        class="state-card"
+      >
+        <template v-if="hasConstraints">
+          No titles match these filters. <button
+            type="button"
+            @click="clearFilters"
+          >
+            Clear filters
+          </button>
+        </template>
+        <template v-else-if="libraryState.librariesLoaded && !libraryState.libraries.length">
+          No libraries configured. <RouterLink :to="{ name: 'SettingsLibraries' }">
+            Add a library
+          </RouterLink>
+        </template>
+        <template v-else>
+          No titles have been indexed yet. <RouterLink :to="{ name: 'SettingsMaintenance' }">
+            Manage library scans
+          </RouterLink>
+        </template>
+      </div>
 
-    <section
-      v-else
-      class="results-grid"
-    >
-      <MediaCard
-        v-for="item in libraryState.items"
-        :key="`${mediaType}-${item.id}`"
-        :item="item"
-        :type="mediaCardType"
-      />
-    </section>
+      <section
+        v-else
+        class="results-grid motion-stagger"
+      >
+        <MediaCard
+          v-for="item in libraryState.items"
+          :key="`${mediaType}-${item.id}`"
+          :item="item"
+          :type="mediaCardType"
+        />
+      </section>
+    </Transition>
 
     <p
       v-if="libraryState.moreError"
