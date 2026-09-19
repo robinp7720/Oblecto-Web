@@ -32,9 +32,19 @@ import AccountPassword from '@/components/settings/account/AccountPassword.vue'
 import AccountPreferences from '@/components/settings/account/AccountPreferences.vue'
 import { pagePermission, visibleGroups } from '@/components/settings/registry'
 import { useAuthStore } from '@/stores/auth'
+import { pageLeave } from '@/router/transition'
 
 const router = createRouter({
   history: createWebHistory(BASE_PATH),
+  async scrollBehavior (to, from, savedPosition) {
+    // Query and hash changes stay on the same page: filters, search terms and
+    // settings anchors, which focusSetting scrolls to itself.
+    if (to.path === from.path) return false
+
+    await pageLeave()
+
+    return savedPosition || { top: 0 }
+  },
   routes: [
     {
       path: '/',

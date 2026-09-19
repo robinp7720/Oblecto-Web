@@ -1,0 +1,117 @@
+// Shared motion: timing tokens, keyframes and the named <Transition> classes.
+//
+// Imported once, globally, from main.js. Motion here is meant to be quick and
+// quiet: things arrive with a short rise and leave faster than they came, so
+// navigation never feels like waiting. The reduced-motion rule in App.vue
+// collapses every duration and delay below to nothing.
+
+:root
+  --motion-fast: 120ms
+  --motion-base: 220ms
+  --motion-slow: 420ms
+  --ease-out: cubic-bezier(0.2, 0.8, 0.2, 1)
+  --ease-in: cubic-bezier(0.4, 0, 1, 1)
+  // Per-item delay for staggered lists; items past the cap arrive together.
+  --stagger-step: 30ms
+
+// Keyframes ------------------------------------------------------------------
+
+@keyframes motion-rise
+  from
+    opacity: 0
+    transform: translateY(12px)
+  to
+    opacity: 1
+    transform: none
+
+@keyframes motion-fade
+  from
+    opacity: 0
+  to
+    opacity: 1
+
+@keyframes motion-pop
+  from
+    opacity: 0
+    transform: scale(0.96) translateY(-4px)
+  to
+    opacity: 1
+    transform: none
+
+@keyframes motion-shimmer
+  from
+    background-position: 150% 0
+  to
+    background-position: -50% 0
+
+// Staggered entrance for the items of a row or grid. Only runs when an item is
+// inserted, so appending a page to a grid animates just the new items. Items
+// past the first dozen share the last delay rather than trailing on.
+$stagger-count: 12
+
+.motion-stagger > *
+  --i: #{$stagger-count}
+  animation: motion-rise var(--motion-base) var(--ease-out) both
+  animation-delay: calc(var(--i) * var(--stagger-step))
+
+  @for $n from 1 through $stagger-count
+    &:nth-child(#{$n})
+      --i: #{$n - 1}
+
+// Loading placeholders.
+.motion-skeleton
+  background: linear-gradient(100deg, #1f1f1f 30%, #2c2c2c 50%, #1f1f1f 70%) #1f1f1f
+  background-size: 200% 100%
+  animation: motion-shimmer 1.4s linear infinite
+
+// Named transitions -----------------------------------------------------------
+
+// Route changes: leave quickly, arrive with a short rise.
+.page-fade-enter-active
+  transition: opacity var(--motion-base) var(--ease-out), transform var(--motion-base) var(--ease-out)
+
+.page-fade-leave-active
+  transition: opacity var(--motion-fast) var(--ease-in), transform var(--motion-fast) var(--ease-in)
+
+.page-fade-enter-from
+  opacity: 0
+  transform: translateY(10px)
+
+.page-fade-leave-to
+  opacity: 0
+  transform: translateY(-6px)
+
+// Plain cross-fade for swapping content in place.
+.fade-enter-active
+  transition: opacity var(--motion-base) var(--ease-out)
+
+.fade-leave-active
+  transition: opacity var(--motion-fast) var(--ease-in)
+
+.fade-enter-from, .fade-leave-to
+  opacity: 0
+
+// Fade with a small rise, for content arriving inside a page.
+.rise-enter-active
+  transition: opacity var(--motion-base) var(--ease-out), transform var(--motion-base) var(--ease-out)
+
+.rise-leave-active
+  transition: opacity var(--motion-fast) var(--ease-in)
+
+.rise-enter-from
+  opacity: 0
+  transform: translateY(8px)
+
+.rise-leave-to
+  opacity: 0
+
+// Bars docked to the bottom of the screen.
+.slide-up-enter-active
+  transition: transform var(--motion-slow) var(--ease-out), opacity var(--motion-base) var(--ease-out)
+
+.slide-up-leave-active
+  transition: transform var(--motion-base) var(--ease-in), opacity var(--motion-base) var(--ease-in)
+
+.slide-up-enter-from, .slide-up-leave-to
+  opacity: 0
+  transform: translateY(100%)
