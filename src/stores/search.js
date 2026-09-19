@@ -10,7 +10,8 @@ export const useSearchStore = defineStore('search', {
     results: {
       movies: [],
       series: [],
-      episodes: []
+      episodes: [],
+      people: []
     }
   }),
   actions: {
@@ -20,28 +21,30 @@ export const useSearchStore = defineStore('search', {
       this.query = normalized
 
       if (!normalized) {
-        this.results = { movies: [], series: [], episodes: [] }
+        this.results = { movies: [], series: [], episodes: [], people: [] }
         this.error = null
         this.loading = false
         return
       }
 
-      this.results = { movies: [], series: [], episodes: [] }
+      this.results = { movies: [], series: [], episodes: [], people: [] }
       this.loading = true
       this.error = null
 
       try {
-        const [episodes, movies, series] = await Promise.all([
+        const [episodes, movies, series, people] = await Promise.all([
           oblectoClient.episodeLibrary.search(normalized),
           oblectoClient.movieLibrary.search(normalized),
-          oblectoClient.seriesLibrary.search(normalized)
+          oblectoClient.seriesLibrary.search(normalized),
+          oblectoClient.people.search(normalized)
         ])
 
         if (requestId !== this.requestId) return
         this.results = {
           movies: movies || [],
           series: series || [],
-          episodes: episodes || []
+          episodes: episodes || [],
+          people: people || []
         }
       } catch (error) {
         if (requestId !== this.requestId) return
