@@ -73,6 +73,12 @@
         >
           <summary>Available files</summary><FileList :files="movie.Files || []" />
         </details>
+        <p
+          v-if="relatedLoading"
+          role="status"
+        >
+          Loading collections…
+        </p>
         <div
           v-if="relatedError"
           class="detail-notice"
@@ -80,7 +86,7 @@
         >
           {{ relatedError }} <button
             class="detail-button secondary"
-            @click="reload"
+            @click="reloadRelated"
           >
             Try again
           </button>
@@ -91,6 +97,11 @@
           :title="set.setName"
           type="movie"
           :items="set.Movies || set.movies"
+        />
+        <RelatedTitles
+          :id="movie.id"
+          type="movie"
+          :exclude="collections.flatMap(set => (set.Movies || set.movies).map(item => item.id))"
         />
       </div>
     </template>
@@ -107,18 +118,19 @@ import MediaDetailHero from '@/components/details/MediaDetailHero.vue'
 import MediaShelf from '@/components/media/MediaShelf.vue'
 import FileList from '@/components/files/FileList.vue'
 import PeopleRow from '@/components/details/PeopleRow.vue'
+import RelatedTitles from '@/components/details/RelatedTitles.vue'
 import { useMediaDetails } from '@/composables/useMediaDetails'
-import { imageUrl, normalizeGenres, formatYear, formatRuntime, formatRating } from '@/utils/media'
+import { imageUrl, normalizeGenres, formatYear, formatRuntime, ratingLabel } from '@/utils/media'
 import '@/assets/sass/details.sass'
 const route = useRoute()
 const store = useStore()
-const { item: movie, related: sets, loading, error, relatedError, reload } = useMediaDetails(
+const { item: movie, related: sets, loading, error, relatedError, relatedLoading, reloadRelated, reload } = useMediaDetails(
   () => route.params.movieId,
   id => oblectoClient.movieLibrary.getInfo(id),
   id => oblectoClient.movieLibrary.getMovieSets(id)
 )
 const genres = computed(() => normalizeGenres(movie.value?.genres || movie.value?.genre))
-const subtitle = computed(() => [formatYear(movie.value?.releaseDate), formatRuntime(movie.value?.runtime), movie.value?.siteRating ? `TMDB ${formatRating(movie.value.siteRating, movie.value.siteRatingCount)}` : null].filter(Boolean).join(' · '))
+const subtitle = computed(() => [formatYear(movie.value?.releaseDate), formatRuntime(movie.value?.runtime), ratingLabel(movie.value)].filter(Boolean).join(' · '))
 const keyCrew = computed(() => (movie.value?.credits?.crew || []).filter(credit => credit.roles?.some(role => ['Director', 'Writer', 'Screenplay', 'Story'].includes(role.job))))
 const collections = computed(() => sets.value.filter(set => (set.Movies || set.movies)?.length))
 const metadata = computed(() => {

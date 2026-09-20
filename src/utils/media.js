@@ -149,3 +149,24 @@ export function playbackLabel (type, item) {
   if (!Number.isFinite(duration) || duration <= time) return 'Resume'
   return `Resume · ${Math.ceil((duration - time) / 60)} min left`
 }
+
+export function ratingLabel (item) {
+  const value = formatRating(item?.siteRating, item?.siteRatingCount)
+  if (!value) return null
+  const source = { tmdb: 'TMDB', tvdb: 'TVDB' }[item.siteRatingSource] || 'Community rating'
+  return `${source} ${value}`
+}
+
+export function nextSeriesEpisode (episodes) {
+  const numbered = value => value !== null && value !== undefined && value !== '' && Number.isFinite(Number(value))
+  const regular = episodes.filter(item => numbered(item.airedSeason) && Number(item.airedSeason) > 0 && numbered(item.airedEpisodeNumber) && Number(item.airedEpisodeNumber) > 0)
+  const ordered = [...(regular.length ? regular : episodes)].sort((a, b) =>
+    (numbered(a.airedSeason) ? Number(a.airedSeason) : Infinity) - (numbered(b.airedSeason) ? Number(b.airedSeason) : Infinity) ||
+    (numbered(a.airedEpisodeNumber) ? Number(a.airedEpisodeNumber) : Infinity) - (numbered(b.airedEpisodeNumber) ? Number(b.airedEpisodeNumber) : Infinity) || a.id - b.id)
+  const unfinished = ordered.filter(item => Number(item.TrackEpisodes?.[0]?.time) > 0 && progressForItem('episode', item) < IGNORE_RESTORE_PROGRESS_THRESHOLD)
+  unfinished.sort((a, b) => (Date.parse(b.TrackEpisodes?.[0]?.updatedAt) || 0) - (Date.parse(a.TrackEpisodes?.[0]?.updatedAt) || 0))
+  const episode = unfinished[0] || ordered.find(item => progressForItem('episode', item) < IGNORE_RESTORE_PROGRESS_THRESHOLD) || ordered[0]
+  if (!episode) return null
+  const action = unfinished.length ? 'Resume' : ordered.every(item => progressForItem('episode', item) >= IGNORE_RESTORE_PROGRESS_THRESHOLD) ? 'Watch again' : 'Play'
+  return { episode, label: `${action} S${episode.airedSeason ?? '?'} E${episode.airedEpisodeNumber ?? '?'}` }
+}

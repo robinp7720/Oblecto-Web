@@ -1,18 +1,18 @@
 <template>
   <section
     class="detail-hero"
-    :class="{ 'portrait-backdrop': type === 'series' }"
+    :class="{ 'portrait-backdrop': type === 'series' && backdropFailed && !fallbackFailed }"
     aria-labelledby="detail-title"
   >
     <img
-      v-if="backdrop && !backdropFailed"
-      :key="backdrop"
+      v-if="activeBackdrop"
+      :key="activeBackdrop"
       class="detail-backdrop"
       :class="{ loaded: backdropLoaded }"
-      :src="backdrop"
+      :src="activeBackdrop"
       alt=""
       @load="backdropLoaded = true"
-      @error="backdropFailed = true"
+      @error="failBackdrop"
     >
     <div class="detail-shade" />
     <div class="detail-content">
@@ -47,10 +47,13 @@
             v-if="genres.length"
             class="detail-genres"
           >
-            <span
+            <RouterLink
               v-for="genre in genres"
               :key="genre"
-            >{{ genre }}</span>
+              :to="{ name: 'Library', params: { mediaType: type === 'movie' ? 'movies' : 'series' }, query: { genre } }"
+            >
+              {{ genre }}
+            </RouterLink>
           </div>
           <div class="detail-actions">
             <slot />
@@ -69,7 +72,7 @@
   </section>
 </template>
 <script setup>
-import { ref, watch } from 'vue'
+import { computed, ref, watch } from 'vue'
 const props = defineProps({
   type: { type: String, required: true },
   title: { type: String, required: true },
@@ -78,14 +81,22 @@ const props = defineProps({
   overview: { type: String, default: '' },
   genres: { type: Array, default: () => [] },
   backdrop: { type: String, default: '' },
+  fallbackBackdrop: { type: String, default: '' },
   poster: { type: String, default: '' },
   backTo: { type: Object, required: true },
   backLabel: { type: String, required: true }
 })
 const backdropFailed = ref(false)
+const fallbackFailed = ref(false)
+const activeBackdrop = computed(() => !backdropFailed.value && props.backdrop ? props.backdrop : !fallbackFailed.value ? props.fallbackBackdrop : '')
+function failBackdrop () {
+  backdropLoaded.value = false
+  if (!backdropFailed.value && props.backdrop) backdropFailed.value = true
+  else fallbackFailed.value = true
+}
 const backdropLoaded = ref(false)
 const posterFailed = ref(false)
-watch(() => props.backdrop, () => { backdropFailed.value = false; backdropLoaded.value = false })
+watch(() => [props.backdrop, props.fallbackBackdrop], () => { backdropFailed.value = false; fallbackFailed.value = false; backdropLoaded.value = false })
 watch(() => props.poster, () => { posterFailed.value = false })
 </script>
 <style scoped lang="sass">
@@ -159,7 +170,7 @@ h1
   flex-wrap: wrap
   gap: 10px
   margin: 22px 0
-  span
+  a
     padding: 5px 10px
     border: 1px solid var(--color-border-strong)
     border-radius: 4px

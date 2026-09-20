@@ -1,39 +1,44 @@
 import { ref, watch, onBeforeUnmount } from 'vue'
 
-// Route changes can reuse a detail component. Ignore responses for an older title.
-export function useMediaDetails (id, getInfo, getRelated = async () => []) {
-  const item = ref(null)
-  const related = ref([])
+// Each section owns its request generation so retries do not reset the page.
+export function useDetailResource (id, fetch, initial = null, validate = () => true) {
+  const data = ref(initial)
   const loading = ref(false)
   const error = ref('')
-  const relatedError = ref('')
   let request = 0
 
   async function reload () {
     const current = ++request
     const mediaId = id()
-    if (!mediaId) return
+    if (!mediaId) {
+      data.value = initial
+      loading.value = false
+      error.value = ''
+      return
+    }
     loading.value = true
     error.value = ''
-    relatedError.value = ''
-    item.value = null
-    related.value = []
-    const [infoResult, relatedResult] = await Promise.allSettled([getInfo(mediaId), getRelated(mediaId)])
-    if (current !== request) return
-    if (infoResult.status === 'fulfilled' && infoResult.value?.id) {
-      item.value = infoResult.value
-    } else {
-      error.value = 'We couldn’t load this title. Please try again.'
+    try {
+      const result = await fetch(mediaId)
+      if (!validate(result)) throw new Error('Invalid response')
+      if (current === request) data.value = result
+    } catch {
+      if (current === request) error.value = 'This content is unavailable. Please try again.'
+    } finally {
+      if (current === request) loading.value = false
     }
-    if (relatedResult.status === 'fulfilled') {
-      related.value = Array.isArray(relatedResult.value) ? relatedResult.value : []
-    } else {
-      relatedError.value = 'Additional content is unavailable. Please try again.'
-    }
-    loading.value = false
   }
 
-  watch(id, reload, { immediate: true })
+  watch(id, () => { data.value = initial; reload() }, { immediate: true })
   onBeforeUnmount(() => { request++ })
-  return { item, related, loading, error, relatedError, reload }
+  return { data, loading, error, reload }
+}
+
+export function useMediaDetails (id, getInfo, getRelated = async () => []) {
+  const info = useDetailResource(id, getInfo, null, value => Boolean(value?.id))
+  const related = useDetailResource(id, getRelated, [], Array.isArray)
+  return {
+    item: info.data, loading: info.loading, error: info.error, reload: info.reload,
+    related: related.data, relatedLoading: related.loading, relatedError: related.error, reloadRelated: related.reload
+  }
 }

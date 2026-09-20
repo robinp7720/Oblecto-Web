@@ -26,15 +26,16 @@
         :subtitle="subtitle"
         :overview="show.overview || ''"
         :genres="normalizeGenres(show.genre || show.genres)"
-        :backdrop="poster"
+        :backdrop="fanart"
+        :fallback-backdrop="poster"
         :poster="poster"
         :back-to="{ name: 'Library', params: { mediaType: 'series' } }"
         back-label="TV Shows"
       >
         <PlaybackButton
-          v-if="firstEpisode"
-          :label="`Play S${firstEpisode.airedSeason} E${firstEpisode.airedEpisodeNumber}`"
-          @play="store.dispatch('playEpisode', firstEpisode.id)"
+          v-if="suggested"
+          :label="suggested.label"
+          @play="store.dispatch('playEpisode', suggested.episode.id)"
         />
         <a
           href="#show-episodes"
@@ -76,16 +77,22 @@
           >
             <p>We couldn’t load the episodes.</p><button
               class="detail-button secondary"
-              @click="reload"
+              @click="reloadRelated"
             >
               Try again
             </button>
           </div>
           <p
-            v-else-if="!episodes.length"
+            v-else-if="!relatedLoading && !episodes.length"
             class="detail-notice"
           >
             No episodes have been added to this show yet.
+          </p>
+          <p
+            v-if="relatedLoading"
+            role="status"
+          >
+            Loading episodes…
           </p>
           <!-- Keyed by season so picking another one replays the entrance. -->
           <div
@@ -112,32 +119,39 @@
             </div>
           </dl>
         </section>
+        <RelatedTitles
+          :id="show.id"
+          type="series"
+        />
       </div>
     </template>
   </div>
 </template>
 <script setup>
+import { remote } from '@/remote/state'
 import PlaybackButton from '@/components/remote/PlaybackButton.vue'
-import { computed, ref, watch } from 'vue'
+import { computed, ref, watch, onMounted, onBeforeUnmount } from 'vue'
 import { useRoute } from 'vue-router'
 import { useStore } from 'vuex'
 import oblectoClient from '@/oblectoClient'
 import MediaDetailHero from '@/components/details/MediaDetailHero.vue'
 import EpisodeRow from '@/components/details/EpisodeRow.vue'
 import PeopleRow from '@/components/details/PeopleRow.vue'
+import RelatedTitles from '@/components/details/RelatedTitles.vue'
 import { useMediaDetails } from '@/composables/useMediaDetails'
-import { imageUrl, normalizeGenres, formatYear, formatRuntime, formatRating } from '@/utils/media'
+import { imageUrl, normalizeGenres, formatYear, formatRuntime, ratingLabel, nextSeriesEpisode } from '@/utils/media'
 import '@/assets/sass/details.sass'
 const route = useRoute()
 const store = useStore()
 const selectedSeason = ref('')
-const { item: show, related: episodes, loading, error, relatedError, reload } = useMediaDetails(
+const { item: show, related: episodes, loading, error, relatedError, relatedLoading, reloadRelated, reload } = useMediaDetails(
   () => route.params.seriesId,
   id => oblectoClient.seriesLibrary.getInfo(id),
   id => oblectoClient.seriesLibrary.getEpisodes(id)
 )
+const fanart = computed(() => imageUrl(store.state.host, 'series', show.value?.id, 'fanart'))
 const poster = computed(() => imageUrl(store.state.host, 'series', show.value?.id, 'poster'))
-const subtitle = computed(() => [formatYear(show.value?.firstAired), show.value?.rating, show.value?.status, show.value?.siteRating ? `TMDB ${formatRating(show.value.siteRating, show.value.siteRatingCount)}` : null].filter(Boolean).join(' · '))
+const subtitle = computed(() => [formatYear(show.value?.firstAired), show.value?.rating, show.value?.status, ratingLabel(show.value)].filter(Boolean).join(' · '))
 const creators = computed(() => (show.value?.credits?.crew || []).filter(credit => credit.roles?.some(role => role.job === 'Creator')))
 const grouped = computed(() => {
   const groups = {}
@@ -153,9 +167,39 @@ const seasons = computed(() => Object.keys(grouped.value).sort((a, b) => {
   const order = value => value === 'unknown' ? Infinity : value === '0' ? Number.MAX_SAFE_INTEGER : Number(value)
   return order(a) - order(b)
 }))
-watch(seasons, values => { if (!values.includes(selectedSeason.value)) selectedSeason.value = values[0] || '' }, { immediate: true })
+let seasonInitialized = false
+watch(() => route.params.seriesId, () => { seasonInitialized = false; selectedSeason.value = '' })
+watch(episodes, values => {
+  if (!values.length) return
+  if (!seasonInitialized) {
+    selectedSeason.value = String(nextSeriesEpisode(values)?.episode.airedSeason ?? 'unknown')
+    seasonInitialized = true
+  } else if (!seasons.value.includes(selectedSeason.value)) selectedSeason.value = seasons.value[0] || ''
+})
 const selectedEpisodes = computed(() => grouped.value[selectedSeason.value] || [])
-const firstEpisode = computed(() => grouped.value[seasons.value[0]]?.[0])
+const suggested = computed(() => nextSeriesEpisode(episodes.value))
+function updateProgress (id, time, progress, updatedAt) {
+  episodes.value = episodes.value.map(episode => {
+    if (String(episode.id) !== String(id) || updatedAt < (Date.parse(episode.TrackEpisodes?.[0]?.updatedAt) || 0)) return episode
+    return { ...episode, TrackEpisodes: [{ ...episode.TrackEpisodes?.[0], progress, time, updatedAt: new Date(updatedAt).toISOString() }] }
+  })
+}
+watch(() => store.state.playing?.entity?.TrackEpisodes?.[0]?.time, time => {
+  const playing = store.state.playing
+  if (playing?.type !== 'episode' || !(Number(time) >= 0)) return
+  const duration = Number(playing.entity.Files?.[0]?.duration) || Number(playing.entity.runtime) * 60
+  if (duration > 0) updateProgress(playing.entity.id, Number(time), Math.min(1, time / duration), Date.now())
+})
+watch(() => remote.devices, devices => {
+  for (const { state } of devices) {
+    if (state?.media?.kind === 'episode' && state.duration > 0) {
+      updateProgress(state.media.id, state.position, Math.min(1, state.position / state.duration), state.updatedAt)
+    }
+  }
+}, { deep: true })
+function refreshEpisodes () { if (!relatedLoading.value) reloadRelated() }
+onMounted(() => window.addEventListener('focus', refreshEpisodes))
+onBeforeUnmount(() => window.removeEventListener('focus', refreshEpisodes))
 const metadata = computed(() => {
   const data = show.value || {}
   return [
@@ -164,7 +208,7 @@ const metadata = computed(() => {
     { label: 'Status', value: data.status },
     { label: 'Runtime', value: formatRuntime(data.runtime) },
     { label: 'Content rating', value: data.rating },
-    { label: 'Community rating', value: formatRating(data.siteRating, data.siteRatingCount) },
+    { label: 'Rating', value: ratingLabel(data) },
     { label: 'Airs', value: [data.airsDayOfWeek, data.airsTime].filter(Boolean).join(' ') },
     { label: 'Popularity', value: Number(data.popularity) > 0 ? String(Math.round(data.popularity * 10) / 10) : null }
   ].filter(entry => entry.value)
