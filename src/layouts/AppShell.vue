@@ -87,6 +87,12 @@
             aria-hidden="true"
           >▾</span>
         </summary>
+        <button
+          type="button"
+          class="menu-backdrop"
+          aria-label="Close account menu"
+          @click="closeMenu"
+        />
         <div class="account-options">
           <p
             v-if="authStore.displayName"
@@ -385,6 +391,8 @@ async function logout () {
     transform: rotate(180deg)
   &[open] .account-options
     animation: motion-pop var(--motion-fast) var(--ease-out)
+.menu-backdrop
+  display: none
 .caret
   display: inline-block
   transition: transform var(--motion-base) var(--ease-out)
@@ -564,6 +572,45 @@ async function logout () {
     gap: 16px
     padding-top: 16px
     padding-bottom: 0
+  .account-menu
+    position: static
+    &[open] .account-options
+      animation: account-sheet-in var(--motion-base) var(--ease-out)
+    &[open] .menu-backdrop
+      display: block
+      animation: account-backdrop-in var(--motion-base) ease-out
+  .menu-backdrop
+    position: fixed
+    z-index: 1
+    inset: 0
+    width: 100%
+    padding: 0
+    border: 0
+    background: rgba(0, 0, 0, 0.62)
+    cursor: default
+    touch-action: none
+  .account-options
+    position: fixed
+    z-index: 2
+    inset: auto 0 0
+    width: 100%
+    max-height: min(78dvh, 620px)
+    padding: 22px 0 calc(10px + var(--safe-bottom))
+    border: 1px solid #444
+    border-bottom: 0
+    border-radius: 14px 14px 0 0
+    box-shadow: 0 -16px 48px rgba(0, 0, 0, 0.55)
+    transform-origin: bottom center
+    &::before
+      content: ""
+      position: absolute
+      top: 8px
+      left: 50%
+      width: 36px
+      height: 4px
+      border-radius: 999px
+      background: #666
+      transform: translateX(-50%)
   .primary-nav
     order: 4
     width: 100%
@@ -582,4 +629,30 @@ async function logout () {
     padding-top: 24px
   .content-home
     padding-top: 0
+@media (max-width: 520px)
+  .shell-header
+    column-gap: 12px
+  .account-menu
+    margin-left: auto
+  .search-form
+    order: 3
+    flex-basis: 100%
+    max-width: none
+    margin-left: 0
+  .primary-nav
+    order: 4
+
+@keyframes account-sheet-in
+  from
+    opacity: 0
+    transform: translateY(28px)
+  to
+    opacity: 1
+    transform: translateY(0)
+
+@keyframes account-backdrop-in
+  from
+    opacity: 0
+  to
+    opacity: 1
 </style>
