@@ -52,6 +52,32 @@
           title="Created by"
           :credits="creators"
         />
+        <p
+          v-if="setsLoading"
+          role="status"
+        >
+          Loading collections…
+        </p>
+        <div
+          v-else-if="setsError"
+          class="detail-notice"
+          role="status"
+        >
+          {{ setsError }} <button
+            class="detail-button secondary"
+            @click="reloadSets"
+          >
+            Try again
+          </button>
+        </div>
+        <MediaShelf
+          v-for="set in collections"
+          :key="set.id"
+          class="detail-section"
+          :title="set.setName"
+          type="series"
+          :items="set.Series || set.series"
+        />
         <section
           id="show-episodes"
           class="detail-section"
@@ -60,7 +86,7 @@
             <div><h2>Episodes</h2><span class="detail-notice">{{ episodes.length }} {{ episodes.length === 1 ? 'episode' : 'episodes' }} in your library</span></div>
             <label
               v-if="seasons.length"
-              class="season-picker"
+              class="season-picker mobile-picker"
             ><span>Season</span><select
               v-model="selectedSeason"
               aria-label="Select season"
@@ -70,6 +96,29 @@
               :value="season"
             >{{ season === '0' ? 'Specials' : season === 'unknown' ? 'Other episodes' : `Season ${season}` }}</option></select></label>
           </div>
+          <div
+            v-if="seasons.length"
+            class="season-rail"
+            aria-label="Seasons"
+          >
+            <button
+              v-for="season in seasons"
+              :key="season"
+              type="button"
+              :class="{ active: selectedSeason === season }"
+              :aria-pressed="selectedSeason === season"
+              @click="selectedSeason = season"
+            >
+              <strong>{{ season === '0' ? 'Specials' : season === 'unknown' ? 'Other' : `Season ${season}` }}</strong>
+              <span>{{ seasonStats[season].watchedCount }}/{{ seasonStats[season].episodeCount }} watched</span>
+            </button>
+          </div>
+          <p
+            v-if="selectedSummary"
+            class="season-summary"
+          >
+            {{ selectedSummary }}
+          </p>
           <div
             v-if="relatedError"
             class="detail-notice"
@@ -135,11 +184,12 @@ import { useRoute } from 'vue-router'
 import { useStore } from 'vuex'
 import oblectoClient from '@/oblectoClient'
 import MediaDetailHero from '@/components/details/MediaDetailHero.vue'
+import MediaShelf from '@/components/media/MediaShelf.vue'
 import EpisodeRow from '@/components/details/EpisodeRow.vue'
 import PeopleRow from '@/components/details/PeopleRow.vue'
 import RelatedTitles from '@/components/details/RelatedTitles.vue'
-import { useMediaDetails } from '@/composables/useMediaDetails'
-import { imageUrl, normalizeGenres, formatYear, formatRuntime, ratingLabel, nextSeriesEpisode } from '@/utils/media'
+import { useMediaDetails, useDetailResource } from '@/composables/useMediaDetails'
+import { imageUrl, normalizeGenres, formatYear, formatRuntime, ratingLabel, nextSeriesEpisode, seasonSummary } from '@/utils/media'
 import '@/assets/sass/details.sass'
 const route = useRoute()
 const store = useStore()
@@ -149,6 +199,12 @@ const { item: show, related: episodes, loading, error, relatedError, relatedLoad
   id => oblectoClient.seriesLibrary.getInfo(id),
   id => oblectoClient.seriesLibrary.getEpisodes(id)
 )
+const { data: sets, loading: setsLoading, error: setsError, reload: reloadSets } = useDetailResource(
+  () => route.params.seriesId,
+  id => oblectoClient.seriesLibrary.getSeriesSets(id),
+  [], Array.isArray
+)
+const collections = computed(() => sets.value.filter(set => (set.Series || set.series)?.length))
 const fanart = computed(() => imageUrl(store.state.host, 'series', show.value?.id, 'fanart'))
 const poster = computed(() => imageUrl(store.state.host, 'series', show.value?.id, 'poster'))
 const subtitle = computed(() => [formatYear(show.value?.firstAired), show.value?.rating, show.value?.status, ratingLabel(show.value)].filter(Boolean).join(' · '))
@@ -177,6 +233,15 @@ watch(episodes, values => {
   } else if (!seasons.value.includes(selectedSeason.value)) selectedSeason.value = seasons.value[0] || ''
 })
 const selectedEpisodes = computed(() => grouped.value[selectedSeason.value] || [])
+const seasonStats = computed(() => Object.fromEntries(Object.entries(grouped.value).map(([season, items]) => [season, seasonSummary(items)])))
+const selectedSummary = computed(() => {
+  const summary = seasonStats.value[selectedSeason.value]
+  if (!summary) return ''
+  const parts = [`${summary.episodeCount} ${summary.episodeCount === 1 ? 'episode' : 'episodes'}`, `${summary.watchedCount} watched`]
+  if (summary.runtimeMinutes) parts.push(`${formatRuntime(summary.runtimeMinutes)} total`)
+  if (summary.averageRating) parts.push(`Average rating ${summary.averageRating}`)
+  return parts.join(' · ')
+})
 const suggested = computed(() => nextSeriesEpisode(episodes.value))
 function updateProgress (id, time, progress, updatedAt) {
   episodes.value = episodes.value.map(episode => {
@@ -235,4 +300,39 @@ const metadata = computed(() => {
     min-height: 44px
     min-width: 150px
     cursor: pointer
+.season-rail
+  display: flex
+  gap: 10px
+  overflow-x: auto
+  padding: 2px 2px 12px
+  scrollbar-width: thin
+  button
+    min-width: 132px
+    padding: 12px 14px
+    border: 1px solid var(--color-border)
+    border-radius: 5px
+    background: var(--color-surface)
+    color: var(--color-text)
+    text-align: left
+    cursor: pointer
+    &.active
+      border-color: var(--color-brand-turquoise)
+      background: rgba(35, 177, 181, 0.12)
+    strong, span
+      display: block
+    span
+      margin-top: 5px
+      color: var(--color-text-muted)
+      font-size: 0.72rem
+.season-summary
+  margin: 4px 0 8px
+  color: var(--color-text-muted)
+  font-size: 0.82rem
+.mobile-picker
+  display: none
+@media (max-width: 600px)
+  .season-rail
+    display: none
+  .mobile-picker
+    display: flex
 </style>

@@ -34,11 +34,12 @@
           {{ title }}
         </RouterLink><span v-if="episode.runtime">{{ formatRuntime(episode.runtime) }}</span>
       </div>
+      <div class="episode-meta">
+        <span v-if="episode.firstAired">{{ episode.firstAired }}</span>
+        <span v-if="rating">{{ rating }}</span>
+        <span :class="{ watched: progress >= 0.9 }">{{ watchState }}</span>
+      </div>
       <p>{{ episode.overview || 'No synopsis available yet.' }}</p>
-      <span
-        v-if="progress >= 0.9"
-        class="watched"
-      >Watched</span>
     </div>
   </article>
 </template>
@@ -46,12 +47,14 @@
 import { computed, ref, watch, onMounted, onBeforeUnmount } from 'vue'
 import { useStore } from 'vuex'
 import { getSocket } from '@/socket'
-import { imageUrl, formatRuntime, progressForItem } from '@/utils/media'
+import { imageUrl, formatRuntime, progressForItem, ratingLabel } from '@/utils/media'
 const props = defineProps({ episode: { type: Object, required: true } })
 const store = useStore()
 const imageFailed = ref(false)
 const progress = ref(0)
 const title = computed(() => props.episode.episodeName || `Episode ${props.episode.airedEpisodeNumber ?? ''}`)
+const rating = computed(() => ratingLabel(props.episode))
+const watchState = computed(() => progress.value >= 0.9 ? 'Watched' : progress.value > 0 ? 'In progress' : 'Unwatched')
 const artwork = computed(() => imageUrl(store.state.host, 'episode', props.episode.id, 'banner'))
 watch(artwork, () => { imageFailed.value = false })
 watch(() => props.episode, value => { progress.value = Math.max(0, Math.min(1, progressForItem('episode', value))) }, { immediate: true, deep: true })
@@ -120,6 +123,13 @@ onBeforeUnmount(() => socket?.off('client-episode-progress', updateProgress))
     -webkit-box-orient: vertical
     overflow: hidden
     margin: 10px 0 0
+.episode-meta
+  display: flex
+  flex-wrap: wrap
+  gap: 6px 14px
+  margin-top: 7px
+  color: var(--color-text-faint)
+  font-size: 0.72rem
 .episode-heading
   display: flex
   align-items: baseline
@@ -138,6 +148,9 @@ onBeforeUnmount(() => socket?.off('client-episode-progress', updateProgress))
   color: var(--color-brand-turquoise)
   font-size: 0.75rem
   margin-top: 8px
+.episode-meta .watched
+  margin-top: 0
+  font-size: inherit
 @media (max-width: 760px)
   .episode-row
     grid-template-columns: 110px minmax(0, 1fr)

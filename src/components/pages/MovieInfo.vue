@@ -27,6 +27,7 @@
         :tagline="movie.tagline || ''"
         :overview="movie.overview || ''"
         :genres="genres"
+        :facts="capabilities"
         :backdrop="artwork('fanart')"
         :poster="artwork('poster')"
         :back-to="{ name: 'Library', params: { mediaType: 'movies' } }"
@@ -94,7 +95,7 @@
         <MediaShelf
           v-for="set in collections"
           :key="set.id"
-          :title="set.setName"
+          :title="set.displayName"
           type="movie"
           :items="set.Movies || set.movies"
         />
@@ -120,7 +121,7 @@ import FileList from '@/components/files/FileList.vue'
 import PeopleRow from '@/components/details/PeopleRow.vue'
 import RelatedTitles from '@/components/details/RelatedTitles.vue'
 import { useMediaDetails } from '@/composables/useMediaDetails'
-import { imageUrl, normalizeGenres, formatYear, formatRuntime, ratingLabel } from '@/utils/media'
+import { imageUrl, normalizeGenres, formatYear, formatRuntime, ratingLabel, mediaCapabilities } from '@/utils/media'
 import '@/assets/sass/details.sass'
 const route = useRoute()
 const store = useStore()
@@ -132,7 +133,12 @@ const { item: movie, related: sets, loading, error, relatedError, relatedLoading
 const genres = computed(() => normalizeGenres(movie.value?.genres || movie.value?.genre))
 const subtitle = computed(() => [formatYear(movie.value?.releaseDate), formatRuntime(movie.value?.runtime), ratingLabel(movie.value)].filter(Boolean).join(' · '))
 const keyCrew = computed(() => (movie.value?.credits?.crew || []).filter(credit => credit.roles?.some(role => ['Director', 'Writer', 'Screenplay', 'Story'].includes(role.job))))
-const collections = computed(() => sets.value.filter(set => (set.Movies || set.movies)?.length))
+const capabilities = computed(() => mediaCapabilities(movie.value?.Files || []))
+const collections = computed(() => sets.value.filter(set => (set.Movies || set.movies)?.length).map(set => {
+  const items = [...(set.Movies || set.movies)].sort((a, b) => String(a.releaseDate || '').localeCompare(String(b.releaseDate || '')) || a.id - b.id)
+  const position = items.findIndex(item => String(item.id) === String(movie.value?.id)) + 1
+  return { ...set, Movies: items, displayName: position ? `${set.setName} · ${position} of ${items.length}` : set.setName }
+}))
 const metadata = computed(() => {
   const data = movie.value || {}
   const currency = value => Number(value) > 0 ? new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 }).format(value) : null

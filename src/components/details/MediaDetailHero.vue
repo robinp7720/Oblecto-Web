@@ -55,6 +55,18 @@
               {{ genre }}
             </RouterLink>
           </div>
+          <ul
+            v-if="facts.length"
+            class="detail-facts"
+            aria-label="Available media features"
+          >
+            <li
+              v-for="fact in facts"
+              :key="fact"
+            >
+              {{ fact }}
+            </li>
+          </ul>
           <div class="detail-actions">
             <slot />
           </div>
@@ -80,6 +92,7 @@ const props = defineProps({
   tagline: { type: String, default: '' },
   overview: { type: String, default: '' },
   genres: { type: Array, default: () => [] },
+  facts: { type: Array, default: () => [] },
   backdrop: { type: String, default: '' },
   fallbackBackdrop: { type: String, default: '' },
   poster: { type: String, default: '' },
@@ -176,6 +189,19 @@ h1
     border-radius: 4px
     color: var(--color-text-muted)
     font-size: 0.75rem
+.detail-facts
+  display: flex
+  flex-wrap: wrap
+  gap: 8px
+  margin: 18px 0 0
+  padding: 0
+  list-style: none
+  li
+    padding: 5px 9px
+    border-radius: 999px
+    background: rgba(20, 20, 20, 0.72)
+    color: #ddd
+    font-size: 0.72rem
 .detail-actions
   display: flex
   flex-wrap: wrap

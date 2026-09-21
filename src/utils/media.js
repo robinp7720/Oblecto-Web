@@ -170,3 +170,56 @@ export function nextSeriesEpisode (episodes) {
   const action = unfinished.length ? 'Resume' : ordered.every(item => progressForItem('episode', item) >= IGNORE_RESTORE_PROGRESS_THRESHOLD) ? 'Watch again' : 'Play'
   return { episode, label: `${action} S${episode.airedSeason ?? '?'} E${episode.airedEpisodeNumber ?? '?'}` }
 }
+
+export function relationshipLabel (relationship = {}) {
+  const collections = relationship.sharedCollections || []
+  if (collections.length) return `Same collection · ${collections[0].name}`
+  const people = relationship.sharedPeople || []
+  if (people.length) return `With ${people[0].name}${people.length > 1 ? ` +${people.length - 1}` : ''}`
+  const genres = relationship.sharedGenres || []
+  return genres.length ? `Shared taste · ${genres.join(' + ')}` : ''
+}
+
+export function libraryConnectionLabel (connections = {}) {
+  const movies = Number(connections.movies) || 0
+  const series = Number(connections.series) || 0
+  const parts = []
+  if (movies) parts.push(`${movies} ${movies === 1 ? 'movie' : 'movies'}`)
+  if (series) parts.push(`${series} ${series === 1 ? 'show' : 'shows'}`)
+  return parts.length ? `Also in ${parts.join(' and ')}` : ''
+}
+
+export function seasonSummary (episodes = []) {
+  const ratings = episodes.map(item => Number(item.siteRating)).filter(value => Number.isFinite(value) && value > 0)
+  return {
+    episodeCount: episodes.length,
+    watchedCount: episodes.filter(item => progressForItem('episode', item) >= IGNORE_RESTORE_PROGRESS_THRESHOLD).length,
+    runtimeMinutes: episodes.reduce((sum, item) => sum + (Number(item.runtime) > 0 ? Number(item.runtime) : 0), 0),
+    averageRating: ratings.length ? Math.round((ratings.reduce((sum, value) => sum + value, 0) / ratings.length) * 10) / 10 : null
+  }
+}
+
+export function mediaCapabilities (files = []) {
+  const streams = files.flatMap(file => file.Streams || file.streams || [])
+  const video = streams.filter(stream => stream.codec_type === 'video')
+  const audio = streams.filter(stream => stream.codec_type === 'audio')
+  const subtitles = streams.filter(stream => stream.codec_type === 'subtitle')
+  const width = Math.max(0, ...video.map(stream => Number(stream.width) || 0))
+  const height = Math.max(0, ...video.map(stream => Number(stream.height) || 0))
+  const resolution = width >= 3800 || height >= 2100 ? '4K' : width >= 1900 || height >= 1050 ? '1080p' : width >= 1200 || height >= 700 ? '720p' : null
+  const dolbyVision = video.some(stream => Number(stream.rpu_present_flag) > 0 || String(stream.side_data_type || '').toLowerCase().includes('dolby vision'))
+  const transfer = video.map(stream => String(stream.color_transfer || '').toLowerCase())
+  const hdr = dolbyVision ? 'Dolby Vision' : transfer.some(value => value.includes('smpte2084')) ? 'HDR10' : transfer.some(value => value.includes('arib-std-b67')) ? 'HLG' : null
+  const channels = Math.max(0, ...audio.map(stream => Number(stream.channels) || 0))
+  const audioLayout = channels >= 8 ? '7.1 audio' : channels >= 6 ? '5.1 audio' : channels >= 2 ? 'Stereo' : null
+  const language = stream => String(stream.tags_language || stream.tags?.language || '').trim().toUpperCase()
+  const audioLanguages = [...new Set(audio.map(language).filter(value => value && value !== 'UND'))]
+  const subtitleLanguages = [...new Set(subtitles.map(language).filter(value => value && value !== 'UND'))]
+  return [
+    resolution,
+    hdr,
+    audioLayout,
+    audioLanguages.length ? `Audio · ${audioLanguages.slice(0, 3).join(', ')}${audioLanguages.length > 3 ? ` +${audioLanguages.length - 3}` : ''}` : null,
+    subtitleLanguages.length ? `Subtitles · ${subtitleLanguages.slice(0, 3).join(', ')}${subtitleLanguages.length > 3 ? ` +${subtitleLanguages.length - 3}` : ''}` : null
+  ].filter(Boolean)
+}
