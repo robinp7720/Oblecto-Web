@@ -28,12 +28,12 @@
 
 <script setup>
 import { computed, ref, watch } from 'vue'
-import { useStore } from 'vuex'
+import { useAppStore } from '@/stores/app'
 import { libraryConnectionLabel } from '@/utils/media'
 const props = defineProps({ credit: { type: Object, required: true } })
-const store = useStore()
+const store = useAppStore()
 const failed = ref(false)
-const portrait = computed(() => `${store.state.host}/person/${props.credit.person.id}/profile?size=medium`)
+const portrait = computed(() => `${store.host}/person/${props.credit.person.id}/profile?size=medium`)
 const initials = computed(() => props.credit.person.name.split(/\s+/).map(part => part[0]).slice(0, 2).join('').toUpperCase())
 const role = computed(() => props.credit.character || props.credit.job || props.credit.department || '')
 const connection = computed(() => libraryConnectionLabel(props.credit.libraryConnections))

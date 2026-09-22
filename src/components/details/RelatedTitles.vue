@@ -34,9 +34,29 @@
             :type="type"
             :landscape="type !== 'series'"
           />
-          <p v-if="relationshipLabel(item.relationship)">
-            {{ relationshipLabel(item.relationship) }}
-          </p>
+          <div
+            v-if="hasReasons(item)"
+            class="reasons"
+            aria-label="Why this title is related"
+          >
+            <span v-if="item.relationship.sharedCollections?.length">
+              Same collection · {{ item.relationship.sharedCollections[0].name }}
+            </span>
+            <RouterLink
+              v-for="person in (item.relationship.sharedPeople || []).slice(0, 2)"
+              :key="`person-${person.id}`"
+              :to="{ name: 'PersonInfo', params: { personId: person.id } }"
+            >
+              With {{ person.name }}
+            </RouterLink>
+            <RouterLink
+              v-for="genre in (item.relationship.sharedGenres || []).slice(0, 2)"
+              :key="`genre-${genre}`"
+              :to="{ name: 'Library', params: { mediaType: type === 'movie' ? 'movies' : 'series' }, query: { genre } }"
+            >
+              {{ genre }}
+            </RouterLink>
+          </div>
         </div>
       </template>
     </MediaShelf>
@@ -48,7 +68,6 @@ import oblectoClient from '@/oblectoClient'
 import MediaShelf from '@/components/media/MediaShelf.vue'
 import MediaCard from '@/components/media/MediaCard.vue'
 import { useDetailResource } from '@/composables/useMediaDetails'
-import { relationshipLabel } from '@/utils/media'
 const props = defineProps({ id: { type: [Number, String], required: true }, type: { type: String, required: true }, exclude: { type: Array, default: () => [] } })
 const { data, loading, error, reload } = useDetailResource(
   () => `${props.type}:${props.id}`,
@@ -56,13 +75,26 @@ const { data, loading, error, reload } = useDetailResource(
   [], Array.isArray
 )
 const items = computed(() => data.value.filter(item => !props.exclude.includes(item.id)))
+function hasReasons (item) {
+  const relationship = item.relationship || {}
+  return Boolean(relationship.sharedCollections?.length || relationship.sharedPeople?.length || relationship.sharedGenres?.length)
+}
 </script>
 <style scoped lang="sass">
 .related-card
   min-width: 0
-  p
-    margin: 2px 0 0
+.reasons
+  display: flex
+  flex-wrap: wrap
+  gap: 6px
+  margin-top: 2px
+  font-size: 0.7rem
+  line-height: 1.4
+  a, span
+    padding: 3px 7px
+    border: 1px solid var(--color-border)
+    border-radius: 999px
     color: var(--color-brand-turquoise)
-    font-size: 0.72rem
-    line-height: 1.4
+  a:hover
+    border-color: var(--color-brand-turquoise)
 </style>

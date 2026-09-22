@@ -6,7 +6,8 @@
   "private": true,
   "scripts": {
     "dev": "vite",
-    "build": "vite build",
+    "build": "node scripts/build-web.mjs",
+    "test:build": "node --test tests/build-web.test.mjs",
     "preview": "vite preview",
     "lint": "eslint src"
   },
@@ -21,8 +22,7 @@
     "velocity-animate": "^1.5.2",
     "vue": "^3.5.13",
     "vue-i18n": "^11.4.12",
-    "vue-router": "^4.5.1",
-    "vuex": "^4.1.0"
+    "vue-router": "^4.5.1"
   },
   "devDependencies": {
     "@eslint/js": "^9.39.2",

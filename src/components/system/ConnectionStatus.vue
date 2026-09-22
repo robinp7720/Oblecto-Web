@@ -27,7 +27,9 @@
 
 <script setup>
 import { computed } from 'vue'
-import { connection } from '@/stores/connection'
+import { useConnectionStore } from '@/stores/connection'
+
+const connection = useConnectionStore()
 
 const label = computed(() => (
   connection.status === 'offline' ? 'Server offline' : 'Reconnecting…'

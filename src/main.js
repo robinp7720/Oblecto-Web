@@ -2,7 +2,7 @@ import { createApp } from 'vue'
 import { createPinia } from 'pinia'
 import App from './App.vue'
 import router from './router'
-import legacyStore from './store'
+import { useAppStore } from '@/stores/app'
 import oblectoClient from '@/oblectoClient'
 import { initSocket, reconnectSocket } from '@/socket'
 import Tabs from '@/components/system/Tabs.vue'
@@ -18,10 +18,8 @@ import '@/assets/sass/motion.sass'
 const app = createApp(App)
 const pinia = createPinia()
 
-legacyStore.dispatch('updateHost', oblectoClient.axios.defaults.baseURL)
-
 app.use(pinia)
-app.use(legacyStore)
+const appStore = useAppStore(pinia)
 app.use(router)
 app.use(i18n)
 app.component('Tabs', Tabs)
@@ -51,11 +49,12 @@ oblectoClient.axios.interceptors.response.use(undefined, async error => {
   return Promise.reject(error)
 })
 
-initSocket({ app, store: legacyStore })
+initSocket({ app, store: appStore, pinia })
 
 app.config.globalProperties.$reconnectSocket = (host) => reconnectSocket({
   app,
-  store: legacyStore
+  store: appStore,
+  pinia
 }, host)
 
 app.mount('#app')

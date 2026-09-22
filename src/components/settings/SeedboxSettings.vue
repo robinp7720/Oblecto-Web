@@ -266,7 +266,8 @@
   import faSync from '@fortawesome/fontawesome-free-solid/faSync'
   import fontawesome from '@fortawesome/fontawesome'
   import oblectoClient from '@/oblectoClient'
-  import { mapActions, mapGetters } from 'vuex'
+  import { mapActions, mapState } from 'pinia'
+  import { useSeedboxStore } from '@/stores/seedbox'
   import SeedboxDialog from '@/components/modals/SeedboxDialog'
   import SaveState from '@/components/system/SaveState.vue'
   import { createSaveState } from '@/composables/useSaveState'
@@ -312,7 +313,7 @@
       }
     },
     computed: {
-      ...mapGetters('seedbox', ['activeImports', 'importHistory']),
+      ...mapState(useSeedboxStore, ['activeImports', 'importHistory']),
       dialogSeedbox () {
         return this.dialogIndex === null || this.dialogIndex < 0
           ? null
@@ -329,7 +330,7 @@
       this.refresh()
     },
     methods: {
-      ...mapActions('seedbox', ['clearImportHistory']),
+      ...mapActions(useSeedboxStore, ['clearImportHistory']),
       async refresh () {
         this.ready = false
         await this.save.run(async () => {

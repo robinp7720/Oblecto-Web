@@ -124,7 +124,8 @@
 <script setup>
 import { computed, markRaw, nextTick, onBeforeUnmount, ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
-import { useStore } from 'vuex'
+import { useAppStore } from '@/stores/app'
+import { useMediaStore } from '@/stores/media'
 
 import PlayerBuffering from './PlayerBuffering.vue'
 import PlayerError from './PlayerError.vue'
@@ -155,7 +156,8 @@ const AUTOPLAY_TIME_LEFT_THRESHOLD = 5
 import { IGNORE_RESTORE_PROGRESS_THRESHOLD } from '@/utils/media'
 const NEXT_EPISODE_PROGRESS_THRESHOLD = 0.9
 
-const store = useStore()
+const store = useAppStore()
+const mediaStore = useMediaStore()
 const router = useRouter()
 const authStore = useAuthStore()
 
@@ -164,10 +166,10 @@ const stage = ref(null)
 const videoEl = ref(null)
 const gestureLayer = ref(null)
 
-const playing = computed(() => store.state.playing || {})
+const playing = computed(() => store.playing || {})
 const autoplay = computed(() => authStore.preferences.autoplayNext)
-const host = computed(() => store.state.host)
-const playSizeFormat = computed(() => store.state.playSizeFormat)
+const host = computed(() => store.host)
+const playSizeFormat = computed(() => store.playSizeFormat)
 
 const playingFileId = ref(0)
 // Starts from the user's preference; a choice made while watching lasts until
@@ -219,7 +221,7 @@ const modeName = computed(() => {
 })
 
 const video = useVideoElement(videoEl, {
-  onEnded: () => store.dispatch('updateWatching'),
+  onEnded: () => mediaStore.scheduleRefresh('watch'),
   onLoadedData: element => {
     env.probeVolumeSupport(element)
     // A new source resets rate and volume on the element, so the user's
@@ -364,7 +366,7 @@ const { reportProgress } = useRemoteBroadcast({
 })
 
 function setMode (mode) {
-  store.commit('setPlaySizeFormat', mode)
+  store.setPlaySizeFormat(mode)
 }
 
 function openSettings () {
@@ -440,8 +442,7 @@ function getTracking () {
   return playing.value.entity.TrackMovies || playing.value.entity.TrackEpisodes || []
 }
 
-// Home and detail shelves read progress straight back out of the vuex entity
-// through progressForItem(), so this stays a mutation in place.
+// Share the local position with every mounted card, even while offline.
 function updateLocalTracker () {
   if (!hasPlayback.value) return
 
@@ -454,6 +455,11 @@ function updateLocalTracker () {
   if (!entity[key][0]) entity[key][0] = {}
 
   entity[key][0].time = video.currentTime.value
+  if (duration.value > 0) {
+    entity[key][0].progress = Math.min(1, video.currentTime.value / duration.value)
+    entity[key][0].updatedAt = new Date().toISOString()
+    mediaStore.applyProgress({ type: playing.value.type, id: entity.id, track: entity[key][0] })
+  }
 }
 
 function onTimeUpdate () {
@@ -601,7 +607,7 @@ function playNext () {
   // Explicitly local: `playEpisode` would route to whatever remote target this
   // device has selected, so a device playing under remote control would fling
   // its own next episode at a third device.
-  if (nextEpisode.value?.id) store.dispatch('playEpisodeLocal', nextEpisode.value.id)
+  if (nextEpisode.value?.id) store.playEpisodeLocal(nextEpisode.value.id)
 }
 
 function stopPlaying () {
@@ -609,8 +615,8 @@ function stopPlaying () {
 
   if (videoEl.value) videoEl.value.src = ''
 
-  store.dispatch('clearPlaying')
-  store.dispatch('updateWatching')
+  store.clearPlaying()
+  mediaStore.scheduleRefresh('watch')
 
   settingsOpen.value = false
   paused.value = true

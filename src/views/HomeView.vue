@@ -100,21 +100,24 @@ import { playbackLabel } from '@/utils/media'
 import HomeLoadState from '@/components/media/HomeLoadState.vue'
 import PlaybackButton from '@/components/remote/PlaybackButton.vue'
 import { computed, onMounted, ref, watch } from 'vue'
-import { useStore } from 'vuex'
+import { useAppStore } from '@/stores/app'
 import MediaShelf from '@/components/media/MediaShelf.vue'
 import { useMediaStore } from '@/stores/media'
-import { imageUrl, titleForItem, subtitleForItem } from '@/utils/media'
+import { titleForItem, subtitleForItem } from '@/utils/media'
 
 const mediaStore = useMediaStore()
-const store = useStore()
+const store = useAppStore()
 const heroFailed = ref(false)
 const heroLoaded = ref(false)
 onMounted(() => { mediaStore.loadHome() })
-const spotlight = computed(() => mediaStore.home.spotlight)
+const spotlight = computed(() => {
+  const value = mediaStore.home.spotlight
+  return value ? { ...value, item: mediaStore.withProgress(value.type, value.item) } : null
+})
 const spotlightTitle = computed(() => spotlight.value ? titleForItem(spotlight.value.type, spotlight.value.item) : '')
 const spotlightSubtitle = computed(() => spotlight.value ? subtitleForItem(spotlight.value.type, spotlight.value.item) : '')
 const spotlightOverview = computed(() => spotlight.value?.item?.overview || 'Settle in and discover something great from your collection.')
-const heroImage = computed(() => spotlight.value ? imageUrl(store.state.host, spotlight.value.type, spotlight.value.item.id, spotlight.value.type === 'movie' ? 'fanart' : 'poster') : '')
+const heroImage = computed(() => spotlight.value ? mediaStore.artworkUrl(store.host, spotlight.value.type, spotlight.value.item.id, spotlight.value.type === 'movie' ? 'fanart' : 'poster') : '')
 watch(heroImage, () => { heroFailed.value = false; heroLoaded.value = false })
 const spotlightRoute = computed(() => {
   if (!spotlight.value) return { name: 'Main' }
@@ -122,7 +125,7 @@ const spotlightRoute = computed(() => {
   return { name: 'SeriesView', params: { seriesId: spotlight.value.item.id } }
 })
 function playSpotlight () {
-  if (spotlight.value?.type === 'movie') store.dispatch('playMovie', spotlight.value.item.id)
+  if (spotlight.value?.type === 'movie') store.playMovie(spotlight.value.item.id)
 }
 </script>
 

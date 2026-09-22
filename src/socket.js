@@ -1,21 +1,32 @@
 import io from 'socket.io-client'
 import oblectoClient from '@/oblectoClient'
-import { markConnected, markConnecting, markConnectionFailure } from '@/stores/connection'
+import { useConnectionStore } from '@/stores/connection'
 import { getDeviceIdentity } from '@/remote/device'
 import { applyDevices, reset as resetRemote } from '@/remote/state'
 import { bindSocket } from '@/remote/transport'
 import { bindStore, handleCommand } from '@/remote/receiver'
+import { useMediaStore } from '@/stores/media'
+import { useSeedboxStore } from '@/stores/seedbox'
 
 let socket = null
 
-export function initSocket ({ app, store }, host = oblectoClient.axios.defaults.baseURL) {
+export function disconnectSocket () {
   if (socket) {
+    socket.removeAllListeners()
     socket.close()
     socket = null
   }
-
+  bindSocket(null)
+  bindStore(null)
   resetRemote()
+  useConnectionStore().$reset()
+}
+
+export function initSocket ({ app, store, pinia }, host = oblectoClient.axios.defaults.baseURL) {
+  disconnectSocket()
   bindStore(store)
+  const media = useMediaStore(pinia)
+  const connection = useConnectionStore(pinia)
 
   // The server now authenticates in the handshake, so connecting without a
   // token just loops on rejection. Sign-in calls back through
@@ -41,29 +52,27 @@ export function initSocket ({ app, store }, host = oblectoClient.axios.defaults.
   app.config.globalProperties.$socket = socket
   bindSocket(socket)
 
-  markConnecting()
+  connection.markConnecting()
 
   // Connection health is reported by the pill in the header rather than by
   // toasts: it stays visible for as long as it is true, and says nothing at all
   // while the socket is healthy.
   socket.on('connect_error', (error) => {
-    markConnectionFailure(error?.message || '')
+    connection.markConnectionFailure(error?.message || '')
   })
 
   socket.on('disconnect', () => {
-    markConnecting()
+    connection.markConnecting()
     resetRemote()
   })
 
   socket.on('connect', () => {
-    markConnected()
-    store.dispatch('updateAll')
+    connection.markConnected()
+    media.resync()
   })
 
   socket.on('indexer', (val) => {
-    if (val.event === 'added') {
-      store.dispatch('updateAll')
-    }
+    media.libraryEvent(val)
   })
 
   // The server pushes the whole list whenever anything about this user's
@@ -71,6 +80,8 @@ export function initSocket ({ app, store }, host = oblectoClient.axios.defaults.
   socket.on('devices', (devices) => {
     applyDevices(devices)
   })
+
+  socket.on('media:progress', payload => media.applyProgress(payload, { persisted: true }))
 
   // Another device is driving this one. The ack goes back to it through the
   // server, so it learns whether playback actually started.
@@ -84,14 +95,14 @@ export function initSocket ({ app, store }, host = oblectoClient.axios.defaults.
   // renders as a live transfer list. That page is where someone watching an
   // import already is; a toast on every event just interrupted everyone else.
   socket.on('seedbox', (msg) => {
-    store.dispatch('seedbox/processSocketEvent', msg)
+    useSeedboxStore(pinia).processSocketEvent(msg)
   })
 
   return socket
 }
 
-export function reconnectSocket ({ app, store }, host) {
-  return initSocket({ app, store }, host)
+export function reconnectSocket ({ app, store, pinia }, host) {
+  return initSocket({ app, store, pinia }, host)
 }
 
 export function getSocket () {

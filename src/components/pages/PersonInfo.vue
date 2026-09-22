@@ -109,7 +109,7 @@
 <script setup>
 import { computed, ref, watch } from 'vue'
 import { useRoute } from 'vue-router'
-import { useStore } from 'vuex'
+import { useAppStore } from '@/stores/app'
 import oblectoClient from '@/oblectoClient'
 import CreditGrid from '@/components/details/CreditGrid.vue'
 import { describeError } from '@/composables/useSaveState'
@@ -120,14 +120,14 @@ import '@/assets/sass/details.sass'
 const BIO_CLAMP_CHARS = 420
 
 const route = useRoute()
-const store = useStore()
+const store = useAppStore()
 const person = ref(null)
 const loading = ref(false)
 const error = ref('')
 const imageFailed = ref(false)
 const backdropLoaded = ref(false)
 const bioExpanded = ref(false)
-const portrait = computed(() => `${store.state.host}/person/${person.value?.id}/profile?size=large`)
+const portrait = computed(() => `${store.host}/person/${person.value?.id}/profile?size=large`)
 const initials = computed(() => (person.value?.name || '').split(/\s+/).map(part => part[0]).slice(0, 2).join('').toUpperCase())
 const longBiography = computed(() => (person.value?.biography || '').length > BIO_CLAMP_CHARS)
 

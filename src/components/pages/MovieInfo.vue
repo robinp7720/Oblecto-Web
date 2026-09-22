@@ -35,7 +35,13 @@
       >
         <PlaybackButton
           :label="playbackLabel('movie', movie)"
-          @play="store.dispatch('playMovie', movie.id)"
+          @play="store.playMovie(movie.id)"
+        />
+        <WatchStateButton
+          :id="movie.id"
+          :track="movie.TrackMovies?.[0]"
+          type="movie"
+          @updated="updateWatchState"
         />
         <a
           href="#movie-files"
@@ -113,22 +119,25 @@ import { playbackLabel } from '@/utils/media'
 import PlaybackButton from '@/components/remote/PlaybackButton.vue'
 import { computed } from 'vue'
 import { useRoute } from 'vue-router'
-import { useStore } from 'vuex'
+import { useAppStore } from '@/stores/app'
+import { useMediaStore } from '@/stores/media'
 import oblectoClient from '@/oblectoClient'
 import MediaDetailHero from '@/components/details/MediaDetailHero.vue'
 import MediaShelf from '@/components/media/MediaShelf.vue'
 import FileList from '@/components/files/FileList.vue'
 import PeopleRow from '@/components/details/PeopleRow.vue'
 import RelatedTitles from '@/components/details/RelatedTitles.vue'
+import WatchStateButton from '@/components/details/WatchStateButton.vue'
 import { useMediaDetails } from '@/composables/useMediaDetails'
-import { imageUrl, normalizeGenres, formatYear, formatRuntime, ratingLabel, mediaCapabilities } from '@/utils/media'
+import { normalizeGenres, formatYear, formatRuntime, ratingLabel, mediaCapabilities } from '@/utils/media'
 import '@/assets/sass/details.sass'
 const route = useRoute()
-const store = useStore()
+const store = useAppStore()
+const media = useMediaStore()
 const { item: movie, related: sets, loading, error, relatedError, relatedLoading, reloadRelated, reload } = useMediaDetails(
   () => route.params.movieId,
   id => oblectoClient.movieLibrary.getInfo(id),
-  id => oblectoClient.movieLibrary.getMovieSets(id)
+  id => oblectoClient.movieLibrary.getMovieSets(id), 'movie'
 )
 const genres = computed(() => normalizeGenres(movie.value?.genres || movie.value?.genre))
 const subtitle = computed(() => [formatYear(movie.value?.releaseDate), formatRuntime(movie.value?.runtime), ratingLabel(movie.value)].filter(Boolean).join(' · '))
@@ -152,5 +161,6 @@ const metadata = computed(() => {
     { label: 'Popularity', value: Number(data.popularity) > 0 ? String(Math.round(data.popularity * 10) / 10) : null }
   ].filter(entry => entry.value)
 })
-function artwork (variant) { return imageUrl(store.state.host, 'movie', movie.value?.id, variant) }
+function artwork (variant) { return media.artworkUrl(store.host, 'movie', movie.value?.id, variant) }
+function updateWatchState (track) { movie.value = { ...movie.value, TrackMovies: [track] } }
 </script>

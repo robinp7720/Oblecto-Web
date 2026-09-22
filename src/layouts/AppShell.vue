@@ -227,12 +227,14 @@ import { useAuthStore } from '@/stores/auth'
 import UserAvatar from '@/components/system/UserAvatar.vue'
 import { canSeeServerSettings } from '@/components/settings/registry'
 import { getDeviceName, setDeviceName } from '@/remote/device'
-import { playbackTargets, remote, setTarget } from '@/remote/state'
+import { useRemoteStore } from '@/remote/state'
 import { getSocket } from '@/socket'
 
 const router = useRouter()
 const route = useRoute()
 const authStore = useAuthStore()
+const remote = useRemoteStore()
+const { setTarget } = remote
 const { t } = useI18n()
 // Server settings are only offered to groups allowed to change some of them.
 const serverSettings = computed(() => canSeeServerSettings(authStore.can))
@@ -246,7 +248,7 @@ const thisDeviceName = ref(getDeviceName())
 
 // The server pushes this list whenever anything changes, so the menu is
 // already current when it opens and there is nothing to fetch.
-const targets = playbackTargets
+const targets = computed(() => remote.playbackTargets)
 const targetDeviceId = computed(() => remote.targetDeviceId)
 
 watch(() => route.query.q, value => { searchText.value = String(value || '') })

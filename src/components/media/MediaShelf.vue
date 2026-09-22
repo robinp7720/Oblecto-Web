@@ -4,7 +4,17 @@
     :aria-label="title"
   >
     <div class="heading">
-      <h2>{{ title }}</h2>
+      <div class="heading-copy">
+        <component :is="headingTag">
+          {{ title }}
+        </component>
+        <p
+          v-if="subtitle"
+          class="shelf-subtitle"
+        >
+          {{ subtitle }}
+        </p>
+      </div>
       <slot name="action">
         <RouterLink
           v-if="actionLabel && actionTo"
@@ -67,6 +77,8 @@ import { computed, ref, onMounted, onBeforeUnmount, watch, nextTick } from 'vue'
 import MediaCard from '@/components/media/MediaCard.vue'
 const props = defineProps({
   title: { type: String, required: true },
+  subtitle: { type: String, default: '' },
+  headingTag: { type: String, default: 'h2' },
   eyebrow: { type: String, default: '' },
   items: { type: Array, default: () => [] },
   type: { type: String, required: true },
@@ -74,7 +86,7 @@ const props = defineProps({
   actionTo: { type: [String, Object], default: null }
 })
 const track = ref(null)
-const itemLabel = computed(() => props.type === 'person' ? 'people' : 'titles')
+const itemLabel = computed(() => props.type === 'person' ? 'people' : props.type === 'episode' ? 'episodes' : 'titles')
 const atStart = ref(true)
 const atEnd = ref(false)
 const canScroll = ref(false)
@@ -107,10 +119,16 @@ onBeforeUnmount(() => observer?.disconnect())
   gap: 18px
   min-height: 36px
   margin-bottom: 10px
-  h2
+  h2, h3
     margin: 0
     font-size: clamp(1.1rem, 1.6vw, 1.5rem)
     letter-spacing: -0.025em
+.heading-copy
+  min-width: 0
+.shelf-subtitle
+  margin: 4px 0 0
+  color: var(--color-text-muted)
+  font-size: 0.78rem
 .action-link
   color: #bcbcbc
   font-size: 0.78rem

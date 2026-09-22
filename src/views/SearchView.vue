@@ -94,10 +94,13 @@ import { useRoute, useRouter } from 'vue-router'
 import MediaShelf from '@/components/media/MediaShelf.vue'
 import PersonCard from '@/components/details/PersonCard.vue'
 import { useSearchStore } from '@/stores/search'
+import { useMediaStore } from '@/stores/media'
 
 const route = useRoute()
 const router = useRouter()
 const searchStore = useSearchStore()
+const mediaStore = useMediaStore()
+watch(() => mediaStore.catalogRevision, () => searchStore.runSearch(route.query.q || '', { silent: true }))
 const query = ref(String(route.query.q || ''))
 
 const normalizedQuery = computed(() => String(route.query.q || '').trim())

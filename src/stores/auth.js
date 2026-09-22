@@ -1,6 +1,11 @@
 import { defineStore } from 'pinia'
 import oblectoClient from '@/oblectoClient'
-import legacyStore from '@/store'
+import { useAppStore } from '@/stores/app'
+import { useMediaStore } from '@/stores/media'
+import { useSearchStore } from '@/stores/search'
+import { useLibrariesStore } from '@/stores/libraries'
+import { useSeedboxStore } from '@/stores/seedbox'
+import { disconnectSocket } from '@/socket'
 import { applyLocale } from '@/i18n'
 
 const TOKEN_KEY = 'oblecto.accessToken'
@@ -31,6 +36,7 @@ let loadingMe = null
 export const useAuthStore = defineStore('auth', {
   state: () => ({
     ready: false,
+    authenticated: false,
     loggingIn: false,
     username: null,
     // The signed-in account from /api/v1/me: profile, group, permissions and
@@ -40,7 +46,7 @@ export const useAuthStore = defineStore('auth', {
     legacyServer: false
   }),
   getters: {
-    isAuthenticated: () => Boolean(oblectoClient.accessToken),
+    isAuthenticated: state => state.authenticated,
     displayName: state => state.me?.name || state.me?.username || state.username,
     preferences: state => ({ ...DEFAULT_PREFERENCES, ...state.me?.preferences }),
     // Whether the signed-in user may do what `permission` guards. The server
@@ -52,10 +58,11 @@ export const useAuthStore = defineStore('auth', {
     hydrate () {
       const storedHost = getStoredHost()
       if (storedHost) {
-        legacyStore.dispatch('updateHost', storedHost)
+        useAppStore().updateHost(storedHost)
       }
 
       const token = getStoredToken()
+      this.authenticated = Boolean(token)
       if (token) {
         oblectoClient.accessToken = token
         oblectoClient.axios.defaults.headers.common.Authorization = `bearer ${token}`
@@ -73,8 +80,10 @@ export const useAuthStore = defineStore('auth', {
       if (this.me && !force) return Promise.resolve(this.me)
       if (loadingMe && !force) return loadingMe
 
+      const token = oblectoClient.accessToken
       const request = oblectoClient.account.get()
         .then(me => {
+          if (token !== oblectoClient.accessToken) return null
           // Anything but an account means a server without this endpoint.
           if (!me || typeof me !== 'object' || Array.isArray(me)) {
             this.legacyServer = true
@@ -85,6 +94,7 @@ export const useAuthStore = defineStore('auth', {
           return me
         })
         .catch(error => {
+          if (token !== oblectoClient.accessToken) return null
           if (error?.response?.status === 404) this.legacyServer = true
 
           return null
@@ -111,24 +121,33 @@ export const useAuthStore = defineStore('auth', {
 
       try {
         await oblectoClient.authenticate(credentials)
+        this.authenticated = Boolean(oblectoClient.accessToken)
         this.username = displayName || null
 
         window.localStorage.setItem(TOKEN_KEY, oblectoClient.accessToken)
-        window.localStorage.setItem(HOST_KEY, legacyStore.state.host || oblectoClient.axios.defaults.baseURL || '')
+        window.localStorage.setItem(HOST_KEY, useAppStore().host || oblectoClient.axios.defaults.baseURL || '')
 
         this.me = null
         await this.loadMe(true)
-        await legacyStore.dispatch('updateAll')
       } finally {
         this.loggingIn = false
       }
     },
     async logout () {
+      disconnectSocket()
+      this.authenticated = false
       window.localStorage.removeItem(TOKEN_KEY)
       this.username = null
       this.me = null
       this.legacyServer = false
-      await legacyStore.dispatch('logout')
+      loadingMe = null
+      oblectoClient.accessToken = ''
+      delete oblectoClient.axios.defaults.headers.common.Authorization
+      useAppStore().clearPlaying()
+      useMediaStore().reset()
+      useSearchStore().reset()
+      useLibrariesStore().reset()
+      useSeedboxStore().$reset()
     }
   }
 })

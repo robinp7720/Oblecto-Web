@@ -1,5 +1,9 @@
 import { defineStore } from 'pinia'
 import oblectoClient from '@/oblectoClient'
+import { imageUrl } from '@/utils/media'
+
+const refreshTimers = new WeakMap()
+const watchCategory = progress => progress >= 0.9 ? 'watched' : progress > 0 ? 'inprogress' : 'unwatched'
 
 function createLibraryState () {
   return {
@@ -23,7 +27,10 @@ function createLibraryState () {
     pageInfo: null,
     loading: false,
     loadingMore: false,
+    busy: false,
     requestId: 0,
+    pagesLoaded: 0,
+    refreshPending: false,
     moreError: null,
     librariesLoaded: false,
     error: null,
@@ -55,6 +62,15 @@ function createBrowseParams (filters, cursor = null) {
 
 export const useMediaStore = defineStore('media', {
   state: () => ({
+    epoch: 0,
+    progress: {},
+    savedProgress: {},
+    deviceSeen: {},
+    artworkVersions: {},
+    catalogRevision: 0,
+    watchRevision: 0,
+    catalogPending: false,
+    watchPending: false,
     home: {
       sections: {},
       spotlight: null,
@@ -68,7 +84,97 @@ export const useMediaStore = defineStore('media', {
     }
   }),
   actions: {
-    async loadHome (onlyId = null) {
+    trackFor (type, item) {
+      const original = (type === 'movie' ? item?.TrackMovies : item?.TrackEpisodes)?.[0]
+      const live = this.progress[`${type}:${item?.id}`]
+      return live && (!original?.updatedAt || Date.parse(live.updatedAt) >= Date.parse(original.updatedAt)) ? live : original
+    },
+    withProgress (type, item) {
+      if (!item || !['movie', 'episode'].includes(type)) return item
+      const track = this.trackFor(type, item)
+      return track ? { ...item, [type === 'movie' ? 'TrackMovies' : 'TrackEpisodes']: [track] } : item
+    },
+    artworkUrl (host, type, id, variant) {
+      const url = imageUrl(host, type, id, variant)
+      const version = this.artworkVersions[`${type}:${id}`]
+      return version && url ? `${url}?v=${version}` : url
+    },
+    applyProgress ({ type, id, track }, { persisted = false } = {}) {
+      if (!['movie', 'episode'].includes(type) || id == null || !track) return
+      const progress = Number(track.progress)
+      const time = Number(track.time)
+      const updatedAt = Date.parse(track.updatedAt)
+      if (!Number.isFinite(progress) || !Number.isFinite(time) || !Number.isFinite(updatedAt)) return
+      const key = `${type}:${id}`
+      // Live playback can lead the database by several seconds. A later save
+      // must refresh shelf membership even when the live category is unchanged.
+      const saved = this.savedProgress[key]
+      if (persisted && (!saved || updatedAt > Date.parse(saved.updatedAt))) {
+        this.savedProgress[key] = { ...track }
+        if (!saved || watchCategory(saved.progress) !== watchCategory(progress)) this.scheduleRefresh('watch')
+      }
+      const previous = this.progress[key]
+      if (previous && updatedAt <= Date.parse(previous.updatedAt)) return
+      this.progress[key] = { ...track, time: Math.max(0, time), progress: Math.max(0, Math.min(1, progress)) }
+      if (!previous || watchCategory(previous.progress) !== watchCategory(progress)) this.scheduleRefresh('watch')
+    },
+    applyDevices (devices) {
+      for (const device of devices || []) {
+        const state = device.state
+        if (!state?.media || !(state.duration > 0) || this.deviceSeen[device.deviceId] >= state.updatedAt) continue
+        this.deviceSeen[device.deviceId] = state.updatedAt
+        this.applyProgress({ type: state.media.kind, id: state.media.id, track: {
+          time: state.position, progress: state.position / state.duration, updatedAt: new Date(state.updatedAt).toISOString()
+        } })
+      }
+    },
+    libraryEvent (event) {
+      if (!['added', 'updated', 'artwork', 'removed'].includes(event?.event)) return
+      if (event.id != null) this.artworkVersions[`${event.type}:${event.id}`] = Date.now()
+      this.scheduleRefresh('catalog')
+    },
+    scheduleRefresh (reason = 'catalog') {
+      if (reason === 'catalog') this.catalogPending = true
+      else this.watchPending = true
+      if (refreshTimers.has(this)) return
+      // A bounded batch: continuous imports still refresh once each second.
+      refreshTimers.set(this, setTimeout(() => {
+        refreshTimers.delete(this)
+        this.flushRefresh()
+      }, 750))
+    },
+    flushRefresh () {
+      const catalog = this.catalogPending
+      const watched = this.watchPending
+      this.catalogPending = this.watchPending = false
+      if (catalog) this.catalogRevision++
+      if (watched) this.watchRevision++
+      if (Object.keys(this.home.sections).length) {
+        if (catalog) void this.loadHome(null, { silent: true })
+        else if (watched) for (const id of ['continue-movies', 'continue-episodes', 'next-episodes']) void this.loadHome(id, { silent: true })
+      }
+      for (const [type, state] of Object.entries(this.library)) {
+        if (!state.requestId || (!catalog && !watched)) continue
+        if (state.busy) state.refreshPending = true
+        else void this.loadLibrary(type, { silent: true, preservePages: true })
+      }
+    },
+    resync () {
+      this.deviceSeen = {}
+      // REST snapshots after reconnect replace any missed watch resets.
+      this.progress = {}
+      this.savedProgress = {}
+      this.scheduleRefresh('catalog')
+    },
+    reset () {
+      clearTimeout(refreshTimers.get(this))
+      refreshTimers.delete(this)
+      const epoch = this.epoch + 1
+      this.$reset()
+      this.epoch = epoch
+    },
+    async loadHome (onlyId = null, { silent = false } = {}) {
+      const epoch = this.epoch
       const definitions = [
         ['continue-movies', 'Continue Watching Movies', 'movie', () => oblectoClient.movieLibrary.getWatching()],
         ['continue-episodes', 'Continue Watching Episodes', 'episode', () => oblectoClient.episodeLibrary.getWatching()],
@@ -93,21 +199,33 @@ export const useMediaStore = defineStore('media', {
         const series = sections['recent-series']?.items?.[0]
         this.home.spotlight = movie ? { type: 'movie', item: movie } : series ? { type: 'series', item: series } : null
       }
-      const jobs = definitions.filter(([id]) => !onlyId || id === onlyId).filter(([id]) => !this.home.sections[id]?.loading)
+      const jobs = definitions.filter(([id]) => !onlyId || id === onlyId).filter(([id]) => {
+        if (!this.home.sections[id]?.busy) return true
+        this.home.sections[id].refreshPending = true
+        return false
+      })
       for (const [id, title] of jobs) {
-        this.home.sections[id] = { ...this.home.sections[id], title, loading: true, error: null }
+        this.home.sections[id] = { ...this.home.sections[id], title, busy: true, loading: !silent, error: null }
       }
       refresh()
       await Promise.all(jobs.map(async ([id, , , fetch]) => {
         const section = this.home.sections[id]
         try {
           const items = await fetch()
+          if (epoch !== this.epoch) return
           section.items = Array.isArray(items) ? items : []
         } catch {
+          if (epoch !== this.epoch) return
           section.error = `Could not load ${section.title.toLowerCase()}.`
         } finally {
-          section.loading = false
-          refresh()
+          if (epoch === this.epoch) {
+            section.loading = section.busy = false
+            refresh()
+            if (section.refreshPending) {
+              section.refreshPending = false
+              void this.loadHome(id, { silent: true })
+            }
+          }
         }
       }))
     },
@@ -131,36 +249,52 @@ export const useMediaStore = defineStore('media', {
         libraries: this.library[type].libraries
       }
     },
-    async loadLibrary (type, { append = false } = {}) {
+    async loadLibrary (type, { append = false, silent = false, preservePages = false } = {}) {
       const state = this.library[type]
+      const epoch = this.epoch
       const client = type === 'movies' ? oblectoClient.movieLibrary : oblectoClient.seriesLibrary
 
-      if (append && (state.loading || state.loadingMore)) return
+      if (append && state.busy) return
       const requestId = ++state.requestId
       const params = createBrowseParams(state.filters, append ? state.pageInfo?.nextCursor || null : null)
       state.moreError = null
       if (!append) state.error = null
-      state.loading = !append
+      state.busy = true
+      state.loading = !append && !silent
       state.loadingMore = append
 
       try {
         await this.ensureLibraries(type)
 
-        const response = await client.browse(params)
-        if (requestId !== state.requestId) return
+        let response
+        const nextItems = []
+        const pageCount = preservePages ? Math.max(1, state.pagesLoaded) : 1
+        let fetchedPages = 0
+        for (let page = 0; page < pageCount; page++) {
+          response = await client.browse(params)
+          if (requestId !== state.requestId || epoch !== this.epoch) return
+          nextItems.push(...(Array.isArray(response?.items) ? response.items : []))
+          fetchedPages++
+          if (!response?.pageInfo?.hasNextPage || !response.pageInfo.nextCursor) break
+          params.cursor = response.pageInfo.nextCursor
+        }
 
-        const nextItems = Array.isArray(response?.items) ? response.items : []
-
-        state.items = append ? [...state.items, ...nextItems] : nextItems
+        state.items = [...new Map((append ? [...state.items, ...nextItems] : nextItems).map(item => [String(item.id), item])).values()]
+        state.pagesLoaded = append ? state.pagesLoaded + fetchedPages : fetchedPages
         state.facets = response?.facets || { genres: [] }
         state.pageInfo = response?.pageInfo || null
       } catch (error) {
-        if (requestId !== state.requestId) return
+        if (requestId !== state.requestId || epoch !== this.epoch) return
         state[append ? 'moreError' : 'error'] = error.message || `Failed to load ${type}`
       } finally {
-        if (requestId === state.requestId) {
+        if (requestId === state.requestId && epoch === this.epoch) {
+          state.busy = false
           state.loading = false
           state.loadingMore = false
+          if (state.refreshPending) {
+            state.refreshPending = false
+            void this.loadLibrary(type, { silent: true, preservePages: true })
+          }
         }
       }
     }

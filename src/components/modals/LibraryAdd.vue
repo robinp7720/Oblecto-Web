@@ -54,7 +54,7 @@
 
 <script setup>
 import { computed, nextTick, ref, watch } from 'vue'
-import { useStore } from 'vuex'
+import { useLibrariesStore } from '@/stores/libraries'
 import AppDialog from '@/components/system/AppDialog.vue'
 import SaveState from '@/components/system/SaveState.vue'
 import { createSaveState } from '@/composables/useSaveState'
@@ -67,7 +67,7 @@ const props = defineProps({
 
 const emit = defineEmits(['update:open', 'added'])
 
-const store = useStore()
+const store = useLibrariesStore()
 const save = createSaveState()
 const path = ref('')
 const pathError = ref('')
@@ -101,7 +101,7 @@ async function addLibrary () {
 
   if (!ok) return
 
-  await store.dispatch('libraries/updateAll')
+  await store.updateAll()
   emit('added', path.value)
   emit('update:open', false)
 }

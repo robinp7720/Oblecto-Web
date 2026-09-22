@@ -64,7 +64,12 @@
 
 <script setup>
 import { computed } from 'vue'
-import { remote, playbackTargets, activeDevice, setTarget } from '@/remote/state'
+import { storeToRefs } from 'pinia'
+import { useRemoteStore } from '@/remote/state'
+
+const remote = useRemoteStore()
+const { playbackTargets, activeDevice } = storeToRefs(remote)
+const { setTarget } = remote
 
 defineProps({ label: { type: String, default: 'Play' } })
 defineEmits(['play'])

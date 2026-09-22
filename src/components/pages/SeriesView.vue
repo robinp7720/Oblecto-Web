@@ -12,7 +12,9 @@
       class="detail-state"
       role="alert"
     >
-      <h1>TV show unavailable</h1><p>{{ error }}</p><button
+      <h1>TV show unavailable</h1>
+      <p>{{ error }}</p>
+      <button
         class="detail-button"
         @click="reload"
       >
@@ -35,7 +37,7 @@
         <PlaybackButton
           v-if="suggested"
           :label="suggested.label"
-          @play="store.dispatch('playEpisode', suggested.episode.id)"
+          @play="store.playEpisode(suggested.episode.id)"
         />
         <a
           href="#show-episodes"
@@ -43,6 +45,111 @@
         >Browse episodes</a>
       </MediaDetailHero>
       <div class="detail-body">
+        <section
+          id="show-episodes"
+          class="detail-section episodes-section"
+        >
+          <div class="episodes-heading">
+            <h2>Episodes</h2>
+            <button
+              type="button"
+              class="find-toggle"
+              :aria-expanded="filtersOpen"
+              aria-controls="episode-filters"
+              @click="filtersOpen = !filtersOpen"
+            >
+              {{ filtersOpen ? 'Close search' : filterActive ? 'Edit filters' : 'Find an episode' }}
+            </button>
+          </div>
+          <div
+            v-show="filtersOpen"
+            id="episode-filters"
+            class="episode-tools"
+          >
+            <label>
+              <span>Find an episode</span>
+              <input
+                v-model="episodeQuery"
+                type="search"
+                placeholder="Title, synopsis, or S02E05"
+              >
+            </label>
+            <label>
+              <span>Watch state</span>
+              <select v-model="watchedFilter">
+                <option value="all">All episodes</option>
+                <option value="unwatched">Unwatched</option>
+                <option value="inprogress">In progress</option>
+                <option value="watched">Watched</option>
+              </select>
+            </label>
+          </div>
+          <div
+            v-if="filterActive"
+            class="filter-summary"
+            role="status"
+          >
+            <span>{{ filteredEpisodes.length }} {{ filteredEpisodes.length === 1 ? 'match' : 'matches' }} across all seasons</span>
+            <button
+              type="button"
+              class="find-toggle"
+              @click="clearEpisodeFilters"
+            >
+              Clear
+            </button>
+          </div>
+          <div
+            v-if="relatedError"
+            class="detail-notice"
+            role="alert"
+          >
+            <p>We couldn’t load the episodes.</p>
+            <button
+              class="detail-button secondary"
+              @click="reloadRelated"
+            >
+              Try again
+            </button>
+          </div>
+          <p
+            v-else-if="!relatedLoading && !episodes.length"
+            class="detail-notice"
+          >
+            No episodes have been added to this show yet.
+          </p>
+          <p
+            v-else-if="!relatedLoading && filterActive && !filteredEpisodes.length"
+            class="detail-notice"
+          >
+            No episodes match these filters.
+          </p>
+          <p
+            v-if="relatedLoading"
+            role="status"
+          >
+            Loading episodes…
+          </p>
+          <div class="season-shelves">
+            <MediaShelf
+              v-for="group in visibleGroups"
+              :id="seasonAnchor(group.season)"
+              :key="group.season"
+              class="season-shelf"
+              :title="seasonName(group.season)"
+              :subtitle="seasonDescription(group.season)"
+              heading-tag="h3"
+              type="episode"
+              :items="group.episodes"
+            >
+              <template #item="{ item }">
+                <EpisodeCard
+                  :episode="item"
+                  @watch-state="updateEpisodeWatch(item.id, $event)"
+                />
+              </template>
+            </MediaShelf>
+          </div>
+        </section>
         <PeopleRow
           title="Cast"
           :credits="show.credits?.cast || []"
@@ -63,7 +170,8 @@
           class="detail-notice"
           role="status"
         >
-          {{ setsError }} <button
+          {{ setsError }}
+          <button
             class="detail-button secondary"
             @click="reloadSets"
           >
@@ -79,87 +187,11 @@
           :items="set.Series || set.series"
         />
         <section
-          id="show-episodes"
-          class="detail-section"
-        >
-          <div class="episodes-heading">
-            <div><h2>Episodes</h2><span class="detail-notice">{{ episodes.length }} {{ episodes.length === 1 ? 'episode' : 'episodes' }} in your library</span></div>
-            <label
-              v-if="seasons.length"
-              class="season-picker mobile-picker"
-            ><span>Season</span><select
-              v-model="selectedSeason"
-              aria-label="Select season"
-            ><option
-              v-for="season in seasons"
-              :key="season"
-              :value="season"
-            >{{ season === '0' ? 'Specials' : season === 'unknown' ? 'Other episodes' : `Season ${season}` }}</option></select></label>
-          </div>
-          <div
-            v-if="seasons.length"
-            class="season-rail"
-            aria-label="Seasons"
-          >
-            <button
-              v-for="season in seasons"
-              :key="season"
-              type="button"
-              :class="{ active: selectedSeason === season }"
-              :aria-pressed="selectedSeason === season"
-              @click="selectedSeason = season"
-            >
-              <strong>{{ season === '0' ? 'Specials' : season === 'unknown' ? 'Other' : `Season ${season}` }}</strong>
-              <span>{{ seasonStats[season].watchedCount }}/{{ seasonStats[season].episodeCount }} watched</span>
-            </button>
-          </div>
-          <p
-            v-if="selectedSummary"
-            class="season-summary"
-          >
-            {{ selectedSummary }}
-          </p>
-          <div
-            v-if="relatedError"
-            class="detail-notice"
-            role="alert"
-          >
-            <p>We couldn’t load the episodes.</p><button
-              class="detail-button secondary"
-              @click="reloadRelated"
-            >
-              Try again
-            </button>
-          </div>
-          <p
-            v-else-if="!relatedLoading && !episodes.length"
-            class="detail-notice"
-          >
-            No episodes have been added to this show yet.
-          </p>
-          <p
-            v-if="relatedLoading"
-            role="status"
-          >
-            Loading episodes…
-          </p>
-          <!-- Keyed by season so picking another one replays the entrance. -->
-          <div
-            :key="selectedSeason"
-            class="motion-stagger"
-          >
-            <EpisodeRow
-              v-for="episode in selectedEpisodes"
-              :key="episode.id"
-              :episode="episode"
-            />
-          </div>
-        </section>
-        <section
           v-if="metadata.length"
           class="detail-section"
         >
-          <h2>About this show</h2><dl class="detail-metadata">
+          <h2>About this show</h2>
+          <dl class="detail-metadata">
             <div
               v-for="entry in metadata"
               :key="entry.label"
@@ -177,27 +209,32 @@
   </div>
 </template>
 <script setup>
-import { remote } from '@/remote/state'
 import PlaybackButton from '@/components/remote/PlaybackButton.vue'
-import { computed, ref, watch, onMounted, onBeforeUnmount } from 'vue'
-import { useRoute } from 'vue-router'
-import { useStore } from 'vuex'
+import { computed, ref, watch, nextTick, onBeforeUnmount } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
+import { useAppStore } from '@/stores/app'
+import { useMediaStore } from '@/stores/media'
 import oblectoClient from '@/oblectoClient'
 import MediaDetailHero from '@/components/details/MediaDetailHero.vue'
 import MediaShelf from '@/components/media/MediaShelf.vue'
-import EpisodeRow from '@/components/details/EpisodeRow.vue'
+import EpisodeCard from '@/components/details/EpisodeCard.vue'
 import PeopleRow from '@/components/details/PeopleRow.vue'
 import RelatedTitles from '@/components/details/RelatedTitles.vue'
 import { useMediaDetails, useDetailResource } from '@/composables/useMediaDetails'
-import { imageUrl, normalizeGenres, formatYear, formatRuntime, ratingLabel, nextSeriesEpisode, seasonSummary } from '@/utils/media'
+import { normalizeGenres, formatYear, formatRuntime, ratingLabel, nextSeriesEpisode, seasonSummary } from '@/utils/media'
 import '@/assets/sass/details.sass'
 const route = useRoute()
-const store = useStore()
-const selectedSeason = ref('')
+const router = useRouter()
+const store = useAppStore()
+const media = useMediaStore()
+const episodeQuery = ref(String(route.query.q || ''))
+const watchedFilter = ref(['unwatched', 'inprogress', 'watched'].includes(String(route.query.watched)) ? String(route.query.watched) : 'all')
+const filterActive = computed(() => Boolean(episodeQuery.value.trim()) || watchedFilter.value !== 'all')
+const filtersOpen = ref(filterActive.value)
 const { item: show, related: episodes, loading, error, relatedError, relatedLoading, reloadRelated, reload } = useMediaDetails(
   () => route.params.seriesId,
   id => oblectoClient.seriesLibrary.getInfo(id),
-  id => oblectoClient.seriesLibrary.getEpisodes(id)
+  id => oblectoClient.seriesLibrary.getEpisodes(id), 'series'
 )
 const { data: sets, loading: setsLoading, error: setsError, reload: reloadSets } = useDetailResource(
   () => route.params.seriesId,
@@ -205,66 +242,99 @@ const { data: sets, loading: setsLoading, error: setsError, reload: reloadSets }
   [], Array.isArray
 )
 const collections = computed(() => sets.value.filter(set => (set.Series || set.series)?.length))
-const fanart = computed(() => imageUrl(store.state.host, 'series', show.value?.id, 'fanart'))
-const poster = computed(() => imageUrl(store.state.host, 'series', show.value?.id, 'poster'))
+const fanart = computed(() => media.artworkUrl(store.host, 'series', show.value?.id, 'fanart'))
+const poster = computed(() => media.artworkUrl(store.host, 'series', show.value?.id, 'poster'))
 const subtitle = computed(() => [formatYear(show.value?.firstAired), show.value?.rating, show.value?.status, ratingLabel(show.value)].filter(Boolean).join(' · '))
 const creators = computed(() => (show.value?.credits?.crew || []).filter(credit => credit.roles?.some(role => role.job === 'Creator')))
-const grouped = computed(() => {
-  const groups = {}
-  for (const episode of episodes.value) {
+function groupEpisodes (values) {
+  const groups = new Map()
+  for (const episode of values) {
     const season = String(episode.airedSeason ?? 'unknown')
-    if (!groups[season]) groups[season] = []
-    groups[season].push(episode)
+    if (!groups.has(season)) groups.set(season, [])
+    groups.get(season).push(episode)
   }
-  for (const group of Object.values(groups)) group.sort((a, b) => (a.airedEpisodeNumber ?? Infinity) - (b.airedEpisodeNumber ?? Infinity))
+  for (const group of groups.values()) group.sort((a, b) => (a.airedEpisodeNumber ?? Infinity) - (b.airedEpisodeNumber ?? Infinity))
   return groups
-})
-const seasons = computed(() => Object.keys(grouped.value).sort((a, b) => {
+}
+const grouped = computed(() => groupEpisodes(episodes.value))
+const seasons = computed(() => [...grouped.value.keys()].sort((a, b) => {
   const order = value => value === 'unknown' ? Infinity : value === '0' ? Number.MAX_SAFE_INTEGER : Number(value)
   return order(a) - order(b)
 }))
-let seasonInitialized = false
-watch(() => route.params.seriesId, () => { seasonInitialized = false; selectedSeason.value = '' })
-watch(episodes, values => {
-  if (!values.length) return
-  if (!seasonInitialized) {
-    selectedSeason.value = String(nextSeriesEpisode(values)?.episode.airedSeason ?? 'unknown')
-    seasonInitialized = true
-  } else if (!seasons.value.includes(selectedSeason.value)) selectedSeason.value = seasons.value[0] || ''
-})
-const selectedEpisodes = computed(() => grouped.value[selectedSeason.value] || [])
-const seasonStats = computed(() => Object.fromEntries(Object.entries(grouped.value).map(([season, items]) => [season, seasonSummary(items)])))
-const selectedSummary = computed(() => {
-  const summary = seasonStats.value[selectedSeason.value]
-  if (!summary) return ''
-  const parts = [`${summary.episodeCount} ${summary.episodeCount === 1 ? 'episode' : 'episodes'}`, `${summary.watchedCount} watched`]
-  if (summary.runtimeMinutes) parts.push(`${formatRuntime(summary.runtimeMinutes)} total`)
-  if (summary.averageRating) parts.push(`Average rating ${summary.averageRating}`)
-  return parts.join(' · ')
-})
-const suggested = computed(() => nextSeriesEpisode(episodes.value))
-function updateProgress (id, time, progress, updatedAt) {
-  episodes.value = episodes.value.map(episode => {
-    if (String(episode.id) !== String(id) || updatedAt < (Date.parse(episode.TrackEpisodes?.[0]?.updatedAt) || 0)) return episode
-    return { ...episode, TrackEpisodes: [{ ...episode.TrackEpisodes?.[0], progress, time, updatedAt: new Date(updatedAt).toISOString() }] }
-  })
-}
-watch(() => store.state.playing?.entity?.TrackEpisodes?.[0]?.time, time => {
-  const playing = store.state.playing
-  if (playing?.type !== 'episode' || !(Number(time) >= 0)) return
-  const duration = Number(playing.entity.Files?.[0]?.duration) || Number(playing.entity.runtime) * 60
-  if (duration > 0) updateProgress(playing.entity.id, Number(time), Math.min(1, time / duration), Date.now())
-})
-watch(() => remote.devices, devices => {
-  for (const { state } of devices) {
-    if (state?.media?.kind === 'episode' && state.duration > 0) {
-      updateProgress(state.media.id, state.position, Math.min(1, state.position / state.duration), state.updatedAt)
-    }
+function replaceQuery (changes) {
+  const query = { ...route.query }
+  for (const [key, value] of Object.entries(changes)) {
+    if (value === null || value === undefined || value === '') delete query[key]
+    else query[key] = value
   }
-}, { deep: true })
-function refreshEpisodes () { if (!relatedLoading.value) reloadRelated() }
-onMounted(() => window.addEventListener('focus', refreshEpisodes))
-onBeforeUnmount(() => window.removeEventListener('focus', refreshEpisodes))
+  if (JSON.stringify(query) !== JSON.stringify(route.query)) router.replace({ query })
+}
+watch(() => route.query.q, value => { episodeQuery.value = String(value || '') })
+watch(() => route.query.watched, value => {
+  watchedFilter.value = ['unwatched', 'inprogress', 'watched'].includes(String(value)) ? String(value) : 'all'
+})
+watch(filterActive, active => { if (active) filtersOpen.value = true })
+let queryTimer
+watch(episodeQuery, () => {
+  window.clearTimeout(queryTimer)
+  queryTimer = window.setTimeout(syncFiltersToQuery, 250)
+})
+watch(watchedFilter, () => {
+  window.clearTimeout(queryTimer)
+  syncFiltersToQuery()
+})
+function syncFiltersToQuery () {
+  replaceQuery({ q: episodeQuery.value.trim() || null, watched: watchedFilter.value === 'all' ? null : watchedFilter.value })
+}
+const seasonStats = computed(() => new Map([...grouped.value].map(([season, items]) => [season, seasonSummary(items)])))
+function seasonDescription (season) {
+  const summary = seasonStats.value.get(season)
+  return `${summary.episodeCount} ${summary.episodeCount === 1 ? 'episode' : 'episodes'} · ${summary.watchedCount} watched`
+}
+const suggested = computed(() => nextSeriesEpisode(episodes.value))
+const filteredEpisodes = computed(() => {
+  const query = episodeQuery.value.trim().toLocaleLowerCase()
+  return episodes.value.filter(episode => {
+    const progress = Number(episode.TrackEpisodes?.[0]?.progress) || 0
+    if (watchedFilter.value === 'watched' && progress < 0.9) return false
+    if (watchedFilter.value === 'inprogress' && !(progress > 0 && progress < 0.9)) return false
+    if (watchedFilter.value === 'unwatched' && progress > 0) return false
+    if (!query) return true
+    const season = episode.airedSeason ?? ''
+    const number = episode.airedEpisodeNumber ?? ''
+    const haystack = [episode.episodeName, episode.overview, `s${season}e${number}`, `s${String(season).padStart(2, '0')}e${String(number).padStart(2, '0')}`, `season ${season} episode ${number}`].filter(Boolean).join(' ').toLocaleLowerCase()
+    return haystack.includes(query)
+  })
+})
+const filteredGrouped = computed(() => groupEpisodes(filteredEpisodes.value))
+const visibleGroups = computed(() => seasons.value.map(season => ({ season, episodes: filteredGrouped.value.get(season) || [] })).filter(group => group.episodes.length))
+function clearEpisodeFilters () {
+  episodeQuery.value = ''
+  watchedFilter.value = 'all'
+  window.clearTimeout(queryTimer)
+  syncFiltersToQuery()
+}
+function seasonName (season) { return season === '0' ? 'Specials' : season === 'unknown' ? 'Other episodes' : `Season ${season}` }
+function seasonAnchor (season) { return `show-season-${encodeURIComponent(season)}` }
+
+// A season link reveals its shelf, while every other season stays available.
+let revealedSeason = ''
+watch(() => [route.params.seriesId, route.query.season, loading.value, visibleGroups.value], async () => {
+  const season = String(route.query.season ?? '')
+  const key = `${route.params.seriesId}:${season}`
+  if (!season) { revealedSeason = ''; return }
+  if (loading.value || key === revealedSeason || !visibleGroups.value.some(group => group.season === season)) return
+  await nextTick()
+  const shelf = document.getElementById(seasonAnchor(season))
+  if (shelf) {
+    shelf.scrollIntoView({ block: 'start', behavior: 'instant' })
+    revealedSeason = key
+  }
+}, { flush: 'post' })
+function updateEpisodeWatch (id, track) {
+  episodes.value = episodes.value.map(episode => String(episode.id) === String(id) ? { ...episode, TrackEpisodes: [track] } : episode)
+}
+onBeforeUnmount(() => window.clearTimeout(queryTimer))
 const metadata = computed(() => {
   const data = show.value || {}
   return [
@@ -284,55 +354,59 @@ const metadata = computed(() => {
   display: flex
   align-items: center
   justify-content: space-between
-  flex-wrap: wrap
-  gap: 20px
-  margin-bottom: 16px
+  gap: 16px
+  margin-bottom: 20px
   h2
-    margin-bottom: 6px
-.season-picker
-  display: flex
-  align-items: center
-  gap: 12px
+    margin: 0
+.find-toggle
+  flex-shrink: 0
+  min-height: 44px
+  padding: 6px 0
+  border: 0
+  background: transparent
   color: var(--color-text-muted)
-  font-size: 0.875rem
-  select
-    background: var(--color-surface)
+  font: inherit
+  font-size: 0.8rem
+  cursor: pointer
+  &:hover
+    color: var(--color-brand-turquoise)
+.episode-tools
+  display: grid
+  grid-template-columns: minmax(0, 1fr) minmax(150px, 220px)
+  align-items: end
+  gap: 12px
+  margin-bottom: 20px
+  label
+    display: grid
+    gap: 6px
+    color: var(--color-text-muted)
+    font-size: 0.75rem
+  input, select
+    width: 100%
     min-height: 44px
-    min-width: 150px
-    cursor: pointer
-.season-rail
-  display: flex
-  gap: 10px
-  overflow-x: auto
-  padding: 2px 2px 12px
-  scrollbar-width: thin
-  button
-    min-width: 132px
-    padding: 12px 14px
     border: 1px solid var(--color-border)
-    border-radius: 5px
+    border-radius: 4px
     background: var(--color-surface)
     color: var(--color-text)
-    text-align: left
-    cursor: pointer
-    &.active
-      border-color: var(--color-brand-turquoise)
-      background: rgba(35, 177, 181, 0.12)
-    strong, span
-      display: block
-    span
-      margin-top: 5px
-      color: var(--color-text-muted)
-      font-size: 0.72rem
-.season-summary
-  margin: 4px 0 8px
+    padding: 8px 10px
+.filter-summary
+  display: flex
+  align-items: center
+  justify-content: space-between
+  gap: 12px
+  margin-bottom: 16px
   color: var(--color-text-muted)
   font-size: 0.82rem
-.mobile-picker
-  display: none
+.season-shelves
+  display: grid
+  gap: 28px
+  min-width: 0
+.season-shelf
+  scroll-margin-top: 100px
+@media (max-width: 760px)
+  .season-shelf
+    scroll-margin-top: 180px
 @media (max-width: 600px)
-  .season-rail
-    display: none
-  .mobile-picker
-    display: flex
+  .episode-tools
+    grid-template-columns: 1fr
 </style>

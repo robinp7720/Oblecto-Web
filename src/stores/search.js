@@ -15,7 +15,12 @@ export const useSearchStore = defineStore('search', {
     }
   }),
   actions: {
-    async runSearch (query) {
+    reset () {
+      const requestId = this.requestId + 1
+      this.$reset()
+      this.requestId = requestId
+    },
+    async runSearch (query, { silent = false } = {}) {
       const requestId = ++this.requestId
       const normalized = String(query || '').trim()
       this.query = normalized
@@ -27,8 +32,8 @@ export const useSearchStore = defineStore('search', {
         return
       }
 
-      this.results = { movies: [], series: [], episodes: [], people: [] }
-      this.loading = true
+      if (!silent) this.results = { movies: [], series: [], episodes: [], people: [] }
+      this.loading = !silent
       this.error = null
 
       try {

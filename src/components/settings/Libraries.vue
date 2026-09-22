@@ -275,7 +275,8 @@
 </template>
 
 <script>
-  import { mapActions, mapState } from 'vuex'
+  import { mapActions, mapState } from 'pinia'
+  import { useLibrariesStore } from '@/stores/libraries'
   import oblectoClient from '@/oblectoClient'
 
   import FontAwesomeIcon from '@fortawesome/vue-fontawesome'
@@ -325,7 +326,7 @@
       }
     },
     computed: {
-      ...mapState('libraries', [
+      ...mapState(useLibrariesStore, [
         'shows',
         'movies'
       ]),
@@ -337,7 +338,7 @@
       this.loadConfig()
     },
     methods: {
-      ...mapActions('libraries', [
+      ...mapActions(useLibrariesStore, [
         'updateAll',
         'deleteMovieLibrary',
         'deleteSeriesLibrary'

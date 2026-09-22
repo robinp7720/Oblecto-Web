@@ -47,7 +47,7 @@
 <script setup>
 import { computed, watch } from 'vue'
 import { useRoute } from 'vue-router'
-import { useStore } from 'vuex'
+import { useAppStore } from '@/stores/app'
 import AppShell from '@/layouts/AppShell.vue'
 import PlayerRoot from '@/components/player/PlayerRoot.vue'
 import { ScreenFormats } from '@/enums/ScreenFormats'
@@ -56,7 +56,7 @@ import { useAuthStore } from '@/stores/auth'
 import { cardTransitionActive, pageLeft } from '@/router/transition'
 
 const route = useRoute()
-const store = useStore()
+const store = useAppStore()
 const authStore = useAuthStore()
 
 // Nested routes (settings) keep their layout and animate their own panel, so
@@ -67,8 +67,8 @@ function pageKey (target) {
 }
 
 const showShell = computed(() => authStore.isAuthenticated && route.meta.layout !== 'auth')
-const playing = computed(() => store.state.playing)
-const playSizeFormat = computed(() => store.state.playSizeFormat)
+const playing = computed(() => store.playing)
+const playSizeFormat = computed(() => store.playSizeFormat)
 
 // Both immersive modes lock the page. FULLSCREEN was previously left out, so
 // the page scrolled behind the video whenever a gesture ran past the stage.

@@ -185,7 +185,7 @@
 <script setup>
 import { computed, getCurrentInstance, nextTick, onMounted, reactive, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { useStore } from 'vuex'
+import { useAppStore } from '@/stores/app'
 import BrandLogo from '@/components/system/BrandLogo.vue'
 import UserAvatar from '@/components/system/UserAvatar.vue'
 import { useAuthStore } from '@/stores/auth'
@@ -194,7 +194,7 @@ import oblectoClient from '@/oblectoClient'
 
 const router = useRouter()
 const route = useRoute()
-const store = useStore()
+const store = useAppStore()
 const authStore = useAuthStore()
 const vm = getCurrentInstance()
 
@@ -203,7 +203,7 @@ const credentials = reactive({
   password: ''
 })
 
-const host = ref(store.state.host || '')
+const host = ref(store.host || '')
 const error = ref(route.query.expired ? 'Your session has ended. Please sign in again.' : '')
 const editingHost = ref(!host.value)
 
@@ -222,7 +222,7 @@ const hasProfiles = computed(() => loginOptions.value.users.length > 0)
 const showPicker = computed(() => hasProfiles.value && !formChosen.value)
 
 function applyHost () {
-  store.dispatch('updateHost', host.value)
+  store.updateHost(host.value)
   window.localStorage.setItem('oblecto.host', host.value)
 }
 

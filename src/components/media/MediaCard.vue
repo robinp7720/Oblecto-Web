@@ -75,8 +75,9 @@
 
 <script setup>
 import { computed, ref, watch } from 'vue'
-import { useStore } from 'vuex'
-import { titleForItem, subtitleForItem, imageUrl, progressForItem, playbackLabel } from '@/utils/media'
+import { useAppStore } from '@/stores/app'
+import { useMediaStore } from '@/stores/media'
+import { titleForItem, subtitleForItem, progressForItem, playbackLabel } from '@/utils/media'
 
 const props = defineProps({
   landscape: { type: Boolean, default: false },
@@ -90,23 +91,26 @@ const props = defineProps({
   }
 })
 
-const store = useStore()
+const store = useAppStore()
+const media = useMediaStore()
+const trackedItem = computed(() => media.withProgress(props.type, props.item))
 
 const title = computed(() => titleForItem(props.type, props.item))
 const subtitle = computed(() => subtitleForItem(props.type, props.item))
-const playLabel = computed(() => playbackLabel(props.type, props.item))
-const progress = computed(() => progressForItem(props.type, props.item))
-const host = computed(() => store.state.host)
+const playLabel = computed(() => playbackLabel(props.type, trackedItem.value))
+const progress = computed(() => progressForItem(props.type, trackedItem.value))
+const host = computed(() => store.host)
 const imageFailed = ref(false)
 const posterFallback = ref(false)
 const artwork = computed(() => {
   const variant = props.type === 'episode' ? 'banner' : props.landscape && !posterFallback.value ? 'fanart' : 'poster'
-  return imageUrl(host.value, props.type, props.item.id, variant)
+  return media.artworkUrl(host.value, props.type, props.item.id, variant)
 })
 watch(() => [props.item.id, props.type, props.landscape, host.value], () => {
   imageFailed.value = false
   posterFallback.value = false
 })
+watch(artwork, () => { imageFailed.value = false })
 function handleImageError () {
   if (props.type === 'movie' && props.landscape && !posterFallback.value) posterFallback.value = true
   else imageFailed.value = true
@@ -126,12 +130,12 @@ const playable = computed(() => props.type !== 'series')
 
 function play () {
   if (props.type === 'movie') {
-    store.dispatch('playMovie', props.item.id)
+    store.playMovie(props.item.id)
     return
   }
 
   if (props.type === 'episode') {
-    store.dispatch('playEpisode', props.item.id)
+    store.playEpisode(props.item.id)
   }
 }
 </script>

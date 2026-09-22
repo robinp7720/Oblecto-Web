@@ -38,7 +38,7 @@ async function run (command) {
 
       const action = command.media.kind === 'movie' ? 'playMovieLocal' : 'playEpisodeLocal'
 
-      await store.dispatch(action, command.media.id)
+      await store[action](command.media.id)
 
       return ok()
     }

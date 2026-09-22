@@ -33,7 +33,13 @@
       >
         <PlaybackButton
           :label="playbackLabel('episode', episode)"
-          @play="store.dispatch('playEpisode', episode.id)"
+          @play="store.playEpisode(episode.id)"
+        />
+        <WatchStateButton
+          :id="episode.id"
+          :track="episode.TrackEpisodes?.[0]"
+          type="episode"
+          @updated="updateWatchState"
         />
         <RouterLink
           v-if="seriesId"
@@ -123,26 +129,33 @@ import { playbackLabel } from '@/utils/media'
 import PlaybackButton from '@/components/remote/PlaybackButton.vue'
 import { computed } from 'vue'
 import { useRoute } from 'vue-router'
-import { useStore } from 'vuex'
+import { useAppStore } from '@/stores/app'
+import { useMediaStore } from '@/stores/media'
 import oblectoClient from '@/oblectoClient'
 import MediaDetailHero from '@/components/details/MediaDetailHero.vue'
 import FileList from '@/components/files/FileList.vue'
 import PeopleRow from '@/components/details/PeopleRow.vue'
+import WatchStateButton from '@/components/details/WatchStateButton.vue'
 import { useMediaDetails, useDetailResource } from '@/composables/useMediaDetails'
-import { imageUrl, formatRuntime, ratingLabel, mediaCapabilities } from '@/utils/media'
+import { formatRuntime, ratingLabel, mediaCapabilities } from '@/utils/media'
 import '@/assets/sass/details.sass'
 const route = useRoute()
-const store = useStore()
-const { item: episode, loading, error, reload } = useMediaDetails(() => route.params.episodeId, id => oblectoClient.episodeLibrary.getInfo(id))
+const store = useAppStore()
+const media = useMediaStore()
+const { item: episode, loading, error, reload } = useMediaDetails(() => route.params.episodeId, id => oblectoClient.episodeLibrary.getInfo(id), undefined, 'episode')
 const { data: context, loading: contextLoading, error: contextError, reload: reloadContext } = useDetailResource(
   () => route.params.episodeId,
   id => oblectoClient.episodeLibrary.getContext(id),
-  null, value => Boolean(value?.season)
+  null, value => Boolean(value?.season), { watchState: true }
 )
 const seriesId = computed(() => episode.value?.Series?.id || episode.value?.seriesId)
-const seriesRoute = computed(() => seriesId.value ? { name: 'SeriesView', params: { seriesId: seriesId.value } } : { name: 'Library', params: { mediaType: 'series' } })
-const banner = computed(() => imageUrl(store.state.host, 'episode', episode.value?.id, 'banner'))
-const poster = computed(() => seriesId.value ? imageUrl(store.state.host, 'series', seriesId.value, 'poster') : '')
+const seriesRoute = computed(() => seriesId.value ? {
+  name: 'SeriesView',
+  params: { seriesId: seriesId.value },
+  query: episode.value?.airedSeason != null ? { season: episode.value.airedSeason } : {}
+} : { name: 'Library', params: { mediaType: 'series' } })
+const banner = computed(() => media.artworkUrl(store.host, 'episode', episode.value?.id, 'banner'))
+const poster = computed(() => seriesId.value ? media.artworkUrl(store.host, 'series', seriesId.value, 'poster') : '')
 const capabilities = computed(() => mediaCapabilities(episode.value?.Files || []))
 const subtitle = computed(() => {
   const data = episode.value || {}
@@ -162,6 +175,7 @@ function episodeLabel (item) {
   const number = item.airedSeason != null && item.airedEpisodeNumber != null ? `S${item.airedSeason} E${item.airedEpisodeNumber} · ` : ''
   return `${number}${item.episodeName || 'Untitled episode'}`
 }
+function updateWatchState (track) { episode.value = { ...episode.value, TrackEpisodes: [track] } }
 const metadata = computed(() => {
   const data = episode.value || {}
   return [

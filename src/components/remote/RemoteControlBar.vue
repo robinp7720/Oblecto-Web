@@ -91,21 +91,25 @@
 
 <script setup>
 import { computed, ref, watch } from 'vue'
-import { useStore } from 'vuex'
+import { useAppStore } from '@/stores/app'
+import { useMediaStore } from '@/stores/media'
 
 import PlayerIcon from '@/components/player/PlayerIcon.vue'
 import PlayerSeekBar from '@/components/player/PlayerSeekBar.vue'
 import PlayerVolume from '@/components/player/PlayerVolume.vue'
-import { activeDevice, activeState, remote } from '@/remote/state'
+import { storeToRefs } from 'pinia'
+import { useRemoteStore } from '@/remote/state'
 import { sendCommand } from '@/remote/transport'
 import { useRemotePosition } from '@/composables/useRemotePosition'
-import { imageUrl } from '@/utils/media'
 
 // This is a remote control, not a second player: it renders the state the
 // target reports and emits commands. It borrows the local player's seek bar,
 // volume control and icons so the two surfaces look and behave alike.
 
-const store = useStore()
+const store = useAppStore()
+const remote = useRemoteStore()
+const { activeDevice, activeState } = storeToRefs(remote)
+const mediaStore = useMediaStore()
 const artFailed = ref(false)
 const scrubPosition = ref(null)
 
@@ -139,11 +143,11 @@ const notice = computed(() => remote.lastError)
 const artwork = computed(() => {
   const media = state.value?.media
 
-  if (!media || !store.state.host) return ''
+  if (!media || !store.host) return ''
 
   return media.kind === 'episode'
-    ? imageUrl(store.state.host, 'episode', media.id, 'banner')
-    : imageUrl(store.state.host, 'movie', media.id, 'poster')
+    ? mediaStore.artworkUrl(store.host, 'episode', media.id, 'banner')
+    : mediaStore.artworkUrl(store.host, 'movie', media.id, 'poster')
 })
 
 // A new item deserves a fresh attempt at its artwork; without this a single
