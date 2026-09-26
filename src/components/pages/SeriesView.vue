@@ -240,7 +240,7 @@ import EpisodeCard from '@/components/details/EpisodeCard.vue'
 import PeopleRow from '@/components/details/PeopleRow.vue'
 import RelatedTitles from '@/components/details/RelatedTitles.vue'
 import { useMediaDetails, useDetailResource } from '@/composables/useMediaDetails'
-import { normalizeGenres, formatYear, formatRuntime, ratingLabel, nextSeriesEpisode, seasonSummary } from '@/utils/media'
+import { normalizeGenres, formatYear, formatRuntime, ratingLabel, nextSeriesEpisode, seasonSummary, formatDate } from '@/utils/media'
 import '@/assets/sass/details.sass'
 const route = useRoute()
 const router = useRouter()
@@ -357,7 +357,7 @@ onBeforeUnmount(() => window.clearTimeout(queryTimer))
 const metadata = computed(() => {
   const data = show.value || {}
   return [
-    { label: 'First aired', value: data.firstAired },
+    { label: 'First aired', value: formatDate(data.firstAired) },
     { label: 'Network', value: data.network },
     { label: 'Status', value: data.status },
     { label: 'Runtime', value: formatRuntime(data.runtime) },

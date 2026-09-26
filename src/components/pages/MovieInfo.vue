@@ -128,7 +128,7 @@
   </div>
 </template>
 <script setup>
-import { playbackLabel } from '@/utils/media'
+import { playbackLabel, formatDate } from '@/utils/media'
 import PlaybackButton from '@/components/remote/PlaybackButton.vue'
 import { computed, ref } from 'vue'
 import { useRoute } from 'vue-router'
@@ -168,7 +168,7 @@ const metadata = computed(() => {
   const data = movie.value || {}
   const currency = value => Number(value) > 0 ? new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 }).format(value) : null
   return [
-    { label: 'Release date', value: data.releaseDate },
+    { label: 'Release date', value: formatDate(data.releaseDate) },
     { label: 'Runtime', value: formatRuntime(data.runtime) },
     { label: 'Original language', value: data.originalLanguage?.toUpperCase() },
     { label: 'Original title', value: data.originalName },

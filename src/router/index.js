@@ -33,7 +33,8 @@ import AccountPreferences from '@/components/settings/account/AccountPreferences
 import { pagePermission, visibleGroups } from '@/components/settings/registry'
 import { useAuthStore } from '@/stores/auth'
 import { installCardTransitions, pageKey, pageLeave, scrollHandled } from '@/router/transition'
-import { formatTitle, routeTitle } from '@/composables/usePageTitle'
+import { formatTitle, rememberTitle, routeTitle } from '@/composables/usePageTitle'
+import { installInPageLinks } from '@/router/inPageLinks'
 
 const router = createRouter({
   history: createWebHistory(BASE_PATH),
@@ -228,6 +229,7 @@ const router = createRouter({
 })
 
 installCardTransitions(router)
+installInPageLinks(router)
 
 router.beforeEach(async (to) => {
   const hasToken = Boolean(oblectoClient.accessToken || window.localStorage.getItem('oblecto.accessToken'))
@@ -267,6 +269,7 @@ router.afterEach((to, from) => {
   const title = routeTitle(to)
 
   if (title || pageKey(to) !== pageKey(from)) document.title = formatTitle(title)
+  rememberTitle(to.fullPath, title)
 })
 
 export default router

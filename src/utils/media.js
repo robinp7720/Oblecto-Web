@@ -41,6 +41,18 @@ export function formatRuntime (value) {
   return `${mins}m`
 }
 
+// "1979-05-25" as a date people read ("May 25, 1979" in English). Parsed by
+// hand so it stays on the day it names, whatever the viewer's timezone.
+export function formatDate (value) {
+  const match = /^(\d{4})-(\d{2})-(\d{2})/.exec(String(value ?? ''))
+  if (!match) return value || null
+
+  const date = new Date(Number(match[1]), Number(match[2]) - 1, Number(match[3]))
+  const locale = (typeof document !== 'undefined' && document.documentElement.lang) || 'en'
+
+  return date.toLocaleDateString(locale, { year: 'numeric', month: 'long', day: 'numeric' })
+}
+
 export function formatYear (value) {
   if (!value) return null
   const match = String(value).match(/^\d{4}/)

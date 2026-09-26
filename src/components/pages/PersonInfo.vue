@@ -31,12 +31,13 @@
           @load="backdropLoaded = true"
         >
         <div class="person-shade" />
-        <RouterLink
-          :to="{ name: 'Search' }"
+        <a
+          :href="back.href.value"
           class="back-link"
+          @click="back.go"
         >
-          ‹ Search
-        </RouterLink>
+          ‹ {{ back.label.value }}
+        </a>
         <div class="person-layout">
           <div class="person-portrait">
             <img
@@ -114,6 +115,7 @@ import oblectoClient from '@/oblectoClient'
 import CreditGrid from '@/components/details/CreditGrid.vue'
 import { describeError } from '@/composables/useSaveState'
 import { usePageTitle } from '@/composables/usePageTitle'
+import { useBackLink } from '@/composables/useBackLink'
 import '@/assets/sass/details.sass'
 
 // Biographies run from a sentence to several paragraphs; past this many
@@ -131,6 +133,8 @@ const bioExpanded = ref(false)
 const portrait = computed(() => `${store.host}/person/${person.value?.id}/profile?size=large`)
 const initials = computed(() => (person.value?.name || '').split(/\s+/).map(part => part[0]).slice(0, 2).join('').toUpperCase())
 usePageTitle(() => person.value?.name)
+// Usually reached from a title's cast, which is where it should lead back to.
+const back = useBackLink({ name: 'Search' }, 'Search')
 const longBiography = computed(() => (person.value?.biography || '').length > BIO_CLAMP_CHARS)
 
 // Dates arrive as plain YYYY-MM-DD; parsed by hand so they stay on the day

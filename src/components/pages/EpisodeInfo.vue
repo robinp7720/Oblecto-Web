@@ -136,7 +136,7 @@
   </div>
 </template>
 <script setup>
-import { playbackLabel } from '@/utils/media'
+import { playbackLabel, formatDate } from '@/utils/media'
 import PlaybackButton from '@/components/remote/PlaybackButton.vue'
 import { computed } from 'vue'
 import { useRoute } from 'vue-router'
@@ -190,7 +190,7 @@ function updateWatchState (track) { episode.value = { ...episode.value, TrackEpi
 const metadata = computed(() => {
   const data = episode.value || {}
   return [
-    { label: 'First aired', value: data.firstAired || data.aired || data.airDate },
+    { label: 'First aired', value: formatDate(data.firstAired || data.aired || data.airDate) },
     { label: 'Runtime', value: formatRuntime(data.runtime) },
     { label: 'Rating', value: ratingLabel(data) }
   ].filter(entry => entry.value)
