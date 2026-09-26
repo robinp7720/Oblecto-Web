@@ -60,6 +60,7 @@
 
 <script setup>
 import { onBeforeUnmount, onMounted, ref, watch } from 'vue'
+import { confirm } from '@/composables/useConfirm'
 
 // The native <dialog> element gives us the parts a hand-rolled overlay always
 // got wrong: focus trap, Escape, inert background, and top-layer stacking that
@@ -68,7 +69,10 @@ const props = defineProps({
   open: { type: Boolean, default: false },
   title: { type: String, required: true },
   subtitle: { type: String, default: '' },
-  size: { type: String, default: 'md' }
+  size: { type: String, default: 'md' },
+  // Something has been typed. Esc or a stray click outside then asks before
+  // throwing it away; the close button, a deliberate choice, does not.
+  dirty: { type: Boolean, default: false }
 })
 
 const emit = defineEmits(['update:open', 'close', 'submit'])
@@ -107,8 +111,20 @@ function focusFirstField (el) {
   el.querySelector('.app-dialog__body :is(input:not([type=hidden]), select, textarea):not(:disabled)')?.focus()
 }
 
-function close (reason) {
-  unlockScroll()
+// Scroll unlocks when `open` actually goes false (sync), not here: a parent
+// may refuse to close (a seedbox dialog mid-save), and the page behind must
+// stay locked while the dialog does.
+async function close (reason) {
+  if (props.dirty && (reason === 'cancel' || reason === 'backdrop')) {
+    const discard = await confirm({
+      title: 'Discard what you typed?',
+      message: 'Closing this dialog loses the details you have entered.',
+      confirmLabel: 'Discard',
+      cancelLabel: 'Keep editing',
+      destructive: true
+    })
+    if (!discard) return
+  }
   emit('update:open', false)
   emit('close', reason)
 }

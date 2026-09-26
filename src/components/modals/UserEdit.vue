@@ -1,6 +1,7 @@
 <template>
   <AppDialog
     :open="open"
+    :dirty="dirty"
     title="Edit user"
     :subtitle="user ? `Changes the details of ${user.username}.` : ''"
     size="md"
@@ -56,7 +57,7 @@
 </template>
 
 <script setup>
-import { reactive, watch } from 'vue'
+import { computed, reactive, watch } from 'vue'
 import AppDialog from '@/components/system/AppDialog.vue'
 import SaveState from '@/components/system/SaveState.vue'
 import { createSaveState } from '@/composables/useSaveState'
@@ -78,6 +79,7 @@ const fields = [
 const save = createSaveState()
 const form = reactive({ name: '', username: '', email: '' })
 const errors = reactive({})
+const dirty = computed(() => Boolean(props.user) && fields.some(field => form[field.key] !== (props.user[field.key] || '')))
 
 watch(() => props.open, open => {
   if (!open || !props.user) return

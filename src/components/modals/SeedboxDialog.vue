@@ -1,6 +1,7 @@
 <template>
   <AppDialog
     :open="open"
+    :dirty="dirty"
     :title="isNew ? 'Add seedbox' : 'Edit seedbox'"
     subtitle="Oblecto connects to this host and imports finished downloads from the directories below."
     size="lg"
@@ -229,6 +230,9 @@ const form = reactive(emptySeedbox())
 const errors = reactive({})
 
 const isNew = computed(() => !props.seedbox)
+// The form as it was opened, to tell whether anything has been changed since.
+let opened = ''
+const dirty = computed(() => Boolean(opened) && JSON.stringify(form) !== opened)
 
 watch(() => props.open, open => {
   if (!open) return
@@ -241,6 +245,7 @@ watch(() => props.open, open => {
     storageDriverOptions: { ...base.storageDriverOptions, ...(source.storageDriverOptions || {}) },
     mediaImport: { ...base.mediaImport, ...(source.mediaImport || {}) }
   })
+  opened = JSON.stringify(form)
 
   delete errors.name
   delete errors.host

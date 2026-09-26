@@ -1,6 +1,7 @@
 <template>
   <AppDialog
     :open="open"
+    :dirty="dirty"
     title="Add user"
     subtitle="Creates an account that can sign in to this server."
     size="md"
@@ -65,7 +66,7 @@
 </template>
 
 <script setup>
-import { reactive, ref, watch } from 'vue'
+import { computed, reactive, ref, watch } from 'vue'
 import AppDialog from '@/components/system/AppDialog.vue'
 import SaveState from '@/components/system/SaveState.vue'
 import { createSaveState } from '@/composables/useSaveState'
@@ -90,6 +91,7 @@ const save = createSaveState()
 const form = reactive({ name: '', username: '', email: '', password: '' })
 const errors = reactive({})
 const publicProfile = ref(false)
+const dirty = computed(() => fields.some(field => form[field.key] !== ''))
 
 watch(() => props.open, open => {
   if (!open) return
