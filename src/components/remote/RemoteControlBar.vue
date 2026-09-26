@@ -3,6 +3,7 @@
   <Transition name="slide-up">
     <div
       v-if="visible"
+      ref="bar"
       class="remote-bar"
       role="region"
       :aria-label="`Remote control for ${device.name}`"
@@ -40,12 +41,32 @@
         />
 
         <button
+          v-if="state.canSeek"
+          type="button"
+          class="icon-button skip"
+          aria-label="Back 10 seconds"
+          @click="seekBy(-10)"
+        >
+          <PlayerIcon name="replay-10" />
+        </button>
+
+        <button
           type="button"
           class="icon-button"
           :aria-label="paused ? 'Play' : 'Pause'"
           @click="togglePlay"
         >
           <PlayerIcon :name="paused ? 'play' : 'pause'" />
+        </button>
+
+        <button
+          v-if="state.canSeek"
+          type="button"
+          class="icon-button skip"
+          aria-label="Forward 10 seconds"
+          @click="seekBy(10)"
+        >
+          <PlayerIcon name="forward-10" />
         </button>
 
         <button
@@ -78,6 +99,13 @@
         @scrub="onScrub"
         @scrub-end="onScrubEnd"
       />
+      <p
+        v-if="state.duration"
+        class="times"
+      >
+        <span>{{ formatSeconds(scrubPosition ?? position) }}</span>
+        <span>{{ formatRemaining(scrubPosition ?? position, state.duration) }}</span>
+      </p>
 
       <p
         v-if="notice"
@@ -90,8 +118,9 @@
 </template>
 
 <script setup>
-import { computed, ref, watch } from 'vue'
+import { computed, nextTick, onBeforeUnmount, ref, watch } from 'vue'
 import { useAppStore } from '@/stores/app'
+import { formatRemaining, formatSeconds } from '@/utils/time'
 import { useMediaStore } from '@/stores/media'
 
 import PlayerIcon from '@/components/player/PlayerIcon.vue'
@@ -157,6 +186,36 @@ watch(artwork, () => { artFailed.value = false })
 function send (command) {
   return sendCommand(remote.targetDeviceId, command)
 }
+
+function seekBy (seconds) {
+  send({ type: 'seek', position: Math.min(state.value.duration || Infinity, Math.max(0, position.value + seconds)) })
+}
+
+// The bar floats over the bottom of the page; while it is up, pages leave
+// that much room below their content (--remote-bar-reserve, read by AppShell)
+// so it never covers the last row.
+const bar = ref(null)
+let observer = null
+function reserve (px) {
+  document.documentElement.style.setProperty('--remote-bar-reserve', `${px}px`)
+}
+watch(visible, async shown => {
+  observer?.disconnect()
+  observer = null
+  if (!shown) return reserve(0)
+  await nextTick()
+  if (!bar.value) return
+  const measure = () => reserve(Math.ceil(bar.value.getBoundingClientRect().height) + 12)
+  measure()
+  if (typeof ResizeObserver !== 'undefined') {
+    observer = new ResizeObserver(measure)
+    observer.observe(bar.value)
+  }
+}, { immediate: true })
+onBeforeUnmount(() => {
+  observer?.disconnect()
+  reserve(0)
+})
 
 function togglePlay () {
   send({ type: paused.value ? 'resume' : 'pause' })
@@ -247,8 +306,8 @@ function onScrubEnd (value) {
   flex: none
   display: grid
   place-items: center
-  width: 34px
-  height: 34px
+  width: var(--control-size)
+  height: var(--control-size)
   padding: 0
   border: 0
   border-radius: var(--radius-sm, 3px)
@@ -259,12 +318,20 @@ function onScrubEnd (value) {
   &:hover
     background: #333
 
+.times
+  display: flex
+  justify-content: space-between
+  margin: 0
+  color: var(--color-text-faint)
+  font-size: 0.72rem
+  font-variant-numeric: tabular-nums
+
 .notice
   margin: 4px 0 0
   color: var(--color-text-faint)
   font-size: 0.72rem
 
 @media (max-width: 560px)
-  .art
+  .art, .skip
     display: none
 </style>

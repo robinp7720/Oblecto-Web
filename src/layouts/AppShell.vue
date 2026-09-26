@@ -64,6 +64,7 @@
           placeholder="Titles, movies, shows"
         >
       </form>
+      <RemoteTargetPill />
       <ConnectionStatus />
       <details
         ref="accountMenu"
@@ -222,6 +223,7 @@ import { useRoute, useRouter } from 'vue-router'
 import BrandLogo from '@/components/system/BrandLogo.vue'
 import ConnectionStatus from '@/components/system/ConnectionStatus.vue'
 import RemoteControlBar from '@/components/remote/RemoteControlBar.vue'
+import RemoteTargetPill from '@/components/remote/RemoteTargetPill.vue'
 import { useI18n } from 'vue-i18n'
 import { useAuthStore } from '@/stores/auth'
 import UserAvatar from '@/components/system/UserAvatar.vue'
@@ -564,7 +566,7 @@ async function logout () {
   align-items: center
   flex-wrap: wrap
   gap: 20px
-  padding: 24px max(var(--page-gutter), var(--safe-right)) calc(24px + var(--safe-bottom) + var(--mini-player-reserve)) max(var(--page-gutter), var(--safe-left))
+  padding: 24px max(var(--page-gutter), var(--safe-right)) calc(24px + var(--safe-bottom) + var(--mini-player-reserve) + var(--remote-bar-reserve)) max(var(--page-gutter), var(--safe-left))
   color: var(--color-text-faint)
   font-size: 0.8rem
 .footer-brand

@@ -133,6 +133,8 @@ watch(playerCoversPage, locked => {
     /* Raised by the player only while the mini-player is docked, so pages do not
        reserve dead space when nothing is playing. */
     --mini-player-reserve: 0px
+    /* Set by the remote control bar while it floats over the page. */
+    --remote-bar-reserve: 0px
     /* How much of the top of the viewport the sticky app header covers, for
        anything else that sticks below it. On phones the header is three rows
        tall, too much to pin, so it scrolls away there (AppShell.vue). */

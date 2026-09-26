@@ -36,7 +36,7 @@
         v-if="playable"
         type="button"
         class="play-button"
-        :aria-label="`${playLabel} ${title}`"
+        :aria-label="`${playLabel} ${title}${remote.isRemote && remote.activeDevice ? ` on ${remote.activeDevice.name}` : ''}`"
         @click="play"
       >
         <span aria-hidden="true">▶</span>
@@ -80,6 +80,7 @@
 import { computed, ref, watch } from 'vue'
 import { useAppStore } from '@/stores/app'
 import { useMediaStore } from '@/stores/media'
+import { useRemoteStore } from '@/remote/state'
 import { titleForItem, subtitleForItem, progressForItem, playbackLabel } from '@/utils/media'
 
 const props = defineProps({
@@ -96,6 +97,8 @@ const props = defineProps({
 
 const store = useAppStore()
 const media = useMediaStore()
+// Play follows the device chosen for playback; the label says where.
+const remote = useRemoteStore()
 const trackedItem = computed(() => media.withProgress(props.type, props.item))
 
 const title = computed(() => titleForItem(props.type, props.item))

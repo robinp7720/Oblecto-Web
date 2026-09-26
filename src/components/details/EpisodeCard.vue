@@ -7,7 +7,7 @@
       class="episode-art"
       data-motion-origin
       type="button"
-      :aria-label="`${playLabel} ${title}`"
+      :aria-label="`${playLabel} ${title}${remote.isRemote && remote.activeDevice ? ` on ${remote.activeDevice.name}` : ''}`"
       @click="store.playEpisode(episode.id)"
     >
       <img
@@ -65,6 +65,7 @@
 import { computed, ref, watch } from 'vue'
 import { useAppStore } from '@/stores/app'
 import { useMediaStore } from '@/stores/media'
+import { useRemoteStore } from '@/remote/state'
 import { formatRuntime, progressForItem, playbackLabel } from '@/utils/media'
 import WatchStateButton from './WatchStateButton.vue'
 
@@ -72,6 +73,8 @@ const props = defineProps({ episode: { type: Object, required: true } })
 defineEmits(['watch-state'])
 const store = useAppStore()
 const media = useMediaStore()
+// Play follows the device chosen for playback; the label says where.
+const remote = useRemoteStore()
 const trackedEpisode = computed(() => media.withProgress('episode', props.episode))
 const imageFailed = ref(false)
 const title = computed(() => props.episode.episodeName || `Episode ${props.episode.airedEpisodeNumber ?? ''}`)
