@@ -8,7 +8,7 @@
         </div>
       </div>
 
-      <div class="filters">
+      <div class="quick-controls">
         <div class="search-box">
           <input
             v-model="query"
@@ -18,21 +18,6 @@
             @input="scheduleFilter"
           >
         </div>
-        <button
-          type="button"
-          class="filter-toggle"
-          :aria-expanded="filtersOpen"
-          aria-controls="advanced-filters"
-          @click="filtersOpen = !filtersOpen"
-        >
-          Filters ({{ activeChips.length }})
-        </button>
-      </div>
-      <div
-        id="advanced-filters"
-        class="advanced-filters"
-        :class="{ expanded: filtersOpen }"
-      >
         <select
           v-model="filters.sort"
           aria-label="Sort by"
@@ -45,19 +30,6 @@
             :value="option.value"
           >
             {{ option.label }}
-          </option>
-        </select>
-        <select
-          v-model="filters.order"
-          aria-label="Sort direction"
-          class="select-pill"
-          @change="applyFilters"
-        >
-          <option value="desc">
-            Descending
-          </option>
-          <option value="asc">
-            Ascending
           </option>
         </select>
         <select
@@ -77,6 +49,34 @@
           </option>
           <option value="inprogress">
             In progress
+          </option>
+        </select>
+        <button
+          type="button"
+          class="filter-toggle"
+          :aria-expanded="filtersOpen"
+          aria-controls="advanced-filters"
+          @click="filtersOpen = !filtersOpen"
+        >
+          Filters ({{ activeChips.length }})
+        </button>
+      </div>
+      <div
+        id="advanced-filters"
+        class="advanced-filters"
+        :class="{ expanded: filtersOpen }"
+      >
+        <select
+          v-model="filters.order"
+          aria-label="Sort direction"
+          class="select-pill"
+          @change="applyFilters"
+        >
+          <option value="desc">
+            Descending
+          </option>
+          <option value="asc">
+            Ascending
           </option>
         </select>
         <select
@@ -184,6 +184,15 @@
         </button>
       </div>
     </section>
+
+    <p
+      v-if="!libraryState.loading && !libraryState.error && libraryState.items.length"
+      class="result-count"
+      role="status"
+      aria-live="polite"
+    >
+      Showing {{ libraryState.items.length }} {{ libraryState.items.length === 1 ? 'title' : 'titles' }}{{ libraryState.pageInfo?.hasNextPage ? ' · more available' : '' }}
+    </p>
 
     <Transition
       name="fade"
@@ -445,10 +454,15 @@ onBeforeUnmount(() => clearTimeout(peopleTimer))
   font-size: 0.78rem
   font-weight: 700
 
-.filters
+.quick-controls
   display: grid
-  grid-template-columns: minmax(0, 1fr) auto
+  grid-template-columns: minmax(220px, 1fr) repeat(2, minmax(145px, 180px)) auto
   gap: 12px
+
+.result-count
+  margin: -12px 0 -8px
+  color: var(--color-text-muted)
+  font-size: 0.82rem
 
 .select-pill
   cursor: pointer
@@ -484,7 +498,9 @@ onBeforeUnmount(() => clearTimeout(peopleTimer))
 
 .person-filter
   position: relative
-  min-width: 220px
+  min-width: 0
+  input
+    width: 100%
 .person-options
   position: absolute
   z-index: 5
@@ -564,8 +580,8 @@ onBeforeUnmount(() => clearTimeout(peopleTimer))
     cursor: not-allowed
 
 @media screen and (max-width: 980px)
-  .filters
-    grid-template-columns: 1fr
+  .quick-controls
+    grid-template-columns: minmax(0, 1fr) repeat(2, minmax(130px, 160px)) auto
 </style>
 
 
@@ -581,13 +597,22 @@ onBeforeUnmount(() => clearTimeout(peopleTimer))
 .search-box input
   width: 100%
 .advanced-filters
-  display: grid
+  display: none
   grid-template-columns: repeat(4, minmax(0, 1fr))
   gap: 12px
+  &.expanded
+    display: grid
+    animation: motion-rise var(--motion-base) var(--ease-out)
   .genre-list
     grid-column: 1 / -1
 .filter-toggle
-  display: none
+  background: var(--color-surface)
+  color: var(--color-text)
+  border: 1px solid var(--color-border)
+  border-radius: var(--radius-sm)
+  padding: 8px 12px
+  white-space: nowrap
+  cursor: pointer
 .active-filters
   display: flex
   flex-wrap: wrap
@@ -595,21 +620,16 @@ onBeforeUnmount(() => clearTimeout(peopleTimer))
 button, select
   min-height: var(--control-size)
 @media (max-width: 980px)
-  .filters
-    grid-template-columns: minmax(0, 1fr) auto
-  .filter-toggle
-    display: block
-    background: var(--color-surface)
-    color: var(--color-text)
-    border: 1px solid var(--color-border)
-    border-radius: var(--radius-sm)
-    padding: 8px 12px
   .advanced-filters
-    display: none
     &.expanded
-      display: grid
-      animation: motion-rise var(--motion-base) var(--ease-out)
       grid-template-columns: minmax(0, 1fr)
+@media (max-width: 700px)
+  .quick-controls
+    grid-template-columns: repeat(2, minmax(0, 1fr))
+  .search-box
+    grid-column: 1 / -1
+  .filter-toggle
+    grid-column: 1 / -1
 </style>
 
 <style scoped lang="sass">
