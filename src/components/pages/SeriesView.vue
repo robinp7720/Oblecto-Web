@@ -39,6 +39,14 @@
           :label="suggested.label"
           @play="store.playEpisode(suggested.episode.id)"
         />
+        <button
+          v-if="suggested?.label.startsWith('Resume')"
+          type="button"
+          class="detail-button secondary"
+          @click="store.playEpisode(suggested.episode.id, { position: 0 })"
+        >
+          Start over
+        </button>
         <a
           href="#show-episodes"
           class="detail-button secondary"

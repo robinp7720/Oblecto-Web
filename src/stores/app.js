@@ -18,28 +18,31 @@ export const useAppStore = defineStore('app', {
     // episode). The current one is not cleared first, so the player, its
     // video element, fullscreen and picture-in-picture all carry over and the
     // new title takes the old one's place at the same size.
-    async playLocal (type, id, { continuous = false } = {}) {
+    // `position`: start there (seconds) instead of where the user left off;
+    // Start over passes 0.
+    async playLocal (type, id, { continuous = false, position } = {}) {
       if (continuous) this.playRequest++
       else this.clearPlaying()
       const request = this.playRequest
       const client = type === 'movie' ? oblectoClient.movieLibrary : oblectoClient.episodeLibrary
       const entity = await client.getInfo(id)
       if (request !== this.playRequest) return
-      this.playing = { title: type === 'movie' ? entity.movieName : entity.episodeName, type, entity, continuous }
+      this.playing = { title: type === 'movie' ? entity.movieName : entity.episodeName, type, entity, continuous, ...(Number.isFinite(position) ? { startAt: position } : {}) }
     },
     playMovieLocal (id, options) { return this.playLocal('movie', id, options) },
     playEpisodeLocal (id, options) { return this.playLocal('episode', id, options) },
-    async play (type, id) {
+    async play (type, id, { position } = {}) {
       const remote = useRemoteStore()
       const request = this.playRequest
+      const at = Number.isFinite(position) ? { position } : {}
       if (remote.isRemote) {
-        const ack = await sendCommand(remote.targetDeviceId, { type: 'play', media: { kind: type, id: String(id) } })
+        const ack = await sendCommand(remote.targetDeviceId, { type: 'play', media: { kind: type, id: String(id) }, ...at })
         if (ack.ok) return
       }
       if (request !== this.playRequest) return
-      await this.playLocal(type, id)
+      await this.playLocal(type, id, at)
     },
-    playMovie (id) { return this.play('movie', id) },
-    playEpisode (id) { return this.play('episode', id) }
+    playMovie (id, options) { return this.play('movie', id, options) },
+    playEpisode (id, options) { return this.play('episode', id, options) }
   }
 })

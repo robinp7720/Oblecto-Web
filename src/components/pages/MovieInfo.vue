@@ -37,6 +37,14 @@
           :label="playbackLabel('movie', movie)"
           @play="store.playMovie(movie.id)"
         />
+        <button
+          v-if="playbackLabel('movie', movie).startsWith('Resume')"
+          type="button"
+          class="detail-button secondary"
+          @click="store.playMovie(movie.id, { position: 0 })"
+        >
+          Start over
+        </button>
         <WatchStateButton
           :id="movie.id"
           :track="movie.TrackMovies?.[0]"

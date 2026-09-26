@@ -103,6 +103,20 @@
           </template>
         </PlayerOverlay>
 
+        <div
+          v-if="resumedFrom !== null && !ended"
+          class="resumed"
+          role="status"
+        >
+          <span>Resumed from {{ formatSeconds(resumedFrom) }}</span>
+          <button
+            type="button"
+            @click="startOver"
+          >
+            Start over
+          </button>
+        </div>
+
         <PlayerUpNext
           v-if="upNext"
           :title="upNext.title"
@@ -164,7 +178,7 @@ import PlaybackController, { browserCapabilities } from '@/playback/PlaybackCont
 import { ScreenFormats } from '@/enums/ScreenFormats'
 import oblectoClient from '@/oblectoClient'
 import { imageUrl, subtitleForItem } from '@/utils/media'
-import { describeSeconds } from '@/utils/time'
+import { describeSeconds, formatSeconds } from '@/utils/time'
 
 import { useControlsVisibility } from '@/composables/player/useControlsVisibility'
 import { useFullscreen } from '@/composables/player/useFullscreen'
@@ -234,6 +248,9 @@ const ended = ref(false)
 const countdownStart = ref(null)
 const countdownCancelled = ref(false)
 const upNextDismissed = ref(false)
+// Where playback resumed, shown briefly with a Start over button.
+const resumedFrom = ref(null)
+let resumedTimer = null
 // The browser refused to start playback and wants a gesture on this device.
 const autoplayBlocked = ref(false)
 
@@ -568,6 +585,23 @@ function onEnded () {
   ended.value = true
 }
 
+// Too short a resume is not worth announcing.
+const RESUME_NOTE_MIN_SECONDS = 10
+const RESUME_NOTE_MS = 8000
+
+function showResumed (position) {
+  clearTimeout(resumedTimer)
+  resumedFrom.value = position >= RESUME_NOTE_MIN_SECONDS ? position : null
+  if (resumedFrom.value !== null) resumedTimer = setTimeout(() => { resumedFrom.value = null }, RESUME_NOTE_MS)
+}
+
+function startOver () {
+  clearTimeout(resumedTimer)
+  resumedFrom.value = null
+  video.seekTo(0, duration.value)
+  announcement.value = 'Playing from the beginning'
+}
+
 function cancelCountdown () {
   countdownCancelled.value = true
   countdownStart.value = null
@@ -816,6 +850,7 @@ watch(playing, async newState => {
   loading.value = false
   autoplaying.value = false
   ended.value = false
+  resumedFrom.value = null
   countdownStart.value = null
   countdownCancelled.value = false
   upNextDismissed.value = false
@@ -839,7 +874,12 @@ watch(playing, async newState => {
   const tracking = getTracking()
   const shouldPreSeek = tracking[0] ? tracking[0].progress < IGNORE_RESTORE_PROGRESS_THRESHOLD : false
 
-  if (tracking[0] !== undefined && shouldPreSeek) initialProgress.value = tracking[0].time
+  if (Number.isFinite(newState.startAt)) initialProgress.value = newState.startAt
+  else if (tracking[0] !== undefined && shouldPreSeek) initialProgress.value = tracking[0].time
+
+  // Picking up where the user left off is said out loud, with the way back
+  // to the beginning next to it.
+  showResumed(Number.isFinite(newState.startAt) ? 0 : initialProgress.value)
 
   resumeAfterStreamChange.value = true
 
@@ -879,6 +919,7 @@ watch([hasPlayback, isMini, env.narrow], ([active, mini, narrow]) => {
 }, { immediate: true })
 
 onBeforeUnmount(() => {
+  clearTimeout(resumedTimer)
   mediaSession.clear()
   document.documentElement.style.setProperty('--mini-player-reserve', '0px')
   void controller?.destroy()
@@ -921,6 +962,40 @@ video
 
 .player-root[data-mode='small'] .stage
   animation: motion-rise var(--motion-slow) var(--ease-out)
+
+// A brief note that playback picked up where the user left off.
+.resumed
+  position: absolute
+  left: 24px
+  bottom: 112px
+  display: flex
+  align-items: center
+  gap: 12px
+  padding: 8px 8px 8px 16px
+  border: 1px solid var(--color-border)
+  border-radius: 999px
+  background: rgba(20, 20, 20, 0.88)
+  font-size: 0.9rem
+  animation: motion-rise var(--motion-base) var(--ease-out)
+  button
+    min-height: var(--control-size)
+    padding: 6px 14px
+    border: 0
+    border-radius: 999px
+    background: rgba(255, 255, 255, 0.14)
+    color: var(--color-text)
+    font-weight: 700
+    cursor: pointer
+    &:hover
+      background: rgba(255, 255, 255, 0.24)
+    &:focus-visible
+      outline: 2px solid var(--color-text)
+      outline-offset: 2px
+
+@media (max-width: 600px)
+  .resumed
+    left: 12px
+    bottom: 96px
 
 .player-root[data-mode='small']
   z-index: var(--z-player-mini)

@@ -38,7 +38,8 @@ async function run (command) {
 
       const action = command.media.kind === 'movie' ? 'playMovieLocal' : 'playEpisodeLocal'
 
-      await store[action](command.media.id)
+      // `position` is optional in the protocol: Start over sends 0.
+      await store[action](command.media.id, Number.isFinite(command.position) ? { position: command.position } : {})
 
       return ok()
     }

@@ -35,6 +35,14 @@
           :label="playbackLabel('episode', episode)"
           @play="store.playEpisode(episode.id)"
         />
+        <button
+          v-if="playbackLabel('episode', episode).startsWith('Resume')"
+          type="button"
+          class="detail-button secondary"
+          @click="store.playEpisode(episode.id, { position: 0 })"
+        >
+          Start over
+        </button>
         <WatchStateButton
           :id="episode.id"
           :track="episode.TrackEpisodes?.[0]"
