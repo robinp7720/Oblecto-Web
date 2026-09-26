@@ -19,11 +19,15 @@ function isTypingContext (event, rootEl) {
   return false
 }
 
-export function usePlayerHotkeys (handlers, { enabled, rootRef } = {}) {
+// `scoped`: only keys pressed inside the player count. Docked as a mini
+// player, it shares the screen with a page whose own keys (arrows scroll,
+// Space pages down) must keep working.
+export function usePlayerHotkeys (handlers, { enabled, rootRef, scoped } = {}) {
   function onKeydown (event) {
     if (enabled && !enabled.value) return
     if (event.metaKey || event.ctrlKey || event.altKey) return
     if (isTypingContext(event, rootRef?.value)) return
+    if (scoped?.value && !rootRef?.value?.contains(event.target)) return
 
     const run = handler => {
       if (!handler) return

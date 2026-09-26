@@ -53,6 +53,7 @@
               :key="user.id"
               :user="user"
               :groups="groups"
+              :is-self="user.id === myId"
               @edit="editTarget = user"
               @set-password="passwordTarget = user"
               @delete="deleteUser"
@@ -123,6 +124,11 @@
         // The user whose password is being set; null closes the dialog.
         passwordTarget: null,
         status: createSaveState()
+      }
+    },
+    computed: {
+      myId () {
+        return useAuthStore().me?.id
       }
     },
     created () {

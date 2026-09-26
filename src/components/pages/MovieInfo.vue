@@ -46,6 +46,7 @@
         <a
           href="#movie-files"
           class="detail-button secondary"
+          @click="filesSection && (filesSection.open = true)"
         >Available files</a>
       </MediaDetailHero>
       <div class="detail-body">
@@ -76,6 +77,7 @@
         </section>
         <details
           id="movie-files"
+          ref="filesSection"
           class="detail-section technical-details"
         >
           <summary>Available files</summary><FileList :files="movie.Files || []" />
@@ -117,7 +119,7 @@
 <script setup>
 import { playbackLabel } from '@/utils/media'
 import PlaybackButton from '@/components/remote/PlaybackButton.vue'
-import { computed } from 'vue'
+import { computed, ref } from 'vue'
 import { useRoute } from 'vue-router'
 import { useAppStore } from '@/stores/app'
 import { useMediaStore } from '@/stores/media'
@@ -139,6 +141,9 @@ const { item: movie, related: sets, loading, error, relatedError, relatedLoading
   id => oblectoClient.movieLibrary.getInfo(id),
   id => oblectoClient.movieLibrary.getMovieSets(id), 'movie'
 )
+// Following a link to a closed <details> scrolls to its summary but leaves it
+// shut, so the hero's "Available files" link opens it on the way.
+const filesSection = ref(null)
 const genres = computed(() => normalizeGenres(movie.value?.genres || movie.value?.genre))
 const subtitle = computed(() => [formatYear(movie.value?.releaseDate), formatRuntime(movie.value?.runtime), ratingLabel(movie.value)].filter(Boolean).join(' · '))
 const keyCrew = computed(() => (movie.value?.credits?.crew || []).filter(credit => credit.roles?.some(role => ['Director', 'Writer', 'Screenplay', 'Story'].includes(role.job))))

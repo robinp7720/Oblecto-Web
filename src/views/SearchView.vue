@@ -46,7 +46,7 @@
     </div>
 
     <p
-      v-if="normalizedQuery && !searchStore.loading && !searchStore.error"
+      v-if="normalizedQuery && hasResults && !searchStore.loading && !searchStore.error"
       role="status"
     >
       {{ resultCount }} {{ resultCount === 1 ? 'result' : 'results' }}
@@ -100,7 +100,7 @@ const route = useRoute()
 const router = useRouter()
 const searchStore = useSearchStore()
 const mediaStore = useMediaStore()
-watch(() => mediaStore.catalogRevision, () => searchStore.runSearch(route.query.q || '', { silent: true }))
+watch(() => mediaStore.catalogRevision, () => searchStore.runSearch(searchStore.query, { silent: true }))
 const query = ref(String(route.query.q || ''))
 
 const normalizedQuery = computed(() => String(route.query.q || '').trim())
@@ -120,7 +120,19 @@ function submit () {
 }
 
 watch(() => route.query.q, value => {
+  // The route changes before this page has finished leaving; that is not a
+  // new, empty search.
+  if (route.name !== 'Search') return
   query.value = String(value || '')
+
+  // Back from a result: the store still holds this search, so show it as it
+  // was (and where it was scrolled to), refreshing quietly behind it.
+  const normalized = query.value.trim()
+  if (normalized && normalized === searchStore.query && !searchStore.error) {
+    if (!searchStore.loading) searchStore.runSearch(normalized, { silent: true })
+    return
+  }
+
   searchStore.runSearch(value || '')
 }, { immediate: true })
 </script>

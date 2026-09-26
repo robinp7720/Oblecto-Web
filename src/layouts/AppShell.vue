@@ -251,7 +251,9 @@ const thisDeviceName = ref(getDeviceName())
 const targets = computed(() => remote.playbackTargets)
 const targetDeviceId = computed(() => remote.targetDeviceId)
 
-watch(() => route.query.q, value => { searchText.value = String(value || '') })
+// Only the search page's query belongs in this box; the library uses `q` for
+// its own title filter.
+watch(() => route.name === 'Search' ? route.query.q : '', value => { searchText.value = String(value || '') })
 watch(() => route.fullPath, closeMenu)
 
 function closeMenu () {

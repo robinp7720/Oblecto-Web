@@ -179,7 +179,7 @@
           type="button"
           class="icon-button"
           aria-label="Picture in picture"
-          @click="$emit('minimize')"
+          @click="$emit('pip')"
         >
           <PlayerIcon name="pip" />
         </button>
@@ -233,7 +233,7 @@ const props = defineProps({
 })
 
 defineEmits([
-  'activity', 'minimize', 'stop', 'view-show', 'toggle-play', 'seek-by',
+  'activity', 'minimize', 'pip', 'stop', 'view-show', 'toggle-play', 'seek-by',
   'scrub-start', 'scrub', 'scrub-end', 'set-volume', 'toggle-mute',
   'toggle-subtitles', 'cycle-rate', 'toggle-settings', 'toggle-fullscreen',
   'play-next'

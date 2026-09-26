@@ -34,28 +34,28 @@
       </p>
       <div class="actions-group">
         <button
-          class="btn btn-secondary"
+          class="btn btn-destructive"
           :disabled="isActive('clean', 'files')"
           @click="clean('files')"
         >
           <font-awesome-icon icon="broom" /> Clean up files database
         </button>
         <button
-          class="btn btn-secondary"
+          class="btn btn-destructive"
           :disabled="isActive('clean', 'episodes')"
           @click="clean('episodes')"
         >
           <font-awesome-icon icon="broom" /> Cleanup episodes without linked files
         </button>
         <button
-          class="btn btn-secondary"
+          class="btn btn-destructive"
           :disabled="isActive('clean', 'movies')"
           @click="clean('movies')"
         >
           <font-awesome-icon icon="broom" /> Cleanup movies without linked files
         </button>
         <button
-          class="btn btn-secondary"
+          class="btn btn-destructive"
           :disabled="isActive('clean', 'series')"
           @click="clean('series')"
         >
@@ -145,8 +145,30 @@
   import { useMaintenanceJobs } from '@/composables/useMaintenanceJobs'
   import MaintenanceJobs from './MaintenanceJobs.vue'
   import { createSaveState } from '@/composables/useSaveState'
+  import { confirm } from '@/composables/useConfirm'
 
   fontawesome.library.add(faSync, faTv, faFilm, faBroom, faImage)
+
+  // Cleanups delete database rows, and watch progress on a removed title is
+  // not reattached if the file later comes back, so each asks first.
+  const CLEANUPS = {
+    files: {
+      title: 'Clean up the files database?',
+      message: 'File entries whose file is gone from disk, or that no title uses, are removed. Nothing on disk is deleted.'
+    },
+    episodes: {
+      title: 'Remove episodes without files?',
+      message: 'Episodes with no file left are removed from the library, along with their watch progress. Nothing on disk is deleted.'
+    },
+    movies: {
+      title: 'Remove movies without files?',
+      message: 'Movies with no file left are removed from the library, along with their watch progress. Nothing on disk is deleted.'
+    },
+    series: {
+      title: 'Remove shows without episodes?',
+      message: 'TV shows with no episodes left are removed from the library. Nothing on disk is deleted.'
+    }
+  }
 
   const LABELS = {
     all: 'Full',
@@ -204,6 +226,8 @@
         await this.triggerMaintenance('scan', type, `${LABELS[type]} scan`)
       },
       async clean (type) {
+        if (this.isActive('clean', type)) return
+        if (!await confirm({ ...CLEANUPS[type], confirmLabel: 'Run cleanup', destructive: true })) return
         await this.triggerMaintenance('clean', type, `${LABELS[type]} cleanup`)
       },
       async update (type) {

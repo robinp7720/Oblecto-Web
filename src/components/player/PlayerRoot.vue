@@ -60,6 +60,7 @@
           :compact="env.narrow.value || env.coarsePointer.value"
           @activity="visibility.notifyActivity"
           @minimize="setMode(ScreenFormats.SMALL)"
+          @pip="enterPip"
           @stop="stopPlaying"
           @view-show="viewShow"
           @toggle-play="togglePlay"
@@ -333,7 +334,8 @@ usePlayerHotkeys({
   }
 }, {
   enabled: hasPlayback,
-  rootRef: root
+  rootRef: root,
+  scoped: isMini
 })
 
 // Publishes what this player is doing to the user's other devices, and lets
@@ -662,14 +664,20 @@ watch(playSizeFormat, async mode => {
       }
       break
 
+    // The in-page mini player; the browser's own window is a separate choice
+    // (enterPip), and entering it lands here through onPipEnter.
     case ScreenFormats.SMALL:
       await fullscreen.exit()
-      if (env.pipSupported.value && videoEl.value && !document.pictureInPictureElement) {
-        await videoEl.value.requestPictureInPicture().catch(() => {})
-      }
       break
   }
 })
+
+// Called straight from the click, which the browser requires: by the time a
+// mode watcher runs, the user activation may already have lapsed.
+function enterPip () {
+  if (!env.pipSupported.value || !videoEl.value || document.pictureInPictureElement) return
+  videoEl.value.requestPictureInPicture().catch(() => {})
+}
 
 // The browser's own fullscreen exit (Esc, the system button) must push the
 // store back, or the UI keeps claiming it is fullscreen.
