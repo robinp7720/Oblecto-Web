@@ -155,11 +155,6 @@ watch(() => route.query.q, value => {
     font-family: var(--font-display)
     font-size: clamp(1.6rem, 3vw, 2.4rem)
 
-.eyebrow
-  text-transform: uppercase
-  letter-spacing: 0.18em
-  color: var(--color-accent-strong)
-
 .search-form
   display: grid
   grid-template-columns: 1fr auto
@@ -175,12 +170,6 @@ watch(() => route.query.q, value => {
     font-weight: 800
     cursor: pointer
 
-.state-card
-  padding: 18px
-  border-radius: var(--radius-md)
-  border: 1px solid var(--color-border)
-  background: var(--color-surface)
-
 .people-results
   h2
     margin-bottom: 18px
@@ -195,14 +184,4 @@ watch(() => route.query.q, value => {
 </style>
 
 <style scoped lang="sass">
-.state-card button
-  min-height: var(--control-size)
-  padding: 8px 16px
-  border: 1px solid var(--color-border)
-  border-radius: var(--radius-sm)
-  background: var(--color-surface)
-  color: var(--color-text)
-  cursor: pointer
-.state-card a
-  text-decoration: underline
 </style>

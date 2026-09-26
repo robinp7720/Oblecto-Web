@@ -348,7 +348,7 @@ onMounted(loadLoginOptions)
   grid-template-columns: minmax(0, 1.1fr) minmax(340px, 420px)
   gap: 28px
   padding: 34px
-  border-radius: 8px
+  border-radius: var(--radius-lg)
   background: #181818
   border: 1px solid var(--color-border)
   box-shadow: var(--shadow-strong)
@@ -369,13 +369,6 @@ onMounted(loadLoginOptions)
     font-size: 1.05rem
     line-height: 1.6
 
-.eyebrow
-  text-transform: uppercase
-  letter-spacing: -0.06em
-  font-size: 2rem
-  font-weight: 900
-  color: var(--color-accent)
-
 .login-loading
   align-self: center
   justify-self: center
@@ -385,9 +378,9 @@ onMounted(loadLoginOptions)
   margin: 0
   padding: 10px 12px
   border-radius: var(--radius-sm)
-  background: rgba(217, 87, 87, 0.15)
-  border: 1px solid rgba(217, 87, 87, 0.4)
-  color: #ff8f7a
+  background: var(--color-danger-soft)
+  border: 1px solid var(--color-danger-border)
+  color: var(--color-danger)
   font-size: 0.85rem
   line-height: 1.5
 
@@ -395,7 +388,7 @@ onMounted(loadLoginOptions)
   display: grid
   gap: 14px
   padding: 24px
-  border-radius: 4px
+  border-radius: var(--radius-sm)
   background: rgba(255, 255, 255, 0.04)
   border: 1px solid rgba(255, 255, 255, 0.08)
 
@@ -407,7 +400,7 @@ onMounted(loadLoginOptions)
   button
     margin-top: 10px
     min-height: 50px
-    border-radius: 4px
+    border-radius: var(--radius-sm)
     border: none
     background: var(--color-accent)
     color: #141414
@@ -468,7 +461,7 @@ onMounted(loadLoginOptions)
   width: 140px
   padding: 12px 8px
   border: none
-  border-radius: 8px
+  border-radius: var(--radius-lg)
   background: none
   color: var(--color-text-muted)
   cursor: pointer
@@ -523,7 +516,7 @@ onMounted(loadLoginOptions)
   button
     flex: 1
     min-height: 46px
-    border-radius: 4px
+    border-radius: var(--radius-sm)
     border: none
     background: var(--color-accent)
     color: #141414

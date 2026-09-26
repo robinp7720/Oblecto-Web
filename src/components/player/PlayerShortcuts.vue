@@ -117,7 +117,7 @@ kbd
   padding: 3px 7px
   border: 1px solid var(--color-border-strong)
   border-bottom-width: 2px
-  border-radius: 5px
+  border-radius: var(--radius-sm)
   background: rgba(255, 255, 255, 0.06)
   font-family: inherit
   font-size: 0.8rem

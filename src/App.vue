@@ -103,6 +103,25 @@ watch(playerCoversPage, locked => {
     --color-accent-glow: rgba(241, 90, 36, 0.22)
     --color-border: rgba(255, 255, 255, 0.12)
     --color-border-strong: rgba(255, 255, 255, 0.3)
+    /* The edge of a control you type into or tick: at least 3:1 against the
+       dark surfaces (about 3.8:1 on --color-surface), where --color-border is
+       only about 1.4:1 and a field's outline all but disappeared. */
+    --color-border-control: rgba(255, 255, 255, 0.4)
+    /* Status colours: one red, one green, one amber and one blue for text and
+       icons on the dark surfaces, each with a soft fill and a border to match,
+       instead of the four reds and two greens pages had picked for
+       themselves. */
+    --color-danger: #ff8f7a
+    --color-danger-soft: rgba(255, 143, 122, 0.16)
+    --color-danger-soft-strong: rgba(255, 143, 122, 0.28)
+    --color-danger-border: rgba(255, 143, 122, 0.5)
+    --color-success: #6fce8c
+    --color-success-soft: rgba(111, 206, 140, 0.16)
+    --color-success-border: rgba(111, 206, 140, 0.5)
+    --color-warning: #f5c26b
+    --color-warning-soft: rgba(245, 194, 107, 0.16)
+    --color-info: #7cc4f0
+    --color-info-soft: rgba(124, 196, 240, 0.16)
     --color-shadow: rgba(0, 0, 0, 0.7)
     --color-shadow-soft: rgba(0, 0, 0, 0.4)
     --radius-sm: 4px

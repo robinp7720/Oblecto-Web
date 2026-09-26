@@ -210,7 +210,7 @@ h1
   a
     padding: 5px 10px
     border: 1px solid var(--color-border-strong)
-    border-radius: 4px
+    border-radius: var(--radius-sm)
     color: var(--color-text-muted)
     font-size: 0.75rem
 .detail-facts
@@ -235,7 +235,7 @@ h1
   width: clamp(180px, 20vw, 290px)
   aspect-ratio: 2 / 3
   object-fit: cover
-  border-radius: 6px
+  border-radius: var(--radius-md)
   box-shadow: var(--shadow-strong)
   flex-shrink: 0
 // The synopsis toggle only matters where the synopsis is cut.

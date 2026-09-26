@@ -64,7 +64,7 @@
     </div>
     <section
       v-else-if="!homePending && !homeError && !homeRails.length"
-      class="state-card"
+      class="welcome"
     >
       <span class="eyebrow">MAKE YOURSELF AT HOME</span>
       <h1>Your next favorite belongs here.</h1>
@@ -190,13 +190,12 @@ function playSpotlight () {
   position: relative
   max-width: 600px
   width: 50%
+// The shared eyebrow, in white: it sits on artwork, and carries the mark.
 .eyebrow
   display: inline-flex
   align-items: center
   gap: 12px
-  letter-spacing: 0.25em
-  font-size: 0.75rem
-  font-weight: 700
+  color: var(--color-text)
 .oblecto-mark
   color: var(--color-accent)
   font-size: 2rem
@@ -233,7 +232,7 @@ function playSpotlight () {
   padding: 12px 28px
   min-height: 48px
   border: 0
-  border-radius: 4px
+  border-radius: var(--radius-sm)
   font-size: 1.1rem
   font-weight: 700
   cursor: pointer
@@ -273,7 +272,7 @@ function playSpotlight () {
   padding: 0 var(--page-gutter)
   &.with-hero
     margin-top: -70px
-.state-card
+.welcome
   margin: 50px var(--page-gutter)
   padding: 50px 0
   h1
@@ -287,7 +286,7 @@ function playSpotlight () {
   color: var(--color-text-muted)
 .skeleton-hero
   height: 50vh
-  border-radius: 4px
+  border-radius: var(--radius-sm)
 @media (max-width: 760px)
   .hero
     min-height: 360px

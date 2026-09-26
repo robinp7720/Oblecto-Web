@@ -233,7 +233,7 @@ watch(() => route.params.personId, load, { immediate: true })
   display: grid
   place-items: center
   aspect-ratio: 2 / 3
-  border-radius: 6px
+  border-radius: var(--radius-md)
   overflow: hidden
   background: var(--color-brand-blue)
   box-shadow: var(--shadow-strong)
@@ -246,12 +246,6 @@ watch(() => route.params.personId, load, { immediate: true })
 .person-headline
   grid-area: headline
   min-width: 0
-.eyebrow
-  display: block
-  color: var(--color-brand-turquoise)
-  font-size: 0.7rem
-  font-weight: 700
-  letter-spacing: 0.2em
 h1
   margin: 18px 0
   font-size: clamp(2.5rem, 5vw, 5.5rem)

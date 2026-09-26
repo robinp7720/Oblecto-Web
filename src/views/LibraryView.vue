@@ -526,13 +526,6 @@ onBeforeUnmount(() => clearTimeout(peopleTimer))
   font-size: clamp(2rem, 4vw, 3.2rem)
   letter-spacing: -0.01em
 
-.eyebrow
-  text-transform: uppercase
-  letter-spacing: 0.18em
-  color: var(--color-accent-strong)
-  font-size: 0.78rem
-  font-weight: 700
-
 .quick-controls
   display: grid
   grid-template-columns: minmax(220px, 1fr) repeat(2, minmax(145px, 180px)) auto
@@ -558,7 +551,7 @@ onBeforeUnmount(() => clearTimeout(peopleTimer))
   gap: 8px
 
 .genre-chip
-  border: 1px solid var(--color-border)
+  border: 1px solid var(--color-border-control)
   background: rgba(255, 255, 255, 0.04)
   color: var(--color-text-muted)
   border-radius: 999px
@@ -594,7 +587,7 @@ onBeforeUnmount(() => clearTimeout(peopleTimer))
   right: 0
   display: grid
   padding: 6px
-  border: 1px solid var(--color-border)
+  border: 1px solid var(--color-border-control)
   border-radius: var(--radius-sm)
   background: var(--color-bg-1)
   box-shadow: var(--shadow-strong)
@@ -616,20 +609,6 @@ onBeforeUnmount(() => clearTimeout(peopleTimer))
   display: grid
   grid-template-columns: repeat(auto-fill, minmax(160px, 1fr))
   gap: 28px 16px
-
-.state-card
-  padding: 32px
-  border-radius: var(--radius-md)
-  border: 1px solid var(--color-border)
-  background: var(--color-surface)
-  display: flex
-  align-items: center
-  gap: 16px
-  color: var(--color-text-muted)
-
-  &.error
-    border-color: rgba(239, 68, 68, 0.4)
-    color: #ef4444
 
 .spinner
   width: 20px
@@ -718,14 +697,4 @@ button, select
 </style>
 
 <style scoped lang="sass">
-.state-card button
-  min-height: var(--control-size)
-  padding: 8px 16px
-  border: 1px solid var(--color-border)
-  border-radius: var(--radius-sm)
-  background: var(--color-surface)
-  color: var(--color-text)
-  cursor: pointer
-.state-card a
-  text-decoration: underline
 </style>

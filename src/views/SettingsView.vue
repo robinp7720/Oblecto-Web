@@ -246,13 +246,10 @@ usePageTitle(() => current.value.label)
     font-size: 1.7rem
     line-height: 1.15
 
+// The shared eyebrow, quieter above a settings panel.
 .eyebrow
   margin: 0
   color: var(--color-text-faint)
-  font-size: 0.68rem
-  font-weight: 700
-  letter-spacing: 0.14em
-  text-transform: uppercase
 
 .panel-description
   max-width: 68ch

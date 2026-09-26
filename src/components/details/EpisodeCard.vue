@@ -95,7 +95,7 @@ watch(artwork, () => { imageFailed.value = false })
   aspect-ratio: 16 / 9
   padding: 0
   border: 0
-  border-radius: 8px
+  border-radius: var(--radius-lg)
   overflow: hidden
   background: linear-gradient(135deg, var(--color-brand-blue), var(--color-surface))
   color: white
@@ -130,7 +130,7 @@ watch(artwork, () => { imageFailed.value = false })
   position: absolute
   right: 8px
   bottom: 10px
-  border-radius: 4px
+  border-radius: var(--radius-sm)
   padding: 3px 6px
   background: rgba(15, 15, 15, 0.8)
   font-size: 0.7rem

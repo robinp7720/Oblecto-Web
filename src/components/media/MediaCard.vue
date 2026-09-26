@@ -155,7 +155,7 @@ function play () {
 .poster
   position: relative
   aspect-ratio: 2 / 3
-  border-radius: 4px
+  border-radius: var(--radius-sm)
   overflow: hidden
   background: #252525
   transition: transform var(--motion-base) var(--ease-out), box-shadow var(--motion-base) var(--ease-out)

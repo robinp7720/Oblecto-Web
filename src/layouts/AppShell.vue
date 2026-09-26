@@ -425,7 +425,7 @@ async function logout () {
   place-items: center
   width: 34px
   height: 34px
-  border-radius: 4px
+  border-radius: var(--radius-sm)
   background: var(--color-brand-blue)
   color: white
   font-weight: 700
@@ -544,7 +544,7 @@ async function logout () {
     flex: 1
     min-width: 0
     padding: 6px 8px
-    border: 1px solid #555
+    border: 1px solid var(--color-border-control)
     background: #101010
     color: white
     font-size: 0.8rem
@@ -552,7 +552,7 @@ async function logout () {
   button
     width: auto !important
     padding: 6px 10px !important
-    border: 1px solid #555 !important
+    border: 1px solid var(--color-border-control) !important
     font-size: 0.75rem !important
 
 .content

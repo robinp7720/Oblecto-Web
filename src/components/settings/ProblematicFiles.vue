@@ -564,11 +564,11 @@ export default {
 
   &--identify
     background: rgba(104, 224, 220, 0.16)
-    color: #68e0dc
+    color: var(--color-brand-turquoise)
 
   &--probe
     background: rgba(255, 115, 77, 0.18)
-    color: #ff734d
+    color: var(--color-brand-coral)
 
   &--unknown,
   &--ignored
@@ -589,7 +589,7 @@ export default {
     opacity: 0.6
 
 .error-msg
-  color: #ffb4a7
+  color: var(--color-danger)
   font-size: 0.9em
   white-space: pre-wrap
   max-height: 100px

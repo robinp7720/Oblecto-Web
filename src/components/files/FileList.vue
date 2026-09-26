@@ -177,7 +177,7 @@ export default {
   min-height: 40px
   padding: 8px 14px
   border: 1px solid var(--color-border-strong)
-  border-radius: 4px
+  border-radius: var(--radius-sm)
   background: var(--color-surface)
   color: var(--color-text)
   font-weight: 700
@@ -189,7 +189,7 @@ export default {
   font-size: 0.7rem
   text-transform: uppercase
   border: 1px solid var(--color-border)
-  border-radius: 3px
+  border-radius: var(--radius-sm)
   padding: 4px 6px
 .copy
   display: grid
@@ -197,7 +197,7 @@ export default {
   width: 40px
   height: 40px
   border: 1px solid var(--color-border)
-  border-radius: 4px
+  border-radius: var(--radius-sm)
   color: var(--color-text)
   background: var(--color-surface)
   cursor: pointer
@@ -208,11 +208,11 @@ export default {
     opacity: 0.6
     cursor: progress
 .copy--done
-  color: #6fce8c
-  border-color: rgba(111, 206, 140, 0.5)
+  color: var(--color-success)
+  border-color: var(--color-success-border)
 .copy--failed
-  color: #ff8f7a
-  border-color: rgba(255, 143, 122, 0.5)
+  color: var(--color-danger)
+  border-color: var(--color-danger-border)
 .copy-status
   min-height: 1.3em
   margin: 10px 0 0

@@ -33,7 +33,10 @@
     </section>
 
     <HomeLoadState :ids="discoverIds" />
-    <p v-if="!discoverPending && !discoverError && !discoverRails.length">
+    <p
+      v-if="!discoverPending && !discoverError && !discoverRails.length"
+      class="state-card"
+    >
       No titles to discover yet.
       <RouterLink
         v-if="canOpenPage('SettingsLibraries', authStore.can)"
@@ -92,11 +95,6 @@ const discoverRails = computed(() => mediaStore.home.rails.filter(section => dis
   p
     color: var(--color-text-muted)
     line-height: 1.6
-
-.eyebrow
-  text-transform: uppercase
-  letter-spacing: 0.18em
-  color: var(--color-accent-strong)
 
 .discover-cards
   display: grid

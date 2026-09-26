@@ -403,8 +403,8 @@ const metadata = computed(() => {
   input, select
     width: 100%
     min-height: 44px
-    border: 1px solid var(--color-border)
-    border-radius: 4px
+    border: 1px solid var(--color-border-control)
+    border-radius: var(--radius-sm)
     background: var(--color-surface)
     color: var(--color-text)
     padding: 8px 10px

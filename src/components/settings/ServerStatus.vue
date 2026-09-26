@@ -259,7 +259,7 @@
 
 .status-card
   background: rgba(255, 255, 255, 0.05)
-  border-radius: 8px
+  border-radius: var(--radius-lg)
   overflow: hidden
   border: 1px solid rgba(255, 255, 255, 0.1)
 
@@ -307,21 +307,21 @@
 .status-badge
   font-size: 0.75em
   padding: 2px 8px
-  border-radius: 12px
+  border-radius: 999px
   text-transform: uppercase
   font-weight: bold
 
   &.streaming, &.playing
-    background: rgba(46, 204, 113, 0.2)
-    color: #2ecc71
+    background: var(--color-success-soft)
+    color: var(--color-success)
 
   &.idle, &.paused
-    background: rgba(241, 196, 15, 0.2)
-    color: #f1c40f
+    background: var(--color-warning-soft)
+    color: var(--color-warning)
 
   &.transcoding
-    background: rgba(52, 152, 219, 0.2)
-    color: #3498db
+    background: var(--color-info-soft)
+    color: var(--color-info)
 
 .user-badge
   font-size: 0.85em
@@ -336,7 +336,7 @@
   text-align: center
   color: var(--color-text-faint)
   background: rgba(0, 0, 0, 0.1)
-  border-radius: 8px
+  border-radius: var(--radius-lg)
 
   .empty-icon
     font-size: 2em

@@ -81,7 +81,7 @@ async function toggle () {
   min-height: 34px
   padding: 5px 9px
   border: 1px solid var(--color-border)
-  border-radius: 4px
+  border-radius: var(--radius-sm)
   background: transparent
   color: var(--color-text-muted)
   font-size: 0.72rem
@@ -94,7 +94,7 @@ async function toggle () {
     cursor: progress
 .watch-error
   max-width: 32ch
-  color: #ff8f7a
+  color: var(--color-danger)
   font-size: 0.72rem
   line-height: 1.35
 .compact .watch-error

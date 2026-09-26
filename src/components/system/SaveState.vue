@@ -50,10 +50,10 @@ defineProps({
     animation: save-state-pulse 1s ease-in-out infinite
 
 .save-state--ok
-  color: #6fce8c
+  color: var(--color-success)
 
 .save-state--error
-  color: #ff8f7a
+  color: var(--color-danger)
 
 @keyframes save-state-pulse
   0%, 100%

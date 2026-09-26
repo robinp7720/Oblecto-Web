@@ -323,7 +323,7 @@ defineEmits([
     margin-left: 4px
     padding: 1px 6px
     border: 1px solid var(--color-border-strong)
-    border-radius: 4px
+    border-radius: var(--radius-sm)
     font-family: inherit
 
 .note

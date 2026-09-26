@@ -12,6 +12,7 @@ import { applyLocale, i18n } from '@/i18n'
 // from inside its own scoped block, which shipped a dozen copies of it.
 import '@/assets/sass/settings.sass'
 import '@/assets/sass/motion.sass'
+import '@/assets/sass/ui.sass'
 
 const app = createApp(App)
 const pinia = createPinia()

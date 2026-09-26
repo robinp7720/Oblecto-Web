@@ -209,7 +209,7 @@ const metadata = computed(() => {
     gap: 7px
     padding: 16px
     border: 1px solid var(--color-border)
-    border-radius: 5px
+    border-radius: var(--radius-sm)
     background: var(--color-surface)
     min-width: 0
     &:hover
