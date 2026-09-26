@@ -4,7 +4,7 @@
       <span class="eyebrow">Discover</span>
       <h1>Find your next great watch.</h1>
       <p>
-        Fresh arrivals, popular movies, and shows worth settling in for.
+        Popular movies, highly rated series, and new ways into your collection.
       </p>
     </section>
 
@@ -61,7 +61,7 @@ onMounted(() => {
   mediaStore.loadHome()
 })
 
-const discoverIds = ['recent-movies', 'recent-series', 'popular-movies', 'top-series']
+const discoverIds = ['popular-movies', 'top-series']
 const discoverPending = computed(() => discoverIds.some(id => mediaStore.home.sections[id]?.loading))
 const discoverError = computed(() => discoverIds.some(id => mediaStore.home.sections[id]?.error))
 const discoverRails = computed(() => mediaStore.home.rails.filter(section => discoverIds.includes(section.id)))
