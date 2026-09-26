@@ -38,7 +38,7 @@
         />
 
         <PlayerOverlay
-          :visible="chromeVisible"
+          :visible="chromeVisible && !ended"
           :title="title"
           :subtitle="subtitle"
           :can-view-show="playing.type === 'episode'"
@@ -52,7 +52,6 @@
           :volume-supported="env.volumeSupported.value"
           :playback-rate="video.playbackRate.value"
           :subtitles-on="subtitleMode !== 'off'"
-          :next-episode="showNextEpisode"
           :settings-open="settingsOpen"
           :pip-supported="env.pipSupported.value"
           :fullscreen-supported="env.fullscreenSupported.value"
@@ -74,7 +73,6 @@
           @cycle-rate="cycleRate"
           @toggle-settings="settingsOpen = !settingsOpen"
           @toggle-fullscreen="toggleFullscreen"
-          @play-next="playNext"
         >
           <template #settings>
             <PlayerSettingsSurface
@@ -104,6 +102,30 @@
             </PlayerSettingsSurface>
           </template>
         </PlayerOverlay>
+
+        <PlayerUpNext
+          v-if="upNext"
+          :title="upNext.title"
+          :numbering="upNext.numbering"
+          :countdown="upNext.countdown"
+          :remaining="upNext.remaining"
+          :total="UP_NEXT_COUNTDOWN"
+          @play="playNext"
+          @cancel="cancelCountdown"
+          @dismiss="upNextDismissed = true"
+        />
+
+        <PlayerEndScreen
+          v-if="ended"
+          :kind="playing.type"
+          :title="title"
+          :next="playing.type === 'episode' ? nextInfo?.title || '' : ''"
+          @play-next="playNext"
+          @more-like-this="leaveFor('related')"
+          @details="leaveFor('details')"
+          @replay="watchAgain"
+          @close="stopPlaying"
+        />
       </template>
 
       <PlayerMini
@@ -129,12 +151,14 @@ import { useAppStore } from '@/stores/app'
 import { useMediaStore } from '@/stores/media'
 
 import PlayerBuffering from './PlayerBuffering.vue'
+import PlayerEndScreen from './PlayerEndScreen.vue'
 import PlayerError from './PlayerError.vue'
 import PlayerGestureLayer from './PlayerGestureLayer.vue'
 import PlayerMini from './PlayerMini.vue'
 import PlayerOverlay from './PlayerOverlay.vue'
 import PlayerSettingsPanel from './PlayerSettingsPanel.vue'
 import PlayerSettingsSurface from './PlayerSettingsSurface.vue'
+import PlayerUpNext from './PlayerUpNext.vue'
 
 import PlaybackController, { browserCapabilities } from '@/playback/PlaybackController'
 import { ScreenFormats } from '@/enums/ScreenFormats'
@@ -153,9 +177,14 @@ import { useVideoElement } from '@/composables/player/useVideoElement'
 import { useAuthStore } from '@/stores/auth'
 import { streamInLanguage } from '@/playback/languages'
 
-const AUTOPLAY_TIME_LEFT_THRESHOLD = 5
 import { IGNORE_RESTORE_PROGRESS_THRESHOLD } from '@/utils/media'
+// Past this share of an episode the next one is offered.
 const NEXT_EPISODE_PROGRESS_THRESHOLD = 0.9
+// With autoplay on, the countdown to the next episode starts this many seconds
+// before the end (roughly where credits begin) and lasts UP_NEXT_COUNTDOWN
+// seconds of playback, so the credits are skipped unless the user cancels.
+const UP_NEXT_LEAD = 30
+const UP_NEXT_COUNTDOWN = 10
 
 const store = useAppStore()
 const mediaStore = useMediaStore()
@@ -197,7 +226,14 @@ const announcement = ref('')
 const nextEpisode = ref(null)
 const initialProgress = ref(0)
 const resumeAfterStreamChange = ref(true)
+// Set once the next episode has been asked for, so it is only asked once.
 const autoplaying = ref(false)
+// The title ran to its end; the end screen offers what to do next.
+const ended = ref(false)
+// Playback time at which the up-next countdown began; null when not counting.
+const countdownStart = ref(null)
+const countdownCancelled = ref(false)
+const upNextDismissed = ref(false)
 // The browser refused to start playback and wants a gesture on this device.
 const autoplayBlocked = ref(false)
 
@@ -222,7 +258,7 @@ const modeName = computed(() => {
 })
 
 const video = useVideoElement(videoEl, {
-  onEnded: () => mediaStore.scheduleRefresh('watch'),
+  onEnded,
   onLoadedData: element => {
     env.probeVolumeSupport(element)
     // A new source resets rate and volume on the element, so the user's
@@ -255,9 +291,27 @@ const artwork = computed(() => {
     : imageUrl(host.value, 'movie', entity.id, 'poster')
 })
 
-const showNextEpisode = computed(() => Boolean(
-  nextEpisode.value?.id && playing.value?.type === 'episode' && progress.value > NEXT_EPISODE_PROGRESS_THRESHOLD
-))
+const nextInfo = computed(() => {
+  const next = nextEpisode.value
+  if (!next?.id || playing.value?.type !== 'episode') return null
+
+  return {
+    title: next.episodeName || 'Next episode',
+    numbering: Number.isInteger(next.airedSeason) && Number.isInteger(next.airedEpisodeNumber) ? `S${next.airedSeason} E${next.airedEpisodeNumber}` : ''
+  }
+})
+
+// Counting down (autoplay on), or offered once most of the episode is done;
+// never alongside the end screen.
+const upNext = computed(() => {
+  if (!nextInfo.value || ended.value || !duration.value) return null
+  if (countdownStart.value !== null) {
+    const remaining = Math.ceil(UP_NEXT_COUNTDOWN - (video.currentTime.value - countdownStart.value))
+    return { ...nextInfo.value, countdown: true, remaining: Math.min(UP_NEXT_COUNTDOWN, Math.max(0, remaining)) }
+  }
+  if (!upNextDismissed.value && progress.value > NEXT_EPISODE_PROGRESS_THRESHOLD) return { ...nextInfo.value, countdown: false }
+  return null
+})
 
 function streamsOfType (type) {
   const streams = playbackSession.value?.tracks || currentFile.value?.Streams || []
@@ -488,12 +542,54 @@ function onTimeUpdate () {
   // Throttled inside the transport, so this is one call per second on the wire.
   reportProgress()
 
-  if (autoplay.value && !autoplaying.value && duration.value > 0) {
-    if (duration.value - video.currentTime.value <= AUTOPLAY_TIME_LEFT_THRESHOLD) {
-      autoplaying.value = true
-      playNext()
-    }
+  if (autoplay.value && nextEpisode.value?.id && !countdownCancelled.value && !autoplaying.value && duration.value > 0) {
+    const position = video.currentTime.value
+
+    // Seeking back out of the credits calls the countdown off until they
+    // come round again.
+    if (duration.value - position > UP_NEXT_LEAD) countdownStart.value = null
+    else if (countdownStart.value === null) countdownStart.value = position
+    else if (position - countdownStart.value >= UP_NEXT_COUNTDOWN) playNext()
   }
+
+  // Seeking back from the end screen puts the title back on.
+  if (ended.value && duration.value - video.currentTime.value > 1) ended.value = false
+}
+
+function onEnded () {
+  mediaStore.scheduleRefresh('watch')
+
+  // A title shorter than the countdown, or a countdown that never got to run.
+  if (autoplay.value && nextEpisode.value?.id && !countdownCancelled.value) {
+    playNext()
+    return
+  }
+
+  ended.value = true
+}
+
+function cancelCountdown () {
+  countdownCancelled.value = true
+  countdownStart.value = null
+}
+
+function watchAgain () {
+  ended.value = false
+  countdownCancelled.value = true
+  video.seekTo(0, duration.value)
+  void video.play()
+}
+
+// From the end screen: the title is over, so the player closes and the page
+// it belongs to opens (for a movie, optionally at "More like this").
+function leaveFor (target) {
+  const { type, entity } = playing.value
+  const destination = type === 'movie'
+    ? { name: 'MovieInfo', params: { movieId: entity.id }, ...(target === 'related' ? { hash: '#more-like-this' } : {}) }
+    : { name: 'SeriesView', params: { seriesId: entity.Series?.id ?? entity.SeriesId } }
+
+  stopPlaying()
+  router.push(destination)
 }
 
 async function updateSession (offset = null) {
@@ -623,10 +719,14 @@ function retry () {
 }
 
 function playNext () {
+  if (!nextEpisode.value?.id || autoplaying.value) return
+  autoplaying.value = true
+  countdownStart.value = null
   // Explicitly local: `playEpisode` would route to whatever remote target this
   // device has selected, so a device playing under remote control would fling
-  // its own next episode at a third device.
-  if (nextEpisode.value?.id) store.playEpisodeLocal(nextEpisode.value.id)
+  // its own next episode at a third device. Continuous: it takes over this
+  // player as it is, fullscreen or docked.
+  store.playEpisodeLocal(nextEpisode.value.id, { continuous: true })
 }
 
 function stopPlaying () {
@@ -704,8 +804,10 @@ watch(fullscreen.isFullscreen, active => {
   }
 })
 
-watch(playing, async (newState, oldState) => {
-  if (!oldState?.entity || !oldState.entity.title) setMode(ScreenFormats.LARGE)
+watch(playing, async newState => {
+  // A new title opens large; one that continues from the last (the next
+  // episode) keeps whatever size the player already has.
+  if (newState?.entity && !newState.continuous) setMode(ScreenFormats.LARGE)
 
   initialProgress.value = 0
   playingFileId.value = 0
@@ -713,6 +815,10 @@ watch(playing, async (newState, oldState) => {
   paused.value = true
   loading.value = false
   autoplaying.value = false
+  ended.value = false
+  countdownStart.value = null
+  countdownCancelled.value = false
+  upNextDismissed.value = false
   playbackError.value = ''
   scrubPreview.value = null
   applyTrackPreferences()

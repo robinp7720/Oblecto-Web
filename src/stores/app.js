@@ -14,16 +14,21 @@ export const useAppStore = defineStore('app', {
     setPlaying (playing) { this.playRequest++; this.playing = playing },
     setPlaySizeFormat (mode) { this.playSizeFormat = mode },
     clearPlaying () { this.setPlaying({}) },
-    async playLocal (type, id) {
-      this.clearPlaying()
+    // `continuous`: the title follows on from the one playing (the next
+    // episode). The current one is not cleared first, so the player, its
+    // video element, fullscreen and picture-in-picture all carry over and the
+    // new title takes the old one's place at the same size.
+    async playLocal (type, id, { continuous = false } = {}) {
+      if (continuous) this.playRequest++
+      else this.clearPlaying()
       const request = this.playRequest
       const client = type === 'movie' ? oblectoClient.movieLibrary : oblectoClient.episodeLibrary
       const entity = await client.getInfo(id)
       if (request !== this.playRequest) return
-      this.playing = { title: type === 'movie' ? entity.movieName : entity.episodeName, type, entity }
+      this.playing = { title: type === 'movie' ? entity.movieName : entity.episodeName, type, entity, continuous }
     },
-    playMovieLocal (id) { return this.playLocal('movie', id) },
-    playEpisodeLocal (id) { return this.playLocal('episode', id) },
+    playMovieLocal (id, options) { return this.playLocal('movie', id, options) },
+    playEpisodeLocal (id, options) { return this.playLocal('episode', id, options) },
     async play (type, id) {
       const remote = useRemoteStore()
       const request = this.playRequest

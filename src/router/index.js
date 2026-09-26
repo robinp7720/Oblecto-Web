@@ -44,7 +44,12 @@ const router = createRouter({
 
     await pageLeave()
 
-    return savedPosition || { top: 0 }
+    if (savedPosition) return savedPosition
+    // A link into a page (#more-like-this) lands there if the target is already
+    // rendered; content that arrives later reveals itself (RelatedTitles).
+    if (to.hash && document.getElementById(to.hash.slice(1))) return { el: to.hash }
+
+    return { top: 0 }
   },
   routes: [
     {

@@ -131,15 +131,6 @@
         <span class="spacer" />
 
         <button
-          v-if="nextEpisode"
-          type="button"
-          class="next"
-          @click="$emit('play-next')"
-        >
-          Next episode
-        </button>
-
-        <button
           type="button"
           class="icon-button"
           :class="{ on: subtitlesOn }"
@@ -221,7 +212,6 @@ const props = defineProps({
   volumeSupported: { type: Boolean, default: true },
   playbackRate: { type: Number, default: 1 },
   subtitlesOn: { type: Boolean, default: false },
-  nextEpisode: { type: Boolean, default: false },
   settingsOpen: { type: Boolean, default: false },
   pipSupported: { type: Boolean, default: false },
   fullscreenSupported: { type: Boolean, default: false },
@@ -235,8 +225,7 @@ const props = defineProps({
 defineEmits([
   'activity', 'minimize', 'pip', 'stop', 'view-show', 'toggle-play', 'seek-by',
   'scrub-start', 'scrub', 'scrub-end', 'set-volume', 'toggle-mute',
-  'toggle-subtitles', 'cycle-rate', 'toggle-settings', 'toggle-fullscreen',
-  'play-next'
+  'toggle-subtitles', 'cycle-rate', 'toggle-settings', 'toggle-fullscreen'
 ])
 
 const showCentreTransport = computed(() => props.compact)
@@ -388,21 +377,7 @@ button.subtitle
   position: relative
   display: inline-flex
 
-.next
-  flex: none
-  min-height: 38px
-  margin-right: 4px
-  padding: 8px 16px
-  border: 0
-  border-radius: var(--radius-sm)
-  background: var(--color-brand-coral)
-  color: #141414
-  font-size: 0.85rem
-  font-weight: 700
-  white-space: nowrap
-  cursor: pointer
-  &:hover
-    background: var(--color-brand-orange)
+
 
 @media (min-width: 761px)
   .top
