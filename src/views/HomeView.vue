@@ -68,13 +68,18 @@
     >
       <span class="eyebrow">MAKE YOURSELF AT HOME</span>
       <h1>Your next favorite belongs here.</h1>
-      <p>Add your movies and TV shows to start watching.</p>
-      <RouterLink
-        :to="{ name: 'SettingsLibraries' }"
-        class="primary-button"
-      >
-        Manage libraries
-      </RouterLink>
+      <template v-if="canOpenPage('SettingsLibraries', authStore.can)">
+        <p>Add your movies and TV shows to start watching.</p>
+        <RouterLink
+          :to="{ name: 'SettingsLibraries' }"
+          class="primary-button"
+        >
+          Manage libraries
+        </RouterLink>
+      </template>
+      <p v-else>
+        Nothing has been added to this server yet. Your server admin can add movies and TV shows.
+      </p>
     </section>
 
     <div
@@ -103,9 +108,12 @@ import { computed, onMounted, ref, watch } from 'vue'
 import { useAppStore } from '@/stores/app'
 import MediaShelf from '@/components/media/MediaShelf.vue'
 import { useMediaStore } from '@/stores/media'
+import { useAuthStore } from '@/stores/auth'
+import { canOpenPage } from '@/components/settings/registry'
 import { titleForItem, subtitleForItem } from '@/utils/media'
 
 const mediaStore = useMediaStore()
+const authStore = useAuthStore()
 const store = useAppStore()
 const heroFailed = ref(false)
 const heroLoaded = ref(false)
@@ -114,7 +122,9 @@ const homeIds = ['continue-movies', 'continue-episodes', 'next-episodes', 'recen
 const homePending = computed(() => !Object.keys(mediaStore.home.sections).length || homeIds.some(id => mediaStore.home.sections[id]?.loading))
 const homeError = computed(() => homeIds.some(id => mediaStore.home.sections[id]?.error))
 const homeRails = computed(() => mediaStore.home.rails.filter(section => homeIds.includes(section.id) || section.id.startsWith('set-')))
-onMounted(() => { mediaStore.loadHome() })
+// Back on Home with its rows already loaded, refresh them quietly instead of
+// announcing a load over shelves that are already on screen.
+onMounted(() => { mediaStore.loadHome(null, { silent: homeIds.some(id => mediaStore.home.sections[id]?.settled) }) })
 const spotlight = computed(() => {
   const value = mediaStore.home.spotlight
   return value ? { ...value, item: mediaStore.withProgress(value.type, value.item) } : null

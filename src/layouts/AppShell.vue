@@ -38,7 +38,7 @@
           :to="{ name: 'Discover' }"
           class="nav-link"
         >
-          New &amp; Popular
+          Discover
         </RouterLink>
       </nav>
       <form

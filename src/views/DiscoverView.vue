@@ -34,7 +34,11 @@
 
     <HomeLoadState :ids="discoverIds" />
     <p v-if="!discoverPending && !discoverError && !discoverRails.length">
-      No titles to discover yet. <RouterLink :to="{ name: 'SettingsLibraries' }">
+      No titles to discover yet.
+      <RouterLink
+        v-if="canOpenPage('SettingsLibraries', authStore.can)"
+        :to="{ name: 'SettingsLibraries' }"
+      >
         Manage libraries
       </RouterLink>
     </p>
@@ -54,14 +58,18 @@ import HomeLoadState from '@/components/media/HomeLoadState.vue'
 import { computed, onMounted } from 'vue'
 import MediaShelf from '@/components/media/MediaShelf.vue'
 import { useMediaStore } from '@/stores/media'
+import { useAuthStore } from '@/stores/auth'
+import { canOpenPage } from '@/components/settings/registry'
 
 const mediaStore = useMediaStore()
+const authStore = useAuthStore()
+const discoverIds = ['popular-movies', 'top-series']
 
+// Rows already loaded (from Home or an earlier visit) refresh quietly.
 onMounted(() => {
-  mediaStore.loadHome()
+  mediaStore.loadHome(null, { silent: discoverIds.some(id => mediaStore.home.sections[id]?.settled) })
 })
 
-const discoverIds = ['popular-movies', 'top-series']
 const discoverPending = computed(() => discoverIds.some(id => mediaStore.home.sections[id]?.loading))
 const discoverError = computed(() => discoverIds.some(id => mediaStore.home.sections[id]?.error))
 const discoverRails = computed(() => mediaStore.home.rails.filter(section => discoverIds.includes(section.id)))

@@ -57,7 +57,7 @@ const router = createRouter({
       path: '/discover',
       name: 'Discover',
       component: DiscoverView,
-      meta: { requiresAuth: true, title: 'New & Popular' }
+      meta: { requiresAuth: true, title: 'Discover' }
     },
     {
       path: '/library/:mediaType(movies|series)',
