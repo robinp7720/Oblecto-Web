@@ -85,6 +85,7 @@
 </template>
 <script setup>
 import { computed, ref, watch } from 'vue'
+import { usePageTitle } from '@/composables/usePageTitle'
 const props = defineProps({
   type: { type: String, required: true },
   title: { type: String, required: true },
@@ -99,6 +100,8 @@ const props = defineProps({
   backTo: { type: Object, required: true },
   backLabel: { type: String, required: true }
 })
+// Every title page renders this hero, so it names the tab for all of them.
+usePageTitle(() => props.title)
 const backdropFailed = ref(false)
 const fallbackFailed = ref(false)
 const activeBackdrop = computed(() => !backdropFailed.value && props.backdrop ? props.backdrop : !fallbackFailed.value ? props.fallbackBackdrop : '')

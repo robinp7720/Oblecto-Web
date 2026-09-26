@@ -113,6 +113,7 @@ import { useAppStore } from '@/stores/app'
 import oblectoClient from '@/oblectoClient'
 import CreditGrid from '@/components/details/CreditGrid.vue'
 import { describeError } from '@/composables/useSaveState'
+import { usePageTitle } from '@/composables/usePageTitle'
 import '@/assets/sass/details.sass'
 
 // Biographies run from a sentence to several paragraphs; past this many
@@ -129,6 +130,7 @@ const backdropLoaded = ref(false)
 const bioExpanded = ref(false)
 const portrait = computed(() => `${store.host}/person/${person.value?.id}/profile?size=large`)
 const initials = computed(() => (person.value?.name || '').split(/\s+/).map(part => part[0]).slice(0, 2).join('').toUpperCase())
+usePageTitle(() => person.value?.name)
 const longBiography = computed(() => (person.value?.biography || '').length > BIO_CLAMP_CHARS)
 
 // Dates arrive as plain YYYY-MM-DD; parsed by hand so they stay on the day

@@ -32,7 +32,8 @@ import AccountPassword from '@/components/settings/account/AccountPassword.vue'
 import AccountPreferences from '@/components/settings/account/AccountPreferences.vue'
 import { pagePermission, visibleGroups } from '@/components/settings/registry'
 import { useAuthStore } from '@/stores/auth'
-import { installCardTransitions, pageLeave, scrollHandled } from '@/router/transition'
+import { installCardTransitions, pageKey, pageLeave, scrollHandled } from '@/router/transition'
+import { formatTitle, routeTitle } from '@/composables/usePageTitle'
 
 const router = createRouter({
   history: createWebHistory(BASE_PATH),
@@ -50,19 +51,19 @@ const router = createRouter({
       path: '/',
       name: 'Main',
       component: HomeView,
-      meta: { requiresAuth: true }
+      meta: { requiresAuth: true, title: 'Home' }
     },
     {
       path: '/discover',
       name: 'Discover',
       component: DiscoverView,
-      meta: { requiresAuth: true }
+      meta: { requiresAuth: true, title: 'New & Popular' }
     },
     {
       path: '/library/:mediaType(movies|series)',
       name: 'Library',
       component: LibraryView,
-      meta: { requiresAuth: true }
+      meta: { requiresAuth: true, title: to => to.params.mediaType === 'series' ? 'TV Shows' : 'Movies' }
     },
     {
       path: '/movies',
@@ -106,7 +107,7 @@ const router = createRouter({
       path: '/search',
       name: 'Search',
       component: SearchView,
-      meta: { requiresAuth: true }
+      meta: { requiresAuth: true, title: to => to.query.q ? `${to.query.q} · Search` : 'Search' }
     },
     {
       path: '/search/:search',
@@ -122,7 +123,8 @@ const router = createRouter({
       name: 'login',
       component: LoginView,
       meta: {
-        layout: 'auth'
+        layout: 'auth',
+        title: 'Sign in'
       }
     },
     {
@@ -251,6 +253,15 @@ router.beforeEach(async (to) => {
   }
 
   return true
+})
+
+// A route with its own title always sets it (a new search names its query).
+// Otherwise the title is only reset when the page itself changes, so a query
+// change inside a detail page keeps the name that page gave its tab.
+router.afterEach((to, from) => {
+  const title = routeTitle(to)
+
+  if (title || pageKey(to) !== pageKey(from)) document.title = formatTitle(title)
 })
 
 export default router

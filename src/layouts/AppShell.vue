@@ -69,7 +69,7 @@
         ref="accountMenu"
         class="account-menu"
         @toggle="onMenuToggle"
-        @keydown.esc="closeMenu"
+        @keydown.esc="closeMenuFromKeyboard"
       >
         <summary :aria-label="t('menu.open')">
           <UserAvatar
@@ -217,7 +217,7 @@
 </template>
 
 <script setup>
-import { computed, getCurrentInstance, nextTick, ref, watch } from 'vue'
+import { computed, getCurrentInstance, nextTick, onBeforeUnmount, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import BrandLogo from '@/components/system/BrandLogo.vue'
 import ConnectionStatus from '@/components/system/ConnectionStatus.vue'
@@ -260,6 +260,24 @@ function closeMenu () {
   if (accountMenu.value) accountMenu.value.open = false
   renaming.value = false
 }
+// Esc from inside the menu: the panel it was in has just gone, so focus goes
+// back to the button that opened it instead of being lost.
+function closeMenuFromKeyboard () {
+  const menu = accountMenu.value
+  const hadFocus = menu?.contains(document.activeElement)
+
+  closeMenu()
+  if (hadFocus) menu.querySelector('summary')?.focus()
+}
+// On phones a backdrop behind the sheet takes the outside click; on wider
+// screens there is none, so a press anywhere outside closes the menu.
+function onOutsidePointer (event) {
+  const menu = accountMenu.value
+
+  if (menu?.open && !menu.contains(event.target)) closeMenu()
+}
+document.addEventListener('pointerdown', onOutsidePointer, true)
+onBeforeUnmount(() => document.removeEventListener('pointerdown', onOutsidePointer, true))
 function submitSearch () {
   router.push({ name: 'Search', query: { q: searchText.value } })
 }
@@ -571,7 +589,10 @@ async function logout () {
   .brand
     font-size: 1.5rem
 @media (max-width: 760px)
+  // Wrapped onto three rows here, the header would pin a third of a phone
+  // screen, so it scrolls with the page (see --header-offset in App.vue).
   .shell-header
+    position: relative
     flex-wrap: wrap
     gap: 16px
     padding-top: 16px

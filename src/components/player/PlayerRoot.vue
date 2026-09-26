@@ -317,11 +317,28 @@ const gestures = usePlayerGestures(computed(() => gestureLayer.value?.layer || n
   onToggleFullscreen: toggleFullscreen
 })
 
+// Keys act on a video whose controls may be hidden (fullscreen, idle), so
+// each shows what it did, the way the matching touch gesture does, and says
+// it for screen readers.
 usePlayerHotkeys({
   togglePlay,
-  seekBy,
-  nudgeVolume: delta => video.setVolume(video.volume.value + delta),
-  toggleMute: video.toggleMute,
+  seekBy: seconds => {
+    seekBy(seconds)
+    gestures.flashSeek(seconds)
+    visibility.notifyActivity()
+    announcement.value = `Seeking ${seconds < 0 ? 'back' : 'forward'} ${describeSeconds(Math.abs(seconds))}`
+  },
+  nudgeVolume: delta => {
+    const next = Math.min(1, Math.max(0, video.volume.value + delta))
+    video.setVolume(next)
+    gestures.showVolumeHud(next)
+    announcement.value = `Volume ${Math.round(next * 100)}%`
+  },
+  toggleMute: () => {
+    video.toggleMute()
+    gestures.showVolumeHud(video.muted.value ? 0 : video.volume.value)
+    announcement.value = video.muted.value ? 'Muted' : 'Unmuted'
+  },
   toggleFullscreen,
   toggleSubtitles,
   adjustRate,

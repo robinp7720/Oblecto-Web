@@ -92,10 +92,19 @@ function sync (open) {
   if (open && !el.open) {
     el.showModal()
     lockScroll()
+    focusFirstField(el)
   } else if (!open && el.open) {
     el.close()
     unlockScroll()
   }
+}
+
+// showModal() focuses the first focusable element, which is the close button
+// in the header. A dialog that asks for input starts at its first field
+// instead; one that marks a control autofocus (ConfirmDialog) already has it.
+function focusFirstField (el) {
+  if (el.querySelector('[autofocus]')) return
+  el.querySelector('.app-dialog__body :is(input:not([type=hidden]), select, textarea):not(:disabled)')?.focus()
 }
 
 function close (reason) {

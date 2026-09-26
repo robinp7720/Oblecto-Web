@@ -120,6 +120,7 @@ import { pages, settingsFields, focusSetting, visibleGroups } from '@/components
 import { useRoute } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 import { pageLeft } from '@/router/transition'
+import { usePageTitle } from '@/composables/usePageTitle'
 
 // Grouped by what an operator is trying to do, so the sidebar reads as a few
 // short lists rather than ten equally-weighted cards. The description is the
@@ -172,6 +173,8 @@ const current = computed(() => {
     eyebrow: t(page.group === 'account' ? 'settings.eyebrow.account' : 'settings.eyebrow.server')
   }
 })
+
+usePageTitle(() => current.value.label)
 </script>
 
 <style scoped lang="sass">
@@ -186,7 +189,7 @@ const current = computed(() => {
   max-height: calc(100dvh - 100px)
   overflow-y: auto
   // Clears the sticky app header.
-  top: calc(76px + 24px)
+  top: calc(var(--header-offset) + 24px)
 
 .nav-group
   margin-bottom: 22px
@@ -262,7 +265,7 @@ const current = computed(() => {
     max-height: none
     overflow-y: visible
     min-width: 0
-    top: 0
+    top: var(--header-offset)
     z-index: 1
     margin: 0 calc(-1 * var(--page-gutter))
     padding: 8px var(--page-gutter)

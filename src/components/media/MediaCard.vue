@@ -8,10 +8,13 @@
       class="poster"
       data-motion-origin
     >
+      <!-- The same link as the title below, for the pointer; keyboard and
+           screen reader users get the title, so a card is one stop, not two. -->
       <RouterLink
         :to="detailsRoute"
         class="poster-link"
-        :aria-label="`More info about ${title}`"
+        tabindex="-1"
+        aria-hidden="true"
       >
         <img
           v-if="!imageFailed"
@@ -159,6 +162,15 @@ function play () {
     .play-button
       opacity: 1
       transform: none
+// Keyboard focus on the title lifts and rings the artwork, which is what
+// identifies the card; the poster clips an outline, so this is a shadow ring.
+.media-card:focus-within .poster
+  transform: translateY(-4px)
+  .play-button
+    opacity: 1
+    transform: none
+.media-card:has(.title:focus-visible) .poster
+  box-shadow: 0 0 0 2px white, 0 8px 24px #0008
 .landscape .poster
   aspect-ratio: 16 / 9
 .poster-link
@@ -207,8 +219,8 @@ function play () {
   transition: opacity var(--motion-base) var(--ease-out), transform var(--motion-base) var(--ease-out), background-color var(--motion-fast)
   &:hover
     background: #ddd
-// Beats the hover reveal above, which also sets the transform.
-.poster .play-button:active
+// Beats the hover and focus reveals above, which also set the transform.
+.media-card .poster .play-button:active
   transform: scale(0.92)
 .progress
   position: absolute

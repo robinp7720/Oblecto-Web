@@ -143,6 +143,8 @@
             v-model="credentials.username"
             type="text"
             autocomplete="username"
+            autocapitalize="off"
+            spellcheck="false"
           >
         </label>
         <label>
@@ -256,11 +258,25 @@ async function signIn (credentials, displayName) {
   router.replace(String(route.query.redirect || '/'))
 }
 
-function reportError (e, fallback) {
+function reportError (e, fallback, refused = 'Wrong username or password.') {
   // Shown next to the form that failed rather than in a corner toast that
   // vanishes before the user has finished reading it.
   console.error('Login failed', e)
-  error.value = describeError(e, fallback)
+  error.value = describeSignInError(e, fallback, refused)
+}
+
+// An unreachable server used to read as "Could not sign in with these
+// details: Network Error", which sends people to retype a correct password.
+function describeSignInError (e, fallback, refused) {
+  const status = e?.response?.status
+
+  if (!e?.response) return `Can't reach the server at ${host.value || 'this address'}. Check the address and that Oblecto is running.`
+  if (status === 401) return refused
+  // Throttling and missing fields already come with a sentence meant for people.
+  if (status === 429 || status === 400) return describeError(e, fallback).replace(`${fallback}: `, '')
+  if (status >= 500) return describeError(e, 'The server ran into a problem signing you in')
+
+  return describeError(e, fallback)
 }
 
 async function submit () {
@@ -305,7 +321,7 @@ async function signInPicked () {
   try {
     await signIn({ userId: user.id, password: pickerPassword.value }, user.username)
   } catch (e) {
-    reportError(e, 'Could not sign in with this password')
+    reportError(e, 'Could not sign in with this password', 'Wrong password.')
   }
 }
 

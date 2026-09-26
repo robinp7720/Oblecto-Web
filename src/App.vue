@@ -53,18 +53,11 @@ import PlayerRoot from '@/components/player/PlayerRoot.vue'
 import { ScreenFormats } from '@/enums/ScreenFormats'
 import ConfirmDialog from '@/components/system/ConfirmDialog.vue'
 import { useAuthStore } from '@/stores/auth'
-import { cardTransitionActive, pageLeft } from '@/router/transition'
+import { cardTransitionActive, pageKey, pageLeft } from '@/router/transition'
 
 const route = useRoute()
 const store = useAppStore()
 const authStore = useAuthStore()
-
-// Nested routes (settings) keep their layout and animate their own panel, so
-// they share one key. Everything else is keyed by path: another movie is a new
-// page, but a changed search or filter query is not.
-function pageKey (target) {
-  return target.matched.length > 1 ? target.matched[0].path : target.path
-}
 
 const showShell = computed(() => authStore.isAuthenticated && route.meta.layout !== 'auth')
 const playing = computed(() => store.playing)
@@ -139,6 +132,14 @@ watch([playing, playSizeFormat], () => {
     /* Raised by the player only while the mini-player is docked, so pages do not
        reserve dead space when nothing is playing. */
     --mini-player-reserve: 0px
+    /* How much of the top of the viewport the sticky app header covers, for
+       anything else that sticks below it. On phones the header is three rows
+       tall, too much to pin, so it scrolls away there (AppShell.vue). */
+    --header-offset: 76px
+
+  @media (max-width: 760px)
+    :root
+      --header-offset: 0px
 
   *, *::before, *::after
     box-sizing: border-box
@@ -150,7 +151,12 @@ watch([playing, playSizeFormat], () => {
     letter-spacing: 0.01em
     margin: 0
     padding: 0
+    /* clip, not hidden: hidden makes <body> a scroll container that never
+       scrolls, and every position: sticky inside it (the header, the settings
+       sidebar) then sticks to nothing. hidden stays as the fallback for
+       browsers without clip. */
     overflow-x: hidden
+    overflow-x: clip
 
   /* Custom sleek scrollbars */
   ::-webkit-scrollbar
