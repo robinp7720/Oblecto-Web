@@ -51,7 +51,8 @@
           :muted="video.muted.value"
           :volume-supported="env.volumeSupported.value"
           :playback-rate="video.playbackRate.value"
-          :subtitles-on="subtitleMode !== 'off'"
+          :subtitles-on="subtitlesShowing"
+          :subtitles-available="subtitleStreams.length > 0"
           :settings-open="settingsOpen"
           :pip-supported="env.pipSupported.value"
           :fullscreen-supported="env.fullscreenSupported.value"
@@ -339,6 +340,9 @@ function streamsOfType (type) {
 
 const audioStreams = computed(() => streamsOfType('audio'))
 const subtitleStreams = computed(() => streamsOfType('subtitle'))
+// "On" only when a track is actually showing. The mode alone said on for every
+// video, since 'auto' may well pick no track at all.
+const subtitlesShowing = computed(() => subtitleMode.value !== 'off' && Number.isInteger(selectedSubtitleStreamIndex.value))
 
 const useSheet = computed(() => env.narrow.value || env.coarsePointer.value)
 
@@ -737,7 +741,15 @@ async function setSubtitleMode (mode) {
 }
 
 async function toggleSubtitles () {
-  await setSubtitleMode(subtitleMode.value === 'off' ? 'auto' : 'off')
+  if (subtitlesShowing.value) return setSubtitleMode('off')
+
+  // Turning captions on shows a track: the user's subtitle language when the
+  // file has it, otherwise the first.
+  const streams = subtitleStreams.value
+  if (!streams.length) return
+  const preferred = streamInLanguage(streams, authStore.preferences.subtitleLanguage)
+
+  await selectSubtitleTrack(Number.isInteger(preferred) ? preferred : streams[0].index)
 }
 
 async function selectSubtitleTrack (streamIndex) {
@@ -844,7 +856,8 @@ watch(playing, async newState => {
   if (newState?.entity && !newState.continuous) setMode(ScreenFormats.LARGE)
 
   initialProgress.value = 0
-  playingFileId.value = 0
+  // A particular version asked for by id ("Play this version"), else the first.
+  playingFileId.value = Math.max(0, (newState?.entity?.Files || []).findIndex(file => file.id === newState?.fileId))
   settingsOpen.value = false
   paused.value = true
   loading.value = false

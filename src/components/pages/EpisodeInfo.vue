@@ -126,7 +126,10 @@
           </dl>
         </section>
         <details class="detail-section technical-details">
-          <summary>Available files</summary><FileList :files="episode.Files || []" />
+          <summary>Available files</summary><FileList
+            :files="episode.Files || []"
+            @play="file => store.playEpisode(episode.id, { fileId: file.id })"
+          />
         </details>
       </div>
     </template>

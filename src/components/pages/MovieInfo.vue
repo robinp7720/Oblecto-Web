@@ -88,7 +88,10 @@
           ref="filesSection"
           class="detail-section technical-details"
         >
-          <summary>Available files</summary><FileList :files="movie.Files || []" />
+          <summary>Available files</summary><FileList
+            :files="movie.Files || []"
+            @play="file => store.playMovie(movie.id, { fileId: file.id })"
+          />
         </details>
         <p
           v-if="relatedLoading"

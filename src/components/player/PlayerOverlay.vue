@@ -131,6 +131,7 @@
         <span class="spacer" />
 
         <button
+          v-if="subtitlesAvailable"
           type="button"
           class="icon-button"
           :class="{ on: subtitlesOn }"
@@ -212,6 +213,9 @@ const props = defineProps({
   volumeSupported: { type: Boolean, default: true },
   playbackRate: { type: Number, default: 1 },
   subtitlesOn: { type: Boolean, default: false },
+  // The file has subtitle tracks; without any, the captions button would only
+  // ever toggle nothing.
+  subtitlesAvailable: { type: Boolean, default: true },
   settingsOpen: { type: Boolean, default: false },
   pipSupported: { type: Boolean, default: false },
   fullscreenSupported: { type: Boolean, default: false },

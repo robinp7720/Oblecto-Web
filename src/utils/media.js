@@ -122,19 +122,77 @@ export function progressForItem (type, item) {
   return 0
 }
 
+// A stream's language tag (ffprobe gives ISO 639-2, "eng") as a name in the
+// page's language, or '' when unknown ("und"). Kept free of app imports: the
+// backend's mocha suite loads this module directly in Node.
+export function streamLanguage (stream) {
+  const code = String(stream?.tags?.language || stream?.tags_language || '').trim()
+  if (!code || code.toLowerCase() === 'und') return ''
+
+  try {
+    const locale = (typeof document !== 'undefined' && document.documentElement.lang) || 'en'
+    const name = new Intl.DisplayNames([locale], { type: 'language' }).of(code)
+
+    return name && name.toLowerCase() !== code.toLowerCase() ? name.charAt(0).toLocaleUpperCase() + name.slice(1) : code.toUpperCase()
+  } catch {
+    return code.toUpperCase()
+  }
+}
+
+const CODEC_NAMES = { aac: 'AAC', ac3: 'AC3', eac3: 'E-AC-3', dts: 'DTS', truehd: 'TrueHD', flac: 'FLAC', opus: 'Opus', mp3: 'MP3', hdmv_pgs_subtitle: 'PGS', dvd_subtitle: 'VobSub' }
+
+function channelLayout (channels) {
+  const count = Number(channels) || 0
+  if (count >= 8) return '7.1'
+  if (count >= 6) return '5.1'
+  if (count === 2) return 'Stereo'
+  if (count === 1) return 'Mono'
+  return ''
+}
+
 /**
- * Human label for an ffprobe stream entry, e.g. `EN - English forced (#3)`.
- * Lifted out of the player so both the settings panel and any future track
- * picker format tracks identically.
+ * Human label for an ffprobe stream entry, e.g. "English · 5.1 · AC3" or
+ * "English · Forced". Lifted out of the player so the settings panel and any
+ * other track picker format tracks identically.
  */
 export function formatStreamLabel (stream, type) {
   if (!stream) return ''
 
-  const language = String(stream.tags?.language || stream.tags_language || 'und').toUpperCase()
-  const title = stream.tags_title || stream.tags?.title || stream.codec_name || type
-  const forced = Number(stream.disposition_forced) > 0 ? ' forced' : ''
+  const disposition = key => Number(stream[`disposition_${key}`] ?? stream.disposition?.[key]) > 0
+  const title = stream.tags_title || stream.tags?.title || ''
+  const codec = CODEC_NAMES[String(stream.codec_name).toLowerCase()] || ''
+  const details = type === 'audio'
+    ? [channelLayout(stream.channels), codec]
+    : [disposition('forced') ? 'Forced' : '', disposition('hearing_impaired') ? 'SDH' : '', codec]
 
-  return `${language} - ${title}${forced} (#${stream.index})`
+  return [streamLanguage(stream) || 'Unknown language', title, ...details].filter(Boolean).join(' · ')
+}
+
+function formatSize (bytes) {
+  const size = Number(bytes)
+  if (!Number.isFinite(size) || size <= 0) return ''
+  if (size >= 1e9) return `${(size / 1e9).toFixed(size >= 1e10 ? 0 : 1)} GB`
+  return `${Math.round(size / 1e6)} MB`
+}
+
+function videoFacts (streams) {
+  const video = streams.filter(stream => stream.codec_type === 'video')
+  const width = Math.max(0, ...video.map(stream => Number(stream.width) || 0))
+  const height = Math.max(0, ...video.map(stream => Number(stream.height) || 0))
+  const resolution = width >= 3800 || height >= 2100 ? '4K' : width >= 1900 || height >= 1050 ? '1080p' : width >= 1200 || height >= 700 ? '720p' : height > 0 ? `${height}p` : null
+  const dolbyVision = video.some(stream => Number(stream.rpu_present_flag) > 0 || String(stream.side_data_type || '').toLowerCase().includes('dolby vision'))
+  const transfer = video.map(stream => String(stream.color_transfer || '').toLowerCase())
+  const hdr = dolbyVision ? 'Dolby Vision' : transfer.some(value => value.includes('smpte2084')) ? 'HDR10' : transfer.some(value => value.includes('arib-std-b67')) ? 'HLG' : null
+  return { resolution, hdr }
+}
+
+// One file as a version to choose: "4K · HDR10 · 5.1 · 14.2 GB · 2h 1m".
+export function fileSummary (file) {
+  const streams = file?.Streams || file?.streams || []
+  const { resolution, hdr } = videoFacts(streams)
+  const channels = Math.max(0, ...streams.filter(stream => stream.codec_type === 'audio').map(stream => Number(stream.channels) || 0))
+
+  return [resolution, hdr, channelLayout(channels), formatSize(file?.size), formatRuntime(Number(file?.duration) / 60)].filter(Boolean).join(' · ')
 }
 
 // Shared with the player so labels never promise a resume the player skips.
@@ -200,17 +258,16 @@ export function seasonSummary (episodes = []) {
   }
 }
 
+// Badges for a title's page. They describe the file that plays by default
+// (the first), not the best stream across every file: a 4K badge next to Play
+// should mean Play gives 4K. Other versions are counted, and listed with their
+// own summaries under Available files.
 export function mediaCapabilities (files = []) {
-  const streams = files.flatMap(file => file.Streams || file.streams || [])
-  const video = streams.filter(stream => stream.codec_type === 'video')
+  const streams = files[0]?.Streams || files[0]?.streams || []
   const audio = streams.filter(stream => stream.codec_type === 'audio')
   const subtitles = streams.filter(stream => stream.codec_type === 'subtitle')
-  const width = Math.max(0, ...video.map(stream => Number(stream.width) || 0))
-  const height = Math.max(0, ...video.map(stream => Number(stream.height) || 0))
-  const resolution = width >= 3800 || height >= 2100 ? '4K' : width >= 1900 || height >= 1050 ? '1080p' : width >= 1200 || height >= 700 ? '720p' : null
-  const dolbyVision = video.some(stream => Number(stream.rpu_present_flag) > 0 || String(stream.side_data_type || '').toLowerCase().includes('dolby vision'))
-  const transfer = video.map(stream => String(stream.color_transfer || '').toLowerCase())
-  const hdr = dolbyVision ? 'Dolby Vision' : transfer.some(value => value.includes('smpte2084')) ? 'HDR10' : transfer.some(value => value.includes('arib-std-b67')) ? 'HLG' : null
+  const { resolution: measured, hdr } = videoFacts(streams)
+  const resolution = ['4K', '1080p', '720p'].includes(measured) ? measured : null
   const channels = Math.max(0, ...audio.map(stream => Number(stream.channels) || 0))
   const audioLayout = channels >= 8 ? '7.1 audio' : channels >= 6 ? '5.1 audio' : channels >= 2 ? 'Stereo' : null
   const language = stream => String(stream.tags_language || stream.tags?.language || '').trim().toUpperCase()
@@ -221,6 +278,7 @@ export function mediaCapabilities (files = []) {
     hdr,
     audioLayout,
     audioLanguages.length ? `Audio · ${audioLanguages.slice(0, 3).join(', ')}${audioLanguages.length > 3 ? ` +${audioLanguages.length - 3}` : ''}` : null,
-    subtitleLanguages.length ? `Subtitles · ${subtitleLanguages.slice(0, 3).join(', ')}${subtitleLanguages.length > 3 ? ` +${subtitleLanguages.length - 3}` : ''}` : null
+    subtitleLanguages.length ? `Subtitles · ${subtitleLanguages.slice(0, 3).join(', ')}${subtitleLanguages.length > 3 ? ` +${subtitleLanguages.length - 3}` : ''}` : null,
+    files.length > 1 ? `${files.length} versions` : null
   ].filter(Boolean)
 }
