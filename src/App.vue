@@ -14,9 +14,12 @@
         mode="out-in"
         @after-leave="pageLeft"
       >
+        <!-- Behind a large or fullscreen player the page is inert: no tab
+             stops or screen reader content behind the video. -->
         <AppShell
           v-if="showShell"
           key="shell"
+          :inert="playerCoversPage || undefined"
         >
           <!-- A card transition animates the page change itself, so this
                one swaps instantly while it runs. -->
@@ -65,12 +68,10 @@ const playSizeFormat = computed(() => store.playSizeFormat)
 
 // Both immersive modes lock the page. FULLSCREEN was previously left out, so
 // the page scrolled behind the video whenever a gesture ran past the stage.
-watch([playing, playSizeFormat], () => {
-  const immersive = playSizeFormat.value === ScreenFormats.LARGE ||
-    playSizeFormat.value === ScreenFormats.FULLSCREEN
+const playerCoversPage = computed(() => Boolean(playing.value?.entity) &&
+  (playSizeFormat.value === ScreenFormats.LARGE || playSizeFormat.value === ScreenFormats.FULLSCREEN))
 
-  const locked = immersive && Boolean(playing.value?.entity)
-
+watch(playerCoversPage, locked => {
   // Restore to '' rather than 'auto' so the stylesheet default wins back.
   document.body.style.overflow = locked ? 'hidden' : ''
   document.documentElement.style.overflow = locked ? 'hidden' : ''

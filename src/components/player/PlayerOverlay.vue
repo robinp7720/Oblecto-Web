@@ -50,6 +50,7 @@
         type="button"
         class="icon-button centre-side"
         aria-label="Back 10 seconds"
+        title="Back 10 seconds (←)"
         @click="$emit('seek-by', -10)"
       >
         <PlayerIcon name="replay-10" />
@@ -58,6 +59,7 @@
         type="button"
         class="centre-play"
         :aria-label="paused ? 'Play' : 'Pause'"
+        :title="`${paused ? 'Play' : 'Pause'} (Space)`"
         @click="$emit('toggle-play')"
       >
         <PlayerIcon :name="paused ? 'play' : 'pause'" />
@@ -66,6 +68,7 @@
         type="button"
         class="icon-button centre-side"
         aria-label="Forward 10 seconds"
+        title="Forward 10 seconds (→)"
         @click="$emit('seek-by', 10)"
       >
         <PlayerIcon name="forward-10" />
@@ -96,6 +99,7 @@
           type="button"
           class="icon-button"
           :aria-label="paused ? 'Play' : 'Pause'"
+          :title="`${paused ? 'Play' : 'Pause'} (Space)`"
           @click="$emit('toggle-play')"
         >
           <PlayerIcon :name="paused ? 'play' : 'pause'" />
@@ -105,6 +109,7 @@
           type="button"
           class="icon-button"
           aria-label="Back 10 seconds"
+          title="Back 10 seconds (←)"
           @click="$emit('seek-by', -10)"
         >
           <PlayerIcon name="replay-10" />
@@ -114,6 +119,7 @@
           type="button"
           class="icon-button"
           aria-label="Forward 10 seconds"
+          title="Forward 10 seconds (→)"
           @click="$emit('seek-by', 10)"
         >
           <PlayerIcon name="forward-10" />
@@ -136,6 +142,7 @@
           class="icon-button"
           :class="{ on: subtitlesOn }"
           :aria-label="subtitlesOn ? 'Turn subtitles off' : 'Turn subtitles on'"
+          title="Subtitles (C)"
           :aria-pressed="subtitlesOn ? 'true' : 'false'"
           @click="$emit('toggle-subtitles')"
         >
@@ -147,6 +154,7 @@
           type="button"
           class="icon-button rate"
           aria-label="Change playback speed"
+          title="Playback speed ([ and ])"
           @click="$emit('cycle-rate')"
         >
           {{ playbackRate }}x
@@ -158,6 +166,7 @@
             type="button"
             class="icon-button"
             aria-label="Playback settings"
+            title="Settings (? for shortcuts)"
             :aria-expanded="settingsOpen ? 'true' : 'false'"
             @click="$emit('toggle-settings')"
           >
@@ -181,6 +190,7 @@
           type="button"
           class="icon-button"
           :aria-label="isFullscreen ? 'Exit full screen' : 'Full screen'"
+          :title="`${isFullscreen ? 'Exit full screen' : 'Full screen'} (F)`"
           :aria-pressed="isFullscreen ? 'true' : 'false'"
           @click="$emit('toggle-fullscreen')"
         >

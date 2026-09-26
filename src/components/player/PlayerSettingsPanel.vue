@@ -150,6 +150,15 @@
         </button>
       </div>
     </section>
+
+    <button
+      v-if="keyboard"
+      type="button"
+      class="shortcuts-link"
+      @click="$emit('show-shortcuts')"
+    >
+      Keyboard shortcuts <kbd>?</kbd>
+    </button>
   </div>
 </template>
 
@@ -175,7 +184,9 @@ const props = defineProps({
   subtitleMode: { type: String, default: 'auto' },
   subtitleModes: { type: Array, default: () => ['off', 'auto', 'forced'] },
   playbackRate: { type: Number, default: 1 },
-  speedOptions: { type: Array, default: () => [] }
+  speedOptions: { type: Array, default: () => [] },
+  // A keyboard is likely (a fine pointer), so the shortcuts are worth a link.
+  keyboard: { type: Boolean, default: false }
 })
 
 // Two tracks can read alike (two English commentaries); number the repeats so
@@ -200,7 +211,8 @@ defineEmits([
   'select-audio',
   'select-subtitle',
   'set-subtitle-mode',
-  'set-rate'
+  'set-rate',
+  'show-shortcuts'
 ])
 </script>
 
@@ -294,6 +306,25 @@ defineEmits([
     background: var(--color-accent-soft)
     color: var(--color-accent-strong)
     font-weight: 700
+
+.shortcuts-link
+  justify-self: start
+  margin: 0 12px
+  padding: 6px 0
+  border: 0
+  background: none
+  color: var(--color-text-muted)
+  font-size: 0.82rem
+  cursor: pointer
+  &:hover
+    color: var(--color-text)
+    text-decoration: underline
+  kbd
+    margin-left: 4px
+    padding: 1px 6px
+    border: 1px solid var(--color-border-strong)
+    border-radius: 4px
+    font-family: inherit
 
 .note
   margin: 0

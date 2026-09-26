@@ -35,6 +35,12 @@ export function usePlayerHotkeys (handlers, { enabled, rootRef, scoped } = {}) {
       handler()
     }
 
+    // By character rather than key position: "?" is Shift+/ on most layouts.
+    if (event.key === '?') {
+      run(handlers.showShortcuts)
+      return
+    }
+
     switch (event.code) {
       case 'Space':
       case 'KeyK':

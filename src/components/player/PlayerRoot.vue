@@ -4,6 +4,10 @@
     ref="root"
     class="player-root"
     :data-mode="modeName"
+    :role="isMini ? undefined : 'dialog'"
+    :aria-modal="isMini ? undefined : 'true'"
+    :aria-label="isMini ? undefined : `Player: ${title}`"
+    tabindex="-1"
   >
     <div
       ref="stage"
@@ -57,7 +61,7 @@
           :pip-supported="env.pipSupported.value"
           :fullscreen-supported="env.fullscreenSupported.value"
           :is-fullscreen="isFullscreenMode"
-          :compact="env.narrow.value || env.coarsePointer.value"
+          :compact="env.narrow.value"
           @activity="visibility.notifyActivity"
           @minimize="setMode(ScreenFormats.SMALL)"
           @pip="enterPip"
@@ -93,12 +97,14 @@
                 :subtitle-mode="subtitleMode"
                 :playback-rate="video.playbackRate.value"
                 :speed-options="speedOptions"
+                :keyboard="!env.coarsePointer.value"
                 @select-quality="selectQuality"
                 @select-file="changeFileId"
                 @select-audio="selectAudioStream"
                 @select-subtitle="selectSubtitleTrack"
                 @set-subtitle-mode="setSubtitleMode"
                 @set-rate="video.setRate"
+                @show-shortcuts="settingsOpen = false; shortcutsOpen = true"
               />
             </PlayerSettingsSurface>
           </template>
@@ -128,6 +134,11 @@
           @play="playNext"
           @cancel="cancelCountdown"
           @dismiss="upNextDismissed = true"
+        />
+
+        <PlayerShortcuts
+          v-if="shortcutsOpen"
+          @close="shortcutsOpen = false"
         />
 
         <PlayerEndScreen
@@ -173,6 +184,7 @@ import PlayerMini from './PlayerMini.vue'
 import PlayerOverlay from './PlayerOverlay.vue'
 import PlayerSettingsPanel from './PlayerSettingsPanel.vue'
 import PlayerSettingsSurface from './PlayerSettingsSurface.vue'
+import PlayerShortcuts from './PlayerShortcuts.vue'
 import PlayerUpNext from './PlayerUpNext.vue'
 
 import PlaybackController, { browserCapabilities } from '@/playback/PlaybackController'
@@ -236,6 +248,7 @@ const playbackError = ref('')
 const loading = ref(false)
 const paused = ref(true)
 const settingsOpen = ref(false)
+const shortcutsOpen = ref(false)
 const scrubPreview = ref(null)
 const announcement = ref('')
 const nextEpisode = ref(null)
@@ -349,7 +362,7 @@ const useSheet = computed(() => env.narrow.value || env.coarsePointer.value)
 // The chrome stays up while the user is doing something with it, or while
 // there is something to read.
 const chromePinned = computed(() => Boolean(
-  settingsOpen.value || playbackError.value || scrubPreview.value !== null
+  settingsOpen.value || shortcutsOpen.value || playbackError.value || scrubPreview.value !== null
 ))
 
 const visibility = useControlsVisibility({
@@ -417,7 +430,16 @@ usePlayerHotkeys({
   toggleFullscreen,
   toggleSubtitles,
   adjustRate,
+  showShortcuts: () => {
+    if (isMini.value) return
+    settingsOpen.value = false
+    shortcutsOpen.value = !shortcutsOpen.value
+  },
   escape: () => {
+    if (shortcutsOpen.value) {
+      shortcutsOpen.value = false
+      return
+    }
     if (settingsOpen.value) {
       settingsOpen.value = false
       return
@@ -835,6 +857,25 @@ watch(playSizeFormat, async mode => {
   }
 })
 
+// Large or fullscreen, the player covers the page and behaves as a dialog: the
+// page behind is inert (App.vue), focus moves into the player, and comes back
+// to where it was (the Play button, usually) when the player is docked or
+// closed.
+const immersive = computed(() => hasPlayback.value && !isMini.value)
+let returnFocus = null
+watch(immersive, async (now, before) => {
+  if (now && !before) {
+    returnFocus = document.activeElement
+    await nextTick()
+    root.value?.focus({ preventScroll: true })
+  } else if (!now && before) {
+    const target = returnFocus
+    returnFocus = null
+    await nextTick()
+    if (target?.isConnected && !root.value?.contains(target)) target.focus({ preventScroll: true })
+  }
+})
+
 // Called straight from the click, which the browser requires: by the time a
 // mode watcher runs, the user activation may already have lapsed.
 function enterPip () {
@@ -859,6 +900,7 @@ watch(playing, async newState => {
   // A particular version asked for by id ("Play this version"), else the first.
   playingFileId.value = Math.max(0, (newState?.entity?.Files || []).findIndex(file => file.id === newState?.fileId))
   settingsOpen.value = false
+  shortcutsOpen.value = false
   paused.value = true
   loading.value = false
   autoplaying.value = false
@@ -943,6 +985,9 @@ onBeforeUnmount(() => {
 .player-root
   position: fixed
   color: var(--color-text)
+  // Focus lands here when the player opens; the controls inside show their own.
+  &:focus
+    outline: none
 
 .stage
   position: relative
