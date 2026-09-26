@@ -443,6 +443,27 @@
     margin: 0
     font-size: 0.85rem
 
+// A page's status line, pinned to the bottom of the screen so the outcome of a
+// change made anywhere on a long page is in view. It stays rendered, empty and
+// borderless when idle, so it remains the live region screen readers follow.
+.status-bar
+  @extend .autosave-bar
+  &.idle
+    padding: 0
+    border-color: transparent
+    background: none
+
+.sr-only
+  position: absolute
+  width: 1px
+  height: 1px
+  margin: -1px
+  padding: 0
+  overflow: hidden
+  clip: rect(0, 0, 0, 0)
+  white-space: nowrap
+  border: 0
+
 .maintenance-jobs
   list-style: none
   padding: 0
@@ -452,6 +473,13 @@
   time
     color: var(--color-text-muted)
     font-size: 0.85rem
+
+// Search results: a field's page, under its label.
+.settings-search-results .result-page
+  display: block
+  color: var(--color-text-faint)
+  font-size: 0.75rem
+  font-weight: 400
 
 @media screen and (max-width: 900px)
   .settings-section-picker

@@ -14,6 +14,16 @@
         </button>
       </div>
 
+      <!-- Past a handful of accounts, finding one by eye in a wide table is slow. -->
+      <input
+        v-if="users.length > 5"
+        v-model="query"
+        type="search"
+        class="user-search"
+        placeholder="Find a user by name, username, email or group"
+        aria-label="Find a user"
+      >
+
       <div class="settings-table-scroll">
         <table class="settings-table">
           <thead>
@@ -40,16 +50,16 @@
             </tr>
           </thead>
           <tbody>
-            <tr v-if="users.length === 0">
+            <tr v-if="shownUsers.length === 0">
               <td
                 colspan="7"
                 class="settings-table-center"
               >
-                No users found.
+                {{ users.length ? 'No users match this search.' : 'No users found.' }}
               </td>
             </tr>
             <user-entry
-              v-for="user in users"
+              v-for="user in shownUsers"
               :key="user.id"
               :user="user"
               :groups="groups"
@@ -118,6 +128,7 @@
       return {
         users: [],
         groups: [],
+        query: '',
         showAdd: false,
         // The user whose details are being edited; null closes the dialog.
         editTarget: null,
@@ -129,6 +140,13 @@
     computed: {
       myId () {
         return useAuthStore().me?.id
+      },
+      shownUsers () {
+        const query = this.query.trim().toLocaleLowerCase()
+        if (!query) return this.users
+        const groupName = user => this.groups.find(group => group.id === user.groupId)?.name || ''
+
+        return this.users.filter(user => [user.name, user.username, user.email, groupName(user)].join(' ').toLocaleLowerCase().includes(query))
       }
     },
     created () {
@@ -201,6 +219,10 @@
 </script>
 
 <style scoped lang="sass">
+.user-search
+  width: 100%
+  max-width: 420px
+  margin: 0 0 16px
 .flag-heading
   max-width: 120px
   text-align: center

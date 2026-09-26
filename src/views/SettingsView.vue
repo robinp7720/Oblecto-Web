@@ -18,13 +18,22 @@
         <p v-if="!results.length">
           {{ t('settings.search.empty') }}
         </p>
+        <!-- A field's label ("Data port") means little without its page, so a
+             field result names the page under it. -->
         <RouterLink
-          v-for="result in results"
+          v-for="(result, index) in results"
           :key="result.name + result.anchor"
           :to="{ name: result.name, hash: result.anchor ? '#' + result.anchor : '' }"
+          :aria-label="result.label"
+          :aria-describedby="result.anchor ? `settings-result-${index}` : undefined"
           @click="query = ''"
         >
           {{ result.label }}
+          <small
+            v-if="result.anchor"
+            :id="`settings-result-${index}`"
+            class="result-page"
+          >{{ pageLabel(result.name) }}</small>
         </RouterLink>
       </div>
       <div class="settings-section-picker">
@@ -145,6 +154,7 @@ const navGroups = computed(() => visibleGroups(authStore.can).map(group => ({
 })))
 
 const navItems = computed(() => navGroups.value.flatMap(group => group.items))
+const pageLabel = name => navItems.value.find(item => item.name === name)?.label || ''
 
 const results = computed(() => {
   const terms = query.value.toLowerCase().trim().split(/\s+/)
@@ -272,34 +282,10 @@ usePageTitle(() => current.value.label)
     background: var(--color-bg-1)
     border-bottom: 1px solid var(--color-border)
 
+  // One way to change section on a phone: the picker above. The sideways
+  // strip of links only repeated the same list.
   .nav-scroller
-    display: flex
-    gap: 8px
-    overflow-x: auto
-    scrollbar-width: none
-
-    &::-webkit-scrollbar
-      display: none
-
-  .nav-group
-    display: flex
-    gap: 8px
-    margin: 0
-
-  .nav-group-label
     display: none
-
-  .settings-link
-    flex-shrink: 0
-    padding: 8px 14px
-    border-left: 0
-    border-radius: 999px
-    border: 1px solid var(--color-border)
-    white-space: nowrap
-
-    &.router-link-exact-active
-      border-color: var(--color-accent)
-      background: var(--color-accent-soft)
 
   .panel-header h1
     font-size: 1.4rem

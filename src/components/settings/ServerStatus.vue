@@ -28,7 +28,7 @@
           <div class="card-header">
             <div class="card-title">
               <font-awesome-icon icon="play-circle" />
-              <span>File {{ session.file.id }}</span>
+              <span :title="`File ${session.file.id}`">{{ session.file.name ? `${session.file.name}${session.file.extension ? `.${session.file.extension}` : ''}` : `File ${session.file.id}` }}</span>
             </div>
             <span :class="['status-badge', session.state]">{{ session.state }}</span>
           </div>
@@ -192,8 +192,29 @@
     async created () {
       await this.refresh()
     },
+    // Sessions change by the second; while the page is open and in view it
+    // keeps itself current rather than waiting for Refresh.
+    mounted () {
+      this.poll = window.setInterval(() => {
+        if (document.visibilityState === 'visible' && this.status.status !== 'busy') void this.refresh({ quiet: true })
+      }, 5000)
+    },
+    beforeUnmount () {
+      window.clearInterval(this.poll)
+    },
     methods: {
-      async refresh () {
+      async refresh ({ quiet = false } = {}) {
+        // The automatic refresh says nothing unless it fails.
+        if (quiet) {
+          try {
+            const [sessions, clients] = await Promise.all([oblectoClient.status.getSessions(), oblectoClient.status.getClients()])
+            this.sessions = sessions
+            this.clients = clients
+          } catch {
+            this.status.fail('Could not fetch server status')
+          }
+          return
+        }
         // An empty `ok` keeps a successful refresh silent; only failure is news.
         await this.status.run(
           async () => {
@@ -241,11 +262,6 @@
   border-radius: 8px
   overflow: hidden
   border: 1px solid rgba(255, 255, 255, 0.1)
-  transition: transform 0.2s, box-shadow 0.2s
-
-  &:hover
-    transform: translateY(-2px)
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2)
 
 .card-header
   background: rgba(0, 0, 0, 0.2)

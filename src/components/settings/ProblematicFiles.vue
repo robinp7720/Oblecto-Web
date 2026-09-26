@@ -22,9 +22,34 @@
             :aria-pressed="stage === option.value"
             @click="setStage(option.value)"
           >
-            {{ option.label }}
+            {{ option.label }} <span class="count">{{ counts[option.value] }}</span>
           </button>
         </div>
+        <input
+          v-model="query"
+          type="search"
+          class="problem-search"
+          placeholder="Filter by name or folder"
+          aria-label="Filter problem files by name or folder"
+        >
+        <select
+          v-model="sort"
+          class="problem-sort"
+          aria-label="Sort problem files"
+        >
+          <option value="newest">
+            Newest first
+          </option>
+          <option value="oldest">
+            Oldest first
+          </option>
+          <option value="name">
+            Name
+          </option>
+          <option value="folder">
+            Folder
+          </option>
+        </select>
         <label class="checkbox-container">
           <input
             v-model="includeIgnored"
@@ -58,14 +83,22 @@
       </div>
 
       <p
-        v-if="!loading && files.length === 0"
+        v-if="!loading && shown.length === 0"
         class="settings-empty"
       >
         {{ emptyMessage }}
       </p>
 
+      <p
+        v-if="shown.length && shown.length !== files.length"
+        class="problem-count"
+        role="status"
+      >
+        Showing {{ shown.length }} of {{ files.length }}
+      </p>
+
       <div
-        v-else-if="files.length > 0"
+        v-if="shown.length > 0"
         class="settings-table-scroll"
       >
         <table class="settings-table">
@@ -81,7 +114,7 @@
           </thead>
           <tbody>
             <tr
-              v-for="file in files"
+              v-for="file in shown"
               :key="file.id"
               :class="{ 'problem-ignored': file.problemIgnored }"
             >
@@ -198,6 +231,8 @@ export default {
     return {
       files: [],
       stage: '',
+      query: '',
+      sort: 'newest',
       includeIgnored: false,
       loading: false,
       retryingAll: false,
@@ -210,10 +245,37 @@ export default {
     }
   },
   computed: {
+    // Every stage is loaded and filtered here, so each filter button can say
+    // how many files it holds.
+    counts () {
+      const counts = { '': this.files.length }
+      for (const stage of Object.keys(STAGE_LABELS)) counts[stage] = this.files.filter(file => file.problemStage === stage).length
+      return counts
+    },
+    inStage () {
+      return this.files.filter(file => !this.stage || file.problemStage === this.stage)
+    },
+    shown () {
+      const query = this.query.trim().toLocaleLowerCase()
+      const time = file => Date.parse(file.updatedAt) || 0
+      const order = {
+        newest: (a, b) => time(b) - time(a),
+        oldest: (a, b) => time(a) - time(b),
+        name: (a, b) => this.fileName(a).localeCompare(this.fileName(b)),
+        folder: (a, b) => String(a.directory || a.path).localeCompare(String(b.directory || b.path)) || this.fileName(a).localeCompare(this.fileName(b))
+      }[this.sort]
+
+      return this.inStage
+        .filter(file => !query || `${this.fileName(file)} ${file.directory || file.path || ''}`.toLocaleLowerCase().includes(query))
+        .sort(order)
+    },
+    // Retry all works on the chosen stage on the server, whatever the text
+    // filter shows, so it counts the stage.
     retryableCount () {
-      return this.files.filter(file => !file.problemIgnored && !file.queued).length
+      return this.inStage.filter(file => !file.problemIgnored && !file.queued).length
     },
     emptyMessage () {
+      if (this.query.trim()) return 'No problem files match this filter.'
       if (this.stage) return `No ${STAGE_LABELS[this.stage].toLowerCase()} files.`
 
       return 'No problem files. Everything in your library directories was identified and analysed.'
@@ -239,10 +301,7 @@ export default {
       // An empty `ok` keeps a successful load silent; only failure is news.
       await this.status.run(
         async () => {
-          const files = await oblectoClient.files.getProblematic({
-            stage: this.stage || undefined,
-            includeIgnored: this.includeIgnored
-          })
+          const files = await oblectoClient.files.getProblematic({ includeIgnored: this.includeIgnored })
 
           this.files = files.map(file => ({ ...file, queued: false }))
         },
@@ -251,11 +310,8 @@ export default {
 
       this.loading = false
     },
-    async setStage (stage) {
-      if (this.stage === stage) return
-
+    setStage (stage) {
       this.stage = stage
-      await this.refresh()
     },
     onIndexerEvent (payload) {
       if (payload?.event !== 'problem') return
@@ -274,11 +330,6 @@ export default {
       }
 
       const file = this.files[index]
-
-      if (this.stage && payload.problemStage !== this.stage) {
-        this.files.splice(index, 1)
-        return
-      }
 
       file.queued = false
       file.problemStage = payload.problemStage
@@ -438,6 +489,20 @@ export default {
 
 .problem-toolbar-actions
   margin-left: auto
+
+.problem-search
+  flex: 1 1 220px
+  min-width: 0
+
+.problem-stage-filter .count
+  margin-left: 4px
+  opacity: 0.7
+  font-variant-numeric: tabular-nums
+
+.problem-count
+  margin: 0 0 10px
+  color: var(--color-text-muted)
+  font-size: 0.85rem
 
 .problem-stage-filter
   display: inline-flex

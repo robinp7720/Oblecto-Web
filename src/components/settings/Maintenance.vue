@@ -125,8 +125,11 @@
     />
 
     <!-- One status line for the page: whichever job was last asked for, the
-         answer appears in the same place. -->
-    <div class="settings-card maintenance-status">
+         answer appears in the same place, pinned in view. -->
+    <div
+      class="status-bar"
+      :class="{ idle: status.status === 'idle' }"
+    >
       <SaveState :state="status" />
     </div>
   </div>
