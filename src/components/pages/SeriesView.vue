@@ -98,6 +98,17 @@
               Clear
             </button>
           </div>
+          <nav
+            v-if="visibleGroups.length >= 4"
+            class="season-jumps"
+            aria-label="Jump to season"
+          >
+            <a
+              v-for="group in visibleGroups"
+              :key="group.season"
+              :href="`#${seasonAnchor(group.season)}`"
+            >{{ seasonName(group.season) }}</a>
+          </nav>
           <div
             v-if="relatedError"
             class="detail-notice"
@@ -401,6 +412,27 @@ const metadata = computed(() => {
   display: grid
   gap: 28px
   min-width: 0
+.season-jumps
+  display: flex
+  gap: 8px
+  overflow-x: auto
+  margin: 0 0 20px
+  padding: 0 0 8px
+  scrollbar-width: thin
+  a
+    flex: none
+    display: inline-flex
+    align-items: center
+    min-height: 44px
+    padding: 8px 14px
+    border: 1px solid var(--color-border)
+    border-radius: 999px
+    color: var(--color-text-muted)
+    white-space: nowrap
+    text-decoration: none
+    &:hover, &:focus-visible
+      border-color: var(--color-brand-turquoise)
+      color: var(--color-text)
 .season-shelf
   scroll-margin-top: 100px
 @media (max-width: 760px)
@@ -409,4 +441,6 @@ const metadata = computed(() => {
 @media (max-width: 600px)
   .episode-tools
     grid-template-columns: 1fr
+  .season-shelf :deep(.track)
+    grid-auto-columns: min(64vw, 250px)
 </style>

@@ -48,9 +48,6 @@
       >
         {{ title }}
       </RouterLink>
-      <p class="episode-overview">
-        {{ episode.overview || 'No synopsis available yet.' }}
-      </p>
       <WatchStateButton
         :id="episode.id"
         :track="media.trackFor('episode', episode)"
@@ -144,30 +141,27 @@ watch(artwork, () => { imageFailed.value = false })
     height: 100%
     background: var(--color-brand-turquoise)
 .episode-copy
+  display: grid
+  grid-template-columns: minmax(0, 1fr) auto
+  align-items: center
+  column-gap: 8px
   padding: 12px 2px 0
 .episode-number
-  display: block
-  margin-bottom: 5px
+  grid-column: 1 / -1
+  margin-bottom: 3px
   color: var(--color-text-muted)
   font-size: 0.72rem
 .episode-title
-  display: block
+  display: -webkit-box
+  -webkit-box-orient: vertical
+  -webkit-line-clamp: 2
   overflow: hidden
-  text-overflow: ellipsis
-  white-space: nowrap
+  min-width: 0
   color: var(--color-text)
   font-size: 0.95rem
   font-weight: 600
   &:hover
     color: var(--color-brand-turquoise)
-.episode-overview
-  display: -webkit-box
-  -webkit-box-orient: vertical
-  -webkit-line-clamp: 2
-  overflow: hidden
-  min-height: 2.9em
-  margin: 8px 0 2px
-  color: var(--color-text-muted)
-  font-size: 0.8rem
-  line-height: 1.45
+.episode-copy :deep(.watch-control)
+  justify-self: end
 </style>
