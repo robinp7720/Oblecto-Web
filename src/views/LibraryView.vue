@@ -22,7 +22,7 @@
           v-model="filters.sort"
           aria-label="Sort by"
           class="select-pill"
-          @change="applyFilters"
+          @change="changeSort"
         >
           <option
             v-for="option in sortOptions"
@@ -58,7 +58,7 @@
           aria-controls="advanced-filters"
           @click="filtersOpen = !filtersOpen"
         >
-          Filters ({{ activeChips.length }})
+          Filters ({{ panelFilterCount }})
         </button>
       </div>
       <div
@@ -73,10 +73,10 @@
           @change="applyFilters"
         >
           <option value="desc">
-            Descending
+            {{ directionLabels.desc }}
           </option>
           <option value="asc">
-            Ascending
+            {{ directionLabels.asc }}
           </option>
         </select>
         <select
@@ -97,13 +97,17 @@
           </option>
         </select>
 
-        <div class="person-filter">
+        <div
+          class="person-filter"
+          @focusout="closePeopleOptions"
+        >
           <input
             v-model="personQuery"
             type="search"
             placeholder="Filter by person…"
             aria-label="Filter by actor or creator"
             @input="schedulePeopleSearch"
+            @keydown.esc="peopleOptions = []"
           >
           <div
             v-if="peopleOptions.length && !filters.personId"
@@ -186,12 +190,17 @@
     </section>
 
     <p
-      v-if="!libraryState.loading && !libraryState.error && libraryState.items.length"
+      v-if="!libraryState.error && libraryState.items.length"
       class="result-count"
       role="status"
       aria-live="polite"
     >
-      Showing {{ libraryState.items.length }} {{ libraryState.items.length === 1 ? 'title' : 'titles' }}{{ libraryState.pageInfo?.hasNextPage ? ' · more available' : '' }}
+      <template v-if="libraryState.loading">
+        Updating…
+      </template>
+      <template v-else>
+        Showing {{ libraryState.items.length }} {{ libraryState.items.length === 1 ? 'title' : 'titles' }}{{ libraryState.pageInfo?.hasNextPage ? ' · more available' : '' }}
+      </template>
     </p>
 
     <Transition
@@ -199,7 +208,7 @@
       mode="out-in"
     >
       <div
-        v-if="libraryState.loading"
+        v-if="libraryState.loading && !libraryState.items.length"
         class="state-card"
       >
         <div class="spinner" />
@@ -230,20 +239,38 @@
           </button>
         </template>
         <template v-else-if="libraryState.librariesLoaded && !libraryState.libraries.length">
-          No libraries configured. <RouterLink :to="{ name: 'SettingsLibraries' }">
+          No libraries configured.
+          <RouterLink
+            v-if="canOpen('SettingsLibraries')"
+            :to="{ name: 'SettingsLibraries' }"
+          >
             Add a library
           </RouterLink>
+          <template v-else>
+            Ask your server admin to add one.
+          </template>
         </template>
         <template v-else>
-          No titles have been indexed yet. <RouterLink :to="{ name: 'SettingsMaintenance' }">
+          No titles have been indexed yet.
+          <RouterLink
+            v-if="canOpen('SettingsMaintenance')"
+            :to="{ name: 'SettingsMaintenance' }"
+          >
             Manage library scans
           </RouterLink>
+          <template v-else>
+            Your server admin can start a scan.
+          </template>
         </template>
       </div>
 
+      <!-- A filter change keeps the current results on screen, dimmed, until
+           the new ones arrive, rather than blanking the page to a spinner. -->
       <section
         v-else
         class="results-grid motion-stagger"
+        :class="{ stale: libraryState.loading }"
+        :aria-busy="libraryState.loading"
       >
         <MediaCard
           v-for="item in libraryState.items"
@@ -277,11 +304,15 @@ import { computed, onBeforeUnmount, reactive, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import MediaCard from '@/components/media/MediaCard.vue'
 import { useMediaStore } from '@/stores/media'
+import { useAuthStore } from '@/stores/auth'
+import { canOpenPage } from '@/components/settings/registry'
 import oblectoClient from '@/oblectoClient'
 
 const route = useRoute()
 const router = useRouter()
 const mediaStore = useMediaStore()
+const authStore = useAuthStore()
+const canOpen = name => canOpenPage(name, authStore.can)
 
 const mediaType = computed(() => route.params.mediaType === 'series' ? 'series' : 'movies')
 const mediaCardType = computed(() => mediaType.value === 'movies' ? 'movie' : 'series')
@@ -327,10 +358,24 @@ const sortOptions = computed(() => {
   ]
 })
 
+// Each sort reads naturally one way round: titles A to Z, dates and ratings
+// newest or highest first. Choosing a sort starts there, and the URL only
+// records a direction when it is the other way.
+function naturalOrder (sort) {
+  return ['movieName', 'seriesName'].includes(sort) ? 'asc' : 'desc'
+}
+const directionLabels = computed(() => {
+  const sort = filters.sort
+  if (['movieName', 'seriesName'].includes(sort)) return { asc: 'A to Z', desc: 'Z to A' }
+  if (sort === 'createdAt') return { desc: 'Newest added first', asc: 'Oldest added first' }
+  if (['releaseDate', 'firstAired'].includes(sort)) return { desc: 'Newest first', asc: 'Oldest first' }
+  return { desc: 'Highest first', asc: 'Lowest first' }
+})
+
 function syncFromRoute () {
   filters.q = String(route.query.q || '')
   filters.sort = String(route.query.sort || 'createdAt')
-  filters.order = String(route.query.order || 'desc')
+  filters.order = String(route.query.order || naturalOrder(filters.sort))
   filters.watched = String(route.query.watched || 'all')
   filters.genre = route.query.genre ? String(route.query.genre).split(',').filter(Boolean) : []
   filters.libraryPath = String(route.query.libraryPath || '')
@@ -352,7 +397,7 @@ function applyFilters () {
     query: {
       q: filters.q || undefined,
       sort: filters.sort !== 'createdAt' ? filters.sort : undefined,
-      order: filters.order !== 'desc' ? filters.order : undefined,
+      order: filters.order !== naturalOrder(filters.sort) ? filters.order : undefined,
       watched: filters.watched !== 'all' ? filters.watched : undefined,
       genre: filters.genre.length ? filters.genre.join(',') : undefined,
       libraryPath: filters.libraryPath || undefined,
@@ -361,6 +406,11 @@ function applyFilters () {
       creditRole: filters.personId && filters.creditRole !== 'any' ? filters.creditRole : undefined
     }
   })
+}
+
+function changeSort () {
+  filters.order = naturalOrder(filters.sort)
+  applyFilters()
 }
 
 function toggleGenre (genre) {
@@ -380,12 +430,25 @@ const filtersOpen = ref(false)
 let filterTimer
 let peopleTimer
 const hasConstraints = computed(() => Boolean(filters.q || filters.genre.length || filters.watched !== 'all' || filters.libraryPath || filters.personId))
+const WATCH_LABELS = { watched: 'Watched', unwatched: 'Unwatched', inprogress: 'In progress' }
+const ROLE_LABELS = { cast: 'actor', director: 'director', writer: 'writer', creator: 'creator' }
+function libraryLabel (path) {
+  const library = libraryState.value.libraries.find(entry => (entry.path || entry) === path)
+  return library?.name || String(path).split(/[\\/]/).filter(Boolean).pop() || path
+}
+// Chips read as sentences, not raw query values ("inprogress", "asc", a path).
 const activeChips = computed(() => [
-  ...(filters.q ? [{ key: 'q', value: filters.q, label: filters.q }] : []),
+  ...(filters.q ? [{ key: 'q', value: filters.q, label: `Title: “${filters.q}”` }] : []),
+  ...(filters.sort !== 'createdAt' ? [{ key: 'sort', value: filters.sort, label: `Sort: ${sortOptions.value.find(option => option.value === filters.sort)?.label || filters.sort}` }] : []),
+  ...(filters.order !== naturalOrder(filters.sort) ? [{ key: 'order', value: filters.order, label: directionLabels.value[filters.order] }] : []),
+  ...(filters.watched !== 'all' ? [{ key: 'watched', value: filters.watched, label: WATCH_LABELS[filters.watched] || filters.watched }] : []),
+  ...(filters.libraryPath ? [{ key: 'libraryPath', value: filters.libraryPath, label: libraryLabel(filters.libraryPath) }] : []),
   ...filters.genre.map(value => ({ key: 'genre', value, label: value })),
-  ...(filters.personId ? [{ key: 'personId', value: filters.personId, label: `${filters.personName}${filters.creditRole !== 'any' ? ` · ${filters.creditRole}` : ''}` }] : []),
-  ...['sort', 'order', 'watched', 'libraryPath'].filter(key => filters[key] !== ({ sort: 'createdAt', order: 'desc', watched: 'all', libraryPath: '' })[key]).map(key => ({ key, value: filters[key], label: key === 'sort' ? sortOptions.value.find(option => option.value === filters[key])?.label || filters[key] : filters[key] }))
+  ...(filters.personId ? [{ key: 'personId', value: filters.personId, label: `${filters.personName}${filters.creditRole !== 'any' ? ` as ${ROLE_LABELS[filters.creditRole] || filters.creditRole}` : ''}` }] : [])
 ])
+// The toggle counts what is set inside its panel; search, sort and watch
+// state sit in the row beside it.
+const panelFilterCount = computed(() => activeChips.value.filter(chip => ['order', 'libraryPath', 'genre', 'personId'].includes(chip.key)).length)
 function scheduleFilter () {
   clearTimeout(filterTimer)
   filterTimer = setTimeout(applyFilters, 300)
@@ -394,7 +457,9 @@ function removeFilter (chip) {
   clearTimeout(filterTimer)
   if (chip.key === 'genre') filters.genre = filters.genre.filter(value => value !== chip.value)
   else if (chip.key === 'personId') Object.assign(filters, { personId: '', personName: '', creditRole: 'any' })
-  else filters[chip.key] = ({ q: '', sort: 'createdAt', order: 'desc', watched: 'all', libraryPath: '' })[chip.key]
+  else if (chip.key === 'sort') Object.assign(filters, { sort: 'createdAt', order: naturalOrder('createdAt') })
+  else if (chip.key === 'order') filters.order = naturalOrder(filters.sort)
+  else filters[chip.key] = ({ q: '', watched: 'all', libraryPath: '' })[chip.key]
   applyFilters()
 }
 function clearFilters () {
@@ -403,23 +468,37 @@ function clearFilters () {
   personQuery.value = ''
   applyFilters()
 }
-watch(() => [route.params.mediaType, route.query], () => {
+watch(() => [route.params.mediaType, route.query], (next, previous) => {
+  // The route moves on before this page has finished leaving; that is not a
+  // request for the movie library with default filters.
+  if (route.name !== 'Library') return
   clearTimeout(filterTimer)
+  const before = JSON.stringify(libraryState.value.filters)
   syncFromRoute()
-  mediaStore.loadLibrary(mediaType.value)
+  // Coming back (Back from a title) to the same filters: keep what is loaded,
+  // every page of it, so the grid is there to restore the scroll position
+  // into, and refresh quietly behind it.
+  const returning = !previous && before === JSON.stringify(libraryState.value.filters) && libraryState.value.items.length > 0 && !libraryState.value.error
+  mediaStore.loadLibrary(mediaType.value, returning ? { silent: true, preservePages: true } : {})
 }, { immediate: true })
 onBeforeUnmount(() => clearTimeout(filterTimer))
 
 function schedulePeopleSearch () {
   clearTimeout(peopleTimer)
+  // Editing the name drops the chosen person, from the results too, rather
+  // than leaving the list filtered by someone no longer shown.
   if (filters.personId && personQuery.value !== filters.personName) {
     Object.assign(filters, { personId: '', personName: '', creditRole: 'any' })
+    applyFilters()
   }
   const query = personQuery.value.trim()
   if (query.length < 2) { peopleOptions.value = []; return }
   peopleTimer = setTimeout(async () => {
     try { peopleOptions.value = await oblectoClient.people.search(query, 8) } catch { peopleOptions.value = [] }
   }, 250)
+}
+function closePeopleOptions (event) {
+  if (!event.currentTarget.contains(event.relatedTarget)) peopleOptions.value = []
 }
 function selectPerson (person) {
   Object.assign(filters, { personId: String(person.id), personName: person.name, creditRole: 'any' })
@@ -463,6 +542,12 @@ onBeforeUnmount(() => clearTimeout(peopleTimer))
   margin: -12px 0 -8px
   color: var(--color-text-muted)
   font-size: 0.82rem
+
+.results-grid
+  transition: opacity var(--motion-base) var(--ease-out)
+  &.stale
+    opacity: 0.45
+    pointer-events: none
 
 .select-pill
   cursor: pointer
