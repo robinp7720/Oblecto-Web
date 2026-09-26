@@ -1,9 +1,9 @@
 <template>
   <div class="Libraries">
-    <fieldset
-      class="settings-fields"
-      :disabled="!form.ready"
-    >
+    <!-- Adding and removing paths has its own endpoint, so only the advanced
+         options wait for the settings to load; a failed load there no
+         longer locks the path buttons too. -->
+    <div class="settings-fields">
       <!-- MOVIES SECTION -->
       <div class="settings-card">
         <div class="settings-header-row">
@@ -23,6 +23,10 @@
         <!-- Configuration -->
         <details class="settings-section-gap">
           <summary>Advanced indexing options</summary>
+          <fieldset
+            class="settings-fields"
+            :disabled="!form.ready"
+          >
           <p class="settings-description">
             Identifiers match files to titles. Updaters fetch descriptions and other metadata. Changes to these services take effect after a server restart.
           </p>
@@ -61,6 +65,7 @@
               {{ form.fields['movies.movieUpdaters'] }}
             </p>
           </div>
+          </fieldset>
         </details>
 
         <div class="settings-table-scroll">
@@ -132,6 +137,10 @@
         <!-- Configuration -->
         <details class="settings-section-gap">
           <summary>Advanced indexing options</summary>
+          <fieldset
+            class="settings-fields"
+            :disabled="!form.ready"
+          >
           <p class="settings-description">
             Identifiers match files to titles. Updaters fetch descriptions and other metadata. Changes to these services take effect after a server restart.
           </p>
@@ -208,6 +217,7 @@
               </p>
             </div>
           </div>
+          </fieldset>
         </details>
 
         <div class="settings-table-scroll">
@@ -259,13 +269,14 @@
           <SaveState :state="tvSave" />
         </div>
       </div>
-    </fieldset>
+    </div>
     <SettingsFormStatus
       :state="save"
       :form="form"
       :dirty="settingsDirty"
       @retry="loadConfig"
       @revert="revertSettings"
+      @save="saveSettings()"
     />
     <LibraryAdd
       v-model:open="showAdd"
@@ -376,8 +387,10 @@
           this.save.fail('Could not load libraries or available metadata services. Retry to edit settings.')
         }
       },
-      saveMoviesConfig () { return this.saveSettings() },
-      saveTvConfig () { return this.saveSettings() }
+      // Picked from lists rather than typed, so each change saves at once,
+      // but only that library type's fields.
+      saveMoviesConfig () { return this.saveSettings(Object.keys(this.moviesConfig).map(key => `movies.${key}`)) },
+      saveTvConfig () { return this.saveSettings(Object.keys(this.tvConfig).map(key => `tvshows.${key}`)) }
     }
   }
 </script>

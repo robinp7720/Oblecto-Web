@@ -24,7 +24,7 @@
             autocomplete="off"
             spellcheck="false"
             @input="results[provider.section] = null"
-            @change="saveSettings"
+            @change="checkSettings"
           >
         </div>
         <div class="settings-inline-actions">
@@ -39,10 +39,10 @@
           <button
             type="button"
             class="btn"
-            :disabled="settingsDirty || form.saving || testing[provider.section]"
+            :disabled="form.saving || testing[provider.section]"
             @click="test(provider.section)"
           >
-            Test {{ provider.label }} connection
+            {{ settingsDirty ? 'Save and test' : 'Test' }} {{ provider.label }} connection
           </button>
         </div>
         <p role="status">
@@ -56,6 +56,7 @@
       :dirty="settingsDirty"
       @retry="retrySettings"
       @revert="revertSettings"
+      @save="saveSettings()"
     />
   </div>
 </template>
@@ -73,7 +74,12 @@ export default {
   computed: { keys () { return { themoviedb: this.tmdb, tvdb: this.tvdb, 'fanart.tv': this.fanart } } },
   created () { this.loadSettings() },
   methods: {
+    // The test uses the saved key, so an edited one is saved first.
     async test (provider) {
+      if (this.settingsDirty) {
+        await this.saveSettings()
+        if (this.settingsDirty) return
+      }
       this.testing[provider] = true
       const key = this.keys[provider].key
       try {

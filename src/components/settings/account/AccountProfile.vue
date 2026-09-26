@@ -118,6 +118,7 @@ import { useI18n } from 'vue-i18n'
 import SaveState from '@/components/system/SaveState.vue'
 import UserAvatar from '@/components/system/UserAvatar.vue'
 import { createSaveState } from '@/composables/useSaveState'
+import { useLeaveGuard } from '@/composables/useLeaveGuard'
 import { useAuthStore } from '@/stores/auth'
 import oblectoClient from '@/oblectoClient'
 
@@ -137,6 +138,7 @@ watch(me, value => {
 }, { immediate: true })
 
 const dirty = computed(() => Boolean(me.value) && (name.value !== (me.value.name || '') || email.value !== (me.value.email || '')))
+useLeaveGuard(dirty)
 
 void authStore.loadMe()
 

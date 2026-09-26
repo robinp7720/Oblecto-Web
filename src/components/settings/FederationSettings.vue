@@ -21,7 +21,7 @@
               :aria-invalid="Boolean(form.fields['federation.enable'])"
               :aria-describedby="'setting-federation-enable-error'"
               type="checkbox"
-              @change="saveSettings"
+              @change="saveField('federation.enable')"
             >
             <span class="checkmark" />
           </label>
@@ -36,7 +36,7 @@
               :aria-invalid="Boolean(form.fields['federation.dataPort'])"
               :aria-describedby="'setting-federation-dataPort-error'"
               type="number"
-              @change="saveSettings"
+              @change="checkSettings"
             >
             <p
               v-if="form.fields['federation.dataPort']"
@@ -54,7 +54,7 @@
               :aria-invalid="Boolean(form.fields['federation.mediaPort'])"
               :aria-describedby="'setting-federation-mediaPort-error'"
               type="number"
-              @change="saveSettings"
+              @change="checkSettings"
             >
             <p
               v-if="form.fields['federation.mediaPort']"
@@ -75,7 +75,7 @@
             :aria-describedby="'setting-federation-key-error'"
             type="text"
             placeholder="/etc/oblecto/id_rsa"
-            @change="saveSettings"
+            @change="checkSettings"
           >
           <p
             v-if="form.fields['federation.key']"
@@ -96,6 +96,7 @@
       :dirty="settingsDirty"
       @retry="retrySettings"
       @revert="revertSettings"
+      @save="saveSettings()"
     />
   </div>
 </template>

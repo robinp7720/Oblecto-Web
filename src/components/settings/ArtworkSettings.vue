@@ -19,7 +19,7 @@
             :aria-describedby="'setting-assets-showPosterLocation-error setting-assets-showPosterLocation-hint'"
             type="text"
             placeholder="/var/lib/oblecto/artwork"
-            @change="saveSettings"
+            @change="checkSettings"
           >
           <p
             v-if="form.fields['assets.showPosterLocation']"
@@ -44,7 +44,7 @@
             :aria-describedby="'setting-assets-episodeBannerLocation-error setting-assets-episodeBannerLocation-hint'"
             type="text"
             placeholder="/var/lib/oblecto/artwork"
-            @change="saveSettings"
+            @change="checkSettings"
           >
           <p
             v-if="form.fields['assets.episodeBannerLocation']"
@@ -69,7 +69,7 @@
             :aria-describedby="'setting-assets-moviePosterLocation-error setting-assets-moviePosterLocation-hint'"
             type="text"
             placeholder="/var/lib/oblecto/artwork"
-            @change="saveSettings"
+            @change="checkSettings"
           >
           <p
             v-if="form.fields['assets.moviePosterLocation']"
@@ -94,7 +94,7 @@
             :aria-describedby="'setting-assets-movieFanartLocation-error setting-assets-movieFanartLocation-hint'"
             type="text"
             placeholder="/var/lib/oblecto/artwork"
-            @change="saveSettings"
+            @change="checkSettings"
           >
           <p
             v-if="form.fields['assets.movieFanartLocation']"
@@ -132,7 +132,7 @@
               type="number"
               min="1"
               step="1"
-              @change="saveSettings"
+              @change="checkSettings"
             >
             <p
               v-if="form.fields['artwork.poster.small']"
@@ -152,7 +152,7 @@
               type="number"
               min="1"
               step="1"
-              @change="saveSettings"
+              @change="checkSettings"
             >
             <p
               v-if="form.fields['artwork.poster.medium']"
@@ -172,7 +172,7 @@
               type="number"
               min="1"
               step="1"
-              @change="saveSettings"
+              @change="checkSettings"
             >
             <p
               v-if="form.fields['artwork.poster.large']"
@@ -196,7 +196,7 @@
               type="number"
               min="1"
               step="1"
-              @change="saveSettings"
+              @change="checkSettings"
             >
             <p
               v-if="form.fields['artwork.fanart.small']"
@@ -216,7 +216,7 @@
               type="number"
               min="1"
               step="1"
-              @change="saveSettings"
+              @change="checkSettings"
             >
             <p
               v-if="form.fields['artwork.fanart.medium']"
@@ -236,7 +236,7 @@
               type="number"
               min="1"
               step="1"
-              @change="saveSettings"
+              @change="checkSettings"
             >
             <p
               v-if="form.fields['artwork.fanart.large']"
@@ -260,7 +260,7 @@
               type="number"
               min="1"
               step="1"
-              @change="saveSettings"
+              @change="checkSettings"
             >
             <p
               v-if="form.fields['artwork.banner.small']"
@@ -280,7 +280,7 @@
               type="number"
               min="1"
               step="1"
-              @change="saveSettings"
+              @change="checkSettings"
             >
             <p
               v-if="form.fields['artwork.banner.medium']"
@@ -300,7 +300,7 @@
               type="number"
               min="1"
               step="1"
-              @change="saveSettings"
+              @change="checkSettings"
             >
             <p
               v-if="form.fields['artwork.banner.large']"
@@ -319,6 +319,7 @@
       :dirty="settingsDirty"
       @retry="retrySettings"
       @revert="revertSettings"
+      @save="saveSettings()"
     />
   </div>
 </template>
