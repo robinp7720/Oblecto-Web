@@ -1,22 +1,15 @@
 <template>
+  <!-- Everyone is in the row: it scrolls sideways, with its own arrows, so a
+       "Show all" that only made the same row longer had nothing to show.
+       The count under the title says how long the row is. -->
   <MediaShelf
     v-if="credits.length"
     class="detail-section"
     :title="title"
+    :subtitle="credits.length > 1 ? `${credits.length} people` : ''"
     type="person"
-    :items="visibleCredits"
+    :items="credits"
   >
-    <template #action>
-      <button
-        v-if="hasMore"
-        type="button"
-        class="people-toggle"
-        :aria-expanded="expanded"
-        @click="expanded = !expanded"
-      >
-        {{ expanded ? 'Show less' : `Show all ${credits.length}` }}
-      </button>
-    </template>
     <template #item="{ item }">
       <PersonCard :credit="item" />
     </template>
@@ -24,28 +17,10 @@
 </template>
 
 <script setup>
-import { computed, ref, watch } from 'vue'
 import MediaShelf from '@/components/media/MediaShelf.vue'
 import PersonCard from './PersonCard.vue'
-const props = defineProps({
+defineProps({
   title: { type: String, default: 'Cast' },
-  credits: { type: Array, default: () => [] },
-  limit: { type: Number, default: 10 }
+  credits: { type: Array, default: () => [] }
 })
-const expanded = ref(false)
-const hasMore = computed(() => props.credits.length > props.limit)
-const visibleCredits = computed(() => expanded.value ? props.credits : props.credits.slice(0, props.limit))
-watch(() => [props.title, props.credits], () => { expanded.value = false })
 </script>
-
-<style scoped lang="sass">
-.people-toggle
-  border: 0
-  background: transparent
-  color: var(--color-text-muted)
-  font: inherit
-  font-size: 0.78rem
-  cursor: pointer
-  &:hover
-    color: var(--color-brand-turquoise)
-</style>
