@@ -79,6 +79,12 @@ export function settingsForm (sections) {
               }
             }
             if (section === 'assets' && key.endsWith('Location') && (typeof value !== 'string' || !value.trim() || value.includes('\0'))) fields[`${section}.${key}`] = 'Enter a non-empty path without null characters.'
+            // As the server checks them (lib/settings/validation.ts)
+            if (section === 'jellyfin' && key === 'port' && (!Number.isInteger(value) || value < 0 || value > 65535)) fields[`${section}.${key}`] = 'Enter a port from 0 to 65535.'
+            if (section === 'jellyfin' && key === 'host' && (typeof value !== 'string' || !value.trim())) fields[`${section}.${key}`] = 'Enter an address to listen on, such as 0.0.0.0.'
+            if (section === 'jellyfin' && key === 'serverName' && (typeof value !== 'string' || !value.trim() || value.length > 100)) fields[`${section}.${key}`] = 'Enter a name of up to 100 characters.'
+            if (section === 'jellyfin' && key === 'loginDisclaimer' && (typeof value !== 'string' || value.length > 1000)) fields[`${section}.${key}`] = 'Enter up to 1000 characters.'
+            if (section === 'jellyfin' && key === 'customCss' && (typeof value !== 'string' || new Blob([value]).size > 20 * 1024)) fields[`${section}.${key}`] = 'Keep the CSS under 20 KB.'
             if (section === 'federation' && key.endsWith('Port') && (!Number.isInteger(value) || value < 1 || value > 65535)) fields[`${section}.${key}`] = 'Enter a port from 1 to 65535.'
           }
         }
