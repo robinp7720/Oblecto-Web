@@ -66,8 +66,8 @@ const label = computed(() => (
     animation: connection-pulse 1.1s ease-in-out infinite
 
 .connection-pill--offline
-  color: #ff8f7a
-  border-color: rgba(255, 143, 122, 0.4)
+  color: var(--color-danger)
+  border-color: var(--color-danger-border)
 
 @keyframes connection-pulse
   0%, 100%

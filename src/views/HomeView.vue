@@ -6,7 +6,7 @@
       aria-labelledby="spotlight-title"
     >
       <img
-        v-if="!heroFailed"
+        v-if="!heroFailed && heroImage"
         :key="heroImage"
         class="hero-backdrop"
         :class="{ loaded: heroLoaded }"
@@ -14,11 +14,11 @@
         alt=""
         fetchpriority="high"
         @load="heroLoaded = true"
-        @error="heroFailed = true"
+        @error="failHeroImage"
       >
       <div class="hero-overlay" />
       <div class="hero-content motion-stagger">
-        <span class="eyebrow"><span class="oblecto-mark">O</span> FEATURED {{ spotlight.type === 'movie' ? 'FILM' : 'SERIES' }}</span>
+        <span class="eyebrow"><span class="oblecto-mark">O</span> {{ heroLabel }}</span>
         <h1
           id="spotlight-title"
           class="hero-title"
@@ -36,8 +36,8 @@
         </p>
         <div class="hero-actions">
           <PlaybackButton
-            v-if="spotlight.type === 'movie'"
-            :label="playbackLabel('movie', spotlight.item)"
+            v-if="spotlight.type !== 'series'"
+            :label="playbackLabel(spotlight.type, spotlight.item)"
             @play="playSpotlight"
           />
           <RouterLink
@@ -51,11 +51,11 @@
           </RouterLink>
         </div>
       </div>
-      <span class="hero-caption">IN YOUR LIBRARY</span>
+      <span class="hero-caption">{{ heroCaption }}</span>
     </section>
 
     <div
-      v-if="mediaStore.home.loading && !spotlight"
+      v-if="homePending && !spotlight"
       class="loading-state"
       role="status"
     >
@@ -63,27 +63,32 @@
       <p>Finding your next great watch…</p>
     </div>
     <section
-      v-else-if="!mediaStore.home.loading && !mediaStore.home.error && !mediaStore.home.rails.length"
-      class="state-card"
+      v-else-if="!homePending && !homeError && !homeRails.length"
+      class="welcome"
     >
       <span class="eyebrow">MAKE YOURSELF AT HOME</span>
       <h1>Your next favorite belongs here.</h1>
-      <p>Add your movies and TV shows to start watching.</p>
-      <RouterLink
-        :to="{ name: 'SettingsLibraries' }"
-        class="primary-button"
-      >
-        Manage libraries
-      </RouterLink>
+      <template v-if="canOpenPage('SettingsLibraries', authStore.can)">
+        <p>Add your movies and TV shows to start watching.</p>
+        <RouterLink
+          :to="{ name: 'SettingsLibraries' }"
+          class="primary-button"
+        >
+          Manage libraries
+        </RouterLink>
+      </template>
+      <p v-else>
+        Nothing has been added to this server yet. Your server admin can add movies and TV shows.
+      </p>
     </section>
 
     <div
       class="home-shelves"
       :class="{ 'with-hero': spotlight }"
     >
-      <HomeLoadState />
+      <HomeLoadState :ids="homeIds" />
       <MediaShelf
-        v-for="section in mediaStore.home.rails"
+        v-for="section in homeRails"
         :key="section.id"
         :title="section.title"
         :type="section.type"
@@ -103,13 +108,23 @@ import { computed, onMounted, ref, watch } from 'vue'
 import { useAppStore } from '@/stores/app'
 import MediaShelf from '@/components/media/MediaShelf.vue'
 import { useMediaStore } from '@/stores/media'
+import { useAuthStore } from '@/stores/auth'
+import { canOpenPage } from '@/components/settings/registry'
 import { titleForItem, subtitleForItem } from '@/utils/media'
 
 const mediaStore = useMediaStore()
+const authStore = useAuthStore()
 const store = useAppStore()
 const heroFailed = ref(false)
 const heroLoaded = ref(false)
-onMounted(() => { mediaStore.loadHome() })
+const heroFallback = ref(false)
+const homeIds = ['continue-movies', 'continue-episodes', 'next-episodes', 'recent-movies', 'recent-series', 'recent-episodes', 'sets']
+const homePending = computed(() => !Object.keys(mediaStore.home.sections).length || homeIds.some(id => mediaStore.home.sections[id]?.loading))
+const homeError = computed(() => homeIds.some(id => mediaStore.home.sections[id]?.error))
+const homeRails = computed(() => mediaStore.home.rails.filter(section => homeIds.includes(section.id) || section.id.startsWith('set-')))
+// Back on Home with its rows already loaded, refresh them quietly instead of
+// announcing a load over shelves that are already on screen.
+onMounted(() => { mediaStore.loadHome(null, { silent: homeIds.some(id => mediaStore.home.sections[id]?.settled) }) })
 const spotlight = computed(() => {
   const value = mediaStore.home.spotlight
   return value ? { ...value, item: mediaStore.withProgress(value.type, value.item) } : null
@@ -117,15 +132,33 @@ const spotlight = computed(() => {
 const spotlightTitle = computed(() => spotlight.value ? titleForItem(spotlight.value.type, spotlight.value.item) : '')
 const spotlightSubtitle = computed(() => spotlight.value ? subtitleForItem(spotlight.value.type, spotlight.value.item) : '')
 const spotlightOverview = computed(() => spotlight.value?.item?.overview || 'Settle in and discover something great from your collection.')
-const heroImage = computed(() => spotlight.value ? mediaStore.artworkUrl(store.host, spotlight.value.type, spotlight.value.item.id, spotlight.value.type === 'movie' ? 'fanart' : 'poster') : '')
+const heroLabel = computed(() => ({ resume: 'CONTINUE WATCHING', next: 'UP NEXT', new: 'NEW IN YOUR LIBRARY' })[spotlight.value?.context] || 'IN YOUR LIBRARY')
+const heroCaption = computed(() => spotlight.value?.type === 'episode' ? spotlight.value.item.Series?.seriesName || 'EPISODE' : 'IN YOUR LIBRARY')
+const heroPrimaryImage = computed(() => spotlight.value ? mediaStore.artworkUrl(store.host, spotlight.value.type, spotlight.value.item.id, spotlight.value.type === 'episode' ? 'banner' : 'fanart') : '')
+const heroSecondaryImage = computed(() => {
+  if (!spotlight.value) return ''
+  if (spotlight.value.type === 'episode') {
+    const seriesId = spotlight.value.item.Series?.id || spotlight.value.item.seriesId
+    return seriesId ? mediaStore.artworkUrl(store.host, 'series', seriesId, 'poster') : ''
+  }
+  return mediaStore.artworkUrl(store.host, spotlight.value.type, spotlight.value.item.id, 'poster')
+})
+const heroImage = computed(() => heroFallback.value ? heroSecondaryImage.value : heroPrimaryImage.value)
+watch(() => `${spotlight.value?.type}:${spotlight.value?.item?.id}`, () => { heroFallback.value = false; heroFailed.value = false })
 watch(heroImage, () => { heroFailed.value = false; heroLoaded.value = false })
+function failHeroImage () {
+  if (!heroFallback.value && heroSecondaryImage.value && heroSecondaryImage.value !== heroPrimaryImage.value) heroFallback.value = true
+  else heroFailed.value = true
+}
 const spotlightRoute = computed(() => {
   if (!spotlight.value) return { name: 'Main' }
   if (spotlight.value.type === 'movie') return { name: 'MovieInfo', params: { movieId: spotlight.value.item.id } }
+  if (spotlight.value.type === 'episode') return { name: 'EpisodeInfo', params: { episodeId: spotlight.value.item.id } }
   return { name: 'SeriesView', params: { seriesId: spotlight.value.item.id } }
 })
 function playSpotlight () {
   if (spotlight.value?.type === 'movie') store.playMovie(spotlight.value.item.id)
+  if (spotlight.value?.type === 'episode') store.playEpisode(spotlight.value.item.id)
 }
 </script>
 
@@ -157,13 +190,12 @@ function playSpotlight () {
   position: relative
   max-width: 600px
   width: 50%
+// The shared eyebrow, in white: it sits on artwork, and carries the mark.
 .eyebrow
   display: inline-flex
   align-items: center
   gap: 12px
-  letter-spacing: 0.25em
-  font-size: 0.75rem
-  font-weight: 700
+  color: var(--color-text)
 .oblecto-mark
   color: var(--color-accent)
   font-size: 2rem
@@ -200,7 +232,7 @@ function playSpotlight () {
   padding: 12px 28px
   min-height: 48px
   border: 0
-  border-radius: 4px
+  border-radius: var(--radius-sm)
   font-size: 1.1rem
   font-weight: 700
   cursor: pointer
@@ -240,7 +272,7 @@ function playSpotlight () {
   padding: 0 var(--page-gutter)
   &.with-hero
     margin-top: -70px
-.state-card
+.welcome
   margin: 50px var(--page-gutter)
   padding: 50px 0
   h1
@@ -254,7 +286,7 @@ function playSpotlight () {
   color: var(--color-text-muted)
 .skeleton-hero
   height: 50vh
-  border-radius: 4px
+  border-radius: var(--radius-sm)
 @media (max-width: 760px)
   .hero
     min-height: 360px

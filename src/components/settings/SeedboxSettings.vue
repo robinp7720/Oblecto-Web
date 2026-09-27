@@ -449,10 +449,10 @@
     color: var(--color-text-muted)
 
   .is-done .history-detail
-    color: #6fce8c
+    color: var(--color-success)
 
   .is-error .history-detail
-    color: #ff8f7a
+    color: var(--color-danger)
 
 .import-grid
   align-items: flex-end
@@ -471,7 +471,7 @@
 .transfer-item
   background: rgba(255, 255, 255, 0.03)
   padding: 12px
-  border-radius: 8px
+  border-radius: var(--radius-lg)
   border: 1px solid rgba(255, 255, 255, 0.05)
 
 .transfer-info
@@ -491,7 +491,7 @@
   color: var(--color-text-muted)
 
   .error
-    color: #ff4d4d
+    color: var(--color-danger)
 
 .progress-bar-bg
   height: 6px
@@ -505,5 +505,5 @@
   transition: width 0.3s ease
 
   &.error
-    background: #ff4d4d
+    background: var(--color-danger)
 </style>

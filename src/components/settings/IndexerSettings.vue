@@ -18,7 +18,7 @@
               :aria-invalid="Boolean(form.fields['indexer.runAtBoot'])"
               :aria-describedby="'setting-indexer-runAtBoot-error'"
               type="checkbox"
-              @change="saveSettings"
+              @change="saveField('indexer.runAtBoot')"
             >
             <span class="checkmark" />
           </label>
@@ -36,7 +36,7 @@
               :aria-invalid="Boolean(form.fields['cleaner.runAtBoot'])"
               :aria-describedby="'setting-cleaner-runAtBoot-error'"
               type="checkbox"
-              @change="saveSettings"
+              @change="saveField('cleaner.runAtBoot')"
             >
             <span class="checkmark" />
           </label>
@@ -54,7 +54,7 @@
               :aria-invalid="Boolean(form.fields['files.doHash'])"
               :aria-describedby="'setting-files-doHash-error'"
               type="checkbox"
-              @change="saveSettings"
+              @change="saveField('files.doHash')"
             >
             <span class="checkmark" />
           </label>
@@ -133,6 +133,7 @@
       :dirty="settingsDirty"
       @retry="retrySettings"
       @revert="revertSettings"
+      @save="saveSettings()"
     />
 
     <AppDialog
@@ -273,7 +274,7 @@
       },
       async updateFiletypes (videoList) {
         this.extensions.video = videoList
-        await this.saveSettings()
+        await this.saveField('fileExtensions.video')
         return this.save.status !== 'error'
       }
 

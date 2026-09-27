@@ -4,7 +4,7 @@
       <span class="eyebrow">Discover</span>
       <h1>Find your next great watch.</h1>
       <p>
-        Fresh arrivals, popular movies, and shows worth settling in for.
+        Popular movies, highly rated series, and new ways into your collection.
       </p>
     </section>
 
@@ -33,8 +33,15 @@
     </section>
 
     <HomeLoadState :ids="discoverIds" />
-    <p v-if="!discoverPending && !discoverError && !discoverRails.length">
-      No titles to discover yet. <RouterLink :to="{ name: 'SettingsLibraries' }">
+    <p
+      v-if="!discoverPending && !discoverError && !discoverRails.length"
+      class="state-card"
+    >
+      No titles to discover yet.
+      <RouterLink
+        v-if="canOpenPage('SettingsLibraries', authStore.can)"
+        :to="{ name: 'SettingsLibraries' }"
+      >
         Manage libraries
       </RouterLink>
     </p>
@@ -54,14 +61,18 @@ import HomeLoadState from '@/components/media/HomeLoadState.vue'
 import { computed, onMounted } from 'vue'
 import MediaShelf from '@/components/media/MediaShelf.vue'
 import { useMediaStore } from '@/stores/media'
+import { useAuthStore } from '@/stores/auth'
+import { canOpenPage } from '@/components/settings/registry'
 
 const mediaStore = useMediaStore()
+const authStore = useAuthStore()
+const discoverIds = ['popular-movies', 'top-series']
 
+// Rows already loaded (from Home or an earlier visit) refresh quietly.
 onMounted(() => {
-  mediaStore.loadHome()
+  mediaStore.loadHome(null, { silent: discoverIds.some(id => mediaStore.home.sections[id]?.settled) })
 })
 
-const discoverIds = ['recent-movies', 'recent-series', 'popular-movies', 'top-series']
 const discoverPending = computed(() => discoverIds.some(id => mediaStore.home.sections[id]?.loading))
 const discoverError = computed(() => discoverIds.some(id => mediaStore.home.sections[id]?.error))
 const discoverRails = computed(() => mediaStore.home.rails.filter(section => discoverIds.includes(section.id)))
@@ -84,11 +95,6 @@ const discoverRails = computed(() => mediaStore.home.rails.filter(section => dis
   p
     color: var(--color-text-muted)
     line-height: 1.6
-
-.eyebrow
-  text-transform: uppercase
-  letter-spacing: 0.18em
-  color: var(--color-accent-strong)
 
 .discover-cards
   display: grid

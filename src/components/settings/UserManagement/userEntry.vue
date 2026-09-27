@@ -93,7 +93,9 @@
       >
         <font-awesome-icon icon="key" />
       </button>
+      <!-- Deleting your own account signs you out mid-page; another admin can. -->
       <button
+        v-if="!isSelf"
         type="button"
         :title="`Delete ${user.username}`"
         :aria-label="`Delete ${user.username}`"
@@ -134,6 +136,11 @@
       groups: {
         type: Array,
         default: () => []
+      },
+      // The signed-in admin's own row
+      isSelf: {
+        type: Boolean,
+        default: false
       }
     },
     emits: ['edit', 'set-password', 'delete', 'update', 'upload-avatar', 'remove-avatar'],

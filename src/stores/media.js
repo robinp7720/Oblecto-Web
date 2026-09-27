@@ -116,6 +116,7 @@ export const useMediaStore = defineStore('media', {
       const previous = this.progress[key]
       if (previous && updatedAt <= Date.parse(previous.updatedAt)) return
       this.progress[key] = { ...track, time: Math.max(0, time), progress: Math.max(0, Math.min(1, progress)) }
+      this.selectHomeSpotlight()
       if (!previous || watchCategory(previous.progress) !== watchCategory(progress)) this.scheduleRefresh('watch')
     },
     applyDevices (devices) {
@@ -173,6 +174,33 @@ export const useMediaStore = defineStore('media', {
       this.$reset()
       this.epoch = epoch
     },
+    selectHomeSpotlight () {
+      const sections = this.home.sections
+      const priority = ['continue-movies', 'continue-episodes', 'next-episodes']
+      // A fallback chosen before watch-history requests finish would flash and
+      // then turn into a resume title while someone is reading the page.
+      if (priority.some(id => !sections[id]?.settled || sections[id].busy)) return
+
+      const unfinished = [
+        ...(sections['continue-movies']?.items || []).map(item => ({ type: 'movie', item })),
+        ...(sections['continue-episodes']?.items || []).map(item => ({ type: 'episode', item }))
+      ].filter(({ type, item }) => {
+        const track = this.trackFor(type, item)
+        return Number(track?.time) > 0 && Number(track?.progress) >= 0 && Number(track?.progress) < 0.9
+      }).sort((a, b) => {
+        const lastWatched = candidate => Date.parse(this.trackFor(candidate.type, candidate.item)?.updatedAt) || 0
+        return lastWatched(b) - lastWatched(a)
+      })
+      const resume = unfinished[0]
+      const next = sections['next-episodes']?.items?.[0]
+      const movie = sections['recent-movies']?.items?.[0]
+      const series = sections['recent-series']?.items?.[0]
+      this.home.spotlight = resume
+        ? { ...resume, context: 'resume' }
+        : next ? { type: 'episode', item: next, context: 'next' }
+          : movie ? { type: 'movie', item: movie, context: 'new' }
+            : series ? { type: 'series', item: series, context: 'new' } : null
+    },
     async loadHome (onlyId = null, { silent = false } = {}) {
       const epoch = this.epoch
       const definitions = [
@@ -195,9 +223,7 @@ export const useMediaStore = defineStore('media', {
           if (id === 'sets') return items.slice(0, 2).map(set => ({ id: `set-${set.id}`, title: set.setName, type, items: set.movies || set.Movies || [] }))
           return [{ id, title, type, items }]
         }).filter(section => section.items.length)
-        const movie = sections['recent-movies']?.items?.[0]
-        const series = sections['recent-series']?.items?.[0]
-        this.home.spotlight = movie ? { type: 'movie', item: movie } : series ? { type: 'series', item: series } : null
+        this.selectHomeSpotlight()
       }
       const jobs = definitions.filter(([id]) => !onlyId || id === onlyId).filter(([id]) => {
         if (!this.home.sections[id]?.busy) return true
@@ -214,11 +240,13 @@ export const useMediaStore = defineStore('media', {
           const items = await fetch()
           if (epoch !== this.epoch) return
           section.items = Array.isArray(items) ? items : []
-        } catch {
+        } catch (error) {
           if (epoch !== this.epoch) return
-          section.error = `Could not load ${section.title.toLowerCase()}.`
+          if (id === 'next-episodes' && error?.response?.status === 501) section.items = []
+          else section.error = `Could not load ${section.title.toLowerCase()}.`
         } finally {
           if (epoch === this.epoch) {
+            section.settled = true
             section.loading = section.busy = false
             refresh()
             if (section.refreshPending) {

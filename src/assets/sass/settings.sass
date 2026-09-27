@@ -120,7 +120,9 @@
   gap: 8px
   padding: 10px 20px
   border: 1px solid var(--color-border)
-  border-radius: 999px
+  // Buttons are rounded rectangles app-wide, like Play and the detail-page
+  // buttons; pills are for chips and toggles.
+  border-radius: var(--radius-sm)
   background-color: rgba(255, 255, 255, 0.08)
   color: var(--color-text)
   font-family: var(--font-body)
@@ -155,12 +157,12 @@
       color: #1b1616
 
   &.btn-destructive
-    background-color: rgba(217, 87, 87, 0.18)
-    border-color: rgba(217, 87, 87, 0.5)
-    color: #ff8f7a
+    background-color: var(--color-danger-soft)
+    border-color: var(--color-danger-border)
+    color: var(--color-danger)
 
     &:hover
-      background-color: rgba(217, 87, 87, 0.3)
+      background-color: var(--color-danger-soft-strong)
       color: #fff
 
   &.btn-block
@@ -258,7 +260,7 @@
   textarea
     width: 100%
     padding: 10px 12px
-    border: 1px solid var(--color-border)
+    border: 1px solid var(--color-border-control)
     border-radius: var(--radius-sm)
     background-color: rgba(255, 255, 255, 0.07)
     color: var(--color-text)
@@ -271,7 +273,7 @@
 
   &.is-invalid input,
   &.is-invalid select
-    border-color: #d95757
+    border-color: var(--color-danger)
 
 .form-hint
   margin: 6px 0 0
@@ -282,7 +284,7 @@
 // Validation messages are tied to their field with aria-describedby, so the
 // colour is reinforcement rather than the only signal.
 .form-error
-  color: #ff8f7a
+  color: var(--color-danger)
 
 .form-grid
   display: grid
@@ -331,7 +333,7 @@
     pointer-events: none
     width: 18px
     height: 18px
-    border: 1px solid var(--color-border)
+    border: 1px solid var(--color-border-control)
     border-radius: var(--radius-sm)
     background-color: rgba(255, 255, 255, 0.08)
 
@@ -398,9 +400,9 @@
     outline: 2px solid var(--color-accent)
     outline-offset: 3px
   [aria-invalid='true']
-    border-color: #ff8f7a
+    border-color: var(--color-danger)
   .form-error
-    color: #ff8f7a
+    color: var(--color-danger)
   .form-hint
     display: block
     color: var(--color-text-muted)
@@ -443,6 +445,16 @@
     margin: 0
     font-size: 0.85rem
 
+// A page's status line, pinned to the bottom of the screen so the outcome of a
+// change made anywhere on a long page is in view. It stays rendered, empty and
+// borderless when idle, so it remains the live region screen readers follow.
+.status-bar
+  @extend .autosave-bar
+  &.idle
+    padding: 0
+    border-color: transparent
+    background: none
+
 .maintenance-jobs
   list-style: none
   padding: 0
@@ -452,6 +464,13 @@
   time
     color: var(--color-text-muted)
     font-size: 0.85rem
+
+// Search results: a field's page, under its label.
+.settings-search-results .result-page
+  display: block
+  color: var(--color-text-faint)
+  font-size: 0.75rem
+  font-weight: 400
 
 @media screen and (max-width: 900px)
   .settings-section-picker

@@ -17,16 +17,44 @@ import { onBeforeUnmount, ref } from 'vue'
  * controller pause handler -> emit. Transport actions call the element
  * directly instead, and the controller's callback stays the one writer.
  */
+// Volume, mute and speed carry over to the next video and the next visit, on
+// this device only. Storage can be unavailable (private windows), so it is
+// best-effort both ways.
+const STORAGE_KEY = 'oblecto.player'
+
+function loadSaved () {
+  try {
+    const saved = JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}')
+
+    return {
+      volume: Number.isFinite(saved.volume) ? Math.min(1, Math.max(0, saved.volume)) : 1,
+      muted: saved.muted === true,
+      rate: Number.isFinite(saved.rate) && saved.rate >= 0.25 && saved.rate <= 4 ? saved.rate : 1
+    }
+  } catch {
+    return { volume: 1, muted: false, rate: 1 }
+  }
+}
+
 export function useVideoElement (videoRef, { onEnded, onPipEnter, onPipLeave, onTimeUpdate, onLoadedData } = {}) {
+  const saved = loadSaved()
   const currentTime = ref(0)
   const duration = ref(0)
   const bufferedEnd = ref(0)
-  const volume = ref(1)
-  const muted = ref(false)
-  const playbackRate = ref(1)
+  const volume = ref(saved.volume)
+  const muted = ref(saved.muted)
+  const playbackRate = ref(saved.rate)
 
-  let previousVolume = 1
+  let previousVolume = saved.volume > 0 ? saved.volume : 1
   let bound = null
+
+  function save () {
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify({ volume: volume.value, muted: muted.value, rate: playbackRate.value }))
+    } catch {
+      // Not remembered this time; playback is unaffected.
+    }
+  }
 
   function el () {
     return videoRef.value || null
@@ -66,11 +94,15 @@ export function useVideoElement (videoRef, { onEnded, onPipEnter, onPipLeave, on
       syncDuration(video)
       onLoadedData?.(video)
     },
-    ratechange: video => { playbackRate.value = video.playbackRate },
+    ratechange: video => {
+      playbackRate.value = video.playbackRate
+      save()
+    },
     volumechange: video => {
       volume.value = video.volume
       muted.value = video.muted
       if (video.volume > 0 && !video.muted) previousVolume = video.volume
+      save()
     },
     ended: () => { onEnded?.() },
     enterpictureinpicture: () => { onPipEnter?.() },
@@ -90,9 +122,9 @@ export function useVideoElement (videoRef, { onEnded, onPipEnter, onPipLeave, on
       video.addEventListener(name, listener)
     }
 
-    volume.value = video.volume
-    muted.value = video.muted
-    playbackRate.value = video.playbackRate
+    // A new element starts at the browser defaults; the user's own settings
+    // win, so they go onto it rather than the other way round.
+    applyState()
     syncDuration(video)
   }
 
@@ -163,6 +195,7 @@ export function useVideoElement (videoRef, { onEnded, onPipEnter, onPipLeave, on
     video.volume = next
     volume.value = next
     muted.value = video.muted
+    save()
   }
 
   function toggleMute () {
@@ -179,6 +212,7 @@ export function useVideoElement (videoRef, { onEnded, onPipEnter, onPipLeave, on
 
     video.muted = true
     muted.value = true
+    save()
   }
 
   function setRate (rate) {
@@ -187,6 +221,7 @@ export function useVideoElement (videoRef, { onEnded, onPipEnter, onPipLeave, on
 
     video.playbackRate = rate
     playbackRate.value = rate
+    save()
   }
 
   // Re-applied after every re-attach, since the controller replaces the source.

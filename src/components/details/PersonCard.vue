@@ -53,7 +53,7 @@ watch(portrait, () => { failed.value = false })
   place-items: center
   aspect-ratio: 2 / 3
   overflow: hidden
-  border-radius: 6px
+  border-radius: var(--radius-md)
   background: linear-gradient(145deg, var(--color-brand-blue), var(--color-surface))
   color: var(--color-text-muted)
   font-size: 1.5rem

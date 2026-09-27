@@ -46,7 +46,7 @@
     </div>
 
     <p
-      v-if="normalizedQuery && !searchStore.loading && !searchStore.error"
+      v-if="normalizedQuery && hasResults && !searchStore.loading && !searchStore.error"
       role="status"
     >
       {{ resultCount }} {{ resultCount === 1 ? 'result' : 'results' }}
@@ -100,7 +100,7 @@ const route = useRoute()
 const router = useRouter()
 const searchStore = useSearchStore()
 const mediaStore = useMediaStore()
-watch(() => mediaStore.catalogRevision, () => searchStore.runSearch(route.query.q || '', { silent: true }))
+watch(() => mediaStore.catalogRevision, () => searchStore.runSearch(searchStore.query, { silent: true }))
 const query = ref(String(route.query.q || ''))
 
 const normalizedQuery = computed(() => String(route.query.q || '').trim())
@@ -120,7 +120,19 @@ function submit () {
 }
 
 watch(() => route.query.q, value => {
+  // The route changes before this page has finished leaving; that is not a
+  // new, empty search.
+  if (route.name !== 'Search') return
   query.value = String(value || '')
+
+  // Back from a result: the store still holds this search, so show it as it
+  // was (and where it was scrolled to), refreshing quietly behind it.
+  const normalized = query.value.trim()
+  if (normalized && normalized === searchStore.query && !searchStore.error) {
+    if (!searchStore.loading) searchStore.runSearch(normalized, { silent: true })
+    return
+  }
+
   searchStore.runSearch(value || '')
 }, { immediate: true })
 </script>
@@ -143,11 +155,6 @@ watch(() => route.query.q, value => {
     font-family: var(--font-display)
     font-size: clamp(1.6rem, 3vw, 2.4rem)
 
-.eyebrow
-  text-transform: uppercase
-  letter-spacing: 0.18em
-  color: var(--color-accent-strong)
-
 .search-form
   display: grid
   grid-template-columns: 1fr auto
@@ -163,12 +170,6 @@ watch(() => route.query.q, value => {
     font-weight: 800
     cursor: pointer
 
-.state-card
-  padding: 18px
-  border-radius: var(--radius-md)
-  border: 1px solid var(--color-border)
-  background: var(--color-surface)
-
 .people-results
   h2
     margin-bottom: 18px
@@ -183,14 +184,4 @@ watch(() => route.query.q, value => {
 </style>
 
 <style scoped lang="sass">
-.state-card button
-  min-height: var(--control-size)
-  padding: 8px 16px
-  border: 1px solid var(--color-border)
-  border-radius: var(--radius-sm)
-  background: var(--color-surface)
-  color: var(--color-text)
-  cursor: pointer
-.state-card a
-  text-decoration: underline
 </style>

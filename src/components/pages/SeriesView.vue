@@ -39,6 +39,14 @@
           :label="suggested.label"
           @play="store.playEpisode(suggested.episode.id)"
         />
+        <button
+          v-if="suggested?.label.startsWith('Resume')"
+          type="button"
+          class="detail-button secondary"
+          @click="store.playEpisode(suggested.episode.id, { position: 0 })"
+        >
+          Start over
+        </button>
         <a
           href="#show-episodes"
           class="detail-button secondary"
@@ -98,6 +106,17 @@
               Clear
             </button>
           </div>
+          <nav
+            v-if="visibleGroups.length >= 4"
+            class="season-jumps"
+            aria-label="Jump to season"
+          >
+            <a
+              v-for="group in visibleGroups"
+              :key="group.season"
+              :href="`#${seasonAnchor(group.season)}`"
+            >{{ seasonName(group.season) }}</a>
+          </nav>
           <div
             v-if="relatedError"
             class="detail-notice"
@@ -221,7 +240,7 @@ import EpisodeCard from '@/components/details/EpisodeCard.vue'
 import PeopleRow from '@/components/details/PeopleRow.vue'
 import RelatedTitles from '@/components/details/RelatedTitles.vue'
 import { useMediaDetails, useDetailResource } from '@/composables/useMediaDetails'
-import { normalizeGenres, formatYear, formatRuntime, ratingLabel, nextSeriesEpisode, seasonSummary } from '@/utils/media'
+import { normalizeGenres, formatYear, formatRuntime, ratingLabel, nextSeriesEpisode, seasonSummary, formatDate } from '@/utils/media'
 import '@/assets/sass/details.sass'
 const route = useRoute()
 const router = useRouter()
@@ -338,7 +357,7 @@ onBeforeUnmount(() => window.clearTimeout(queryTimer))
 const metadata = computed(() => {
   const data = show.value || {}
   return [
-    { label: 'First aired', value: data.firstAired },
+    { label: 'First aired', value: formatDate(data.firstAired) },
     { label: 'Network', value: data.network },
     { label: 'Status', value: data.status },
     { label: 'Runtime', value: formatRuntime(data.runtime) },
@@ -384,8 +403,8 @@ const metadata = computed(() => {
   input, select
     width: 100%
     min-height: 44px
-    border: 1px solid var(--color-border)
-    border-radius: 4px
+    border: 1px solid var(--color-border-control)
+    border-radius: var(--radius-sm)
     background: var(--color-surface)
     color: var(--color-text)
     padding: 8px 10px
@@ -401,6 +420,27 @@ const metadata = computed(() => {
   display: grid
   gap: 28px
   min-width: 0
+.season-jumps
+  display: flex
+  gap: 8px
+  overflow-x: auto
+  margin: 0 0 20px
+  padding: 0 0 8px
+  scrollbar-width: thin
+  a
+    flex: none
+    display: inline-flex
+    align-items: center
+    min-height: 44px
+    padding: 8px 14px
+    border: 1px solid var(--color-border)
+    border-radius: 999px
+    color: var(--color-text-muted)
+    white-space: nowrap
+    text-decoration: none
+    &:hover, &:focus-visible
+      border-color: var(--color-brand-turquoise)
+      color: var(--color-text)
 .season-shelf
   scroll-margin-top: 100px
 @media (max-width: 760px)
@@ -409,4 +449,6 @@ const metadata = computed(() => {
 @media (max-width: 600px)
   .episode-tools
     grid-template-columns: 1fr
+  .season-shelf :deep(.track)
+    grid-auto-columns: min(64vw, 250px)
 </style>

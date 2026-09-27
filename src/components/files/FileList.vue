@@ -9,8 +9,21 @@
         :key="file.id"
         class="file-list-item"
       >
-        <span class="file-name">{{ file.name }}</span><span class="badge">{{ file.extension }}</span>
+        <span class="file-name">
+          {{ file.name }}
+          <small v-if="summary(file)">{{ summary(file) }}</small>
+        </span><span class="badge">{{ file.extension }}</span>
         <div class="file-item-right">
+          <!-- With several versions, Play picks the first; this picks this one. -->
+          <button
+            v-if="files.length > 1"
+            type="button"
+            class="play-version"
+            :aria-label="`Play this version: ${summary(file) || file.name}`"
+            @click="$emit('play', file)"
+          >
+            Play this version
+          </button>
           <button
             type="button"
             class="copy"
@@ -49,6 +62,7 @@ import FontAwesomeIcon from '@fortawesome/vue-fontawesome'
 import faCopy from '@fortawesome/fontawesome-free-solid/faCopy'
 import oblectoClient from '@/oblectoClient'
 import { describeError } from '@/composables/useSaveState'
+import { fileSummary } from '@/utils/media'
 
 const RESET_AFTER = 2500
 
@@ -82,6 +96,7 @@ export default {
   name: 'FileList',
   components: { FontAwesomeIcon },
   props: { files: { type: Array, default: () => [] } },
+  emits: ['play'],
   data () {
     return {
       // fileId -> working | copied | failed
@@ -96,6 +111,7 @@ export default {
     window.clearTimeout(this.timer)
   },
   methods: {
+    summary: fileSummary,
     async getUrl (fileId) {
       const session = await oblectoClient.sessions.create(fileId, { quality: 'original' })
 
@@ -144,16 +160,36 @@ export default {
   padding: 16px 0
   border-bottom: 1px solid var(--color-border)
 .file-name
+  display: grid
+  gap: 4px
   flex: 1
   min-width: 0
   overflow-wrap: anywhere
   font-size: 0.875rem
+  small
+    color: var(--color-text-muted)
+    font-size: 0.8rem
+.file-item-right
+  display: flex
+  align-items: center
+  gap: 8px
+.play-version
+  min-height: 40px
+  padding: 8px 14px
+  border: 1px solid var(--color-border-strong)
+  border-radius: var(--radius-sm)
+  background: var(--color-surface)
+  color: var(--color-text)
+  font-weight: 700
+  cursor: pointer
+  &:hover
+    border-color: var(--color-brand-turquoise)
 .badge
   color: var(--color-brand-turquoise)
   font-size: 0.7rem
   text-transform: uppercase
   border: 1px solid var(--color-border)
-  border-radius: 3px
+  border-radius: var(--radius-sm)
   padding: 4px 6px
 .copy
   display: grid
@@ -161,7 +197,7 @@ export default {
   width: 40px
   height: 40px
   border: 1px solid var(--color-border)
-  border-radius: 4px
+  border-radius: var(--radius-sm)
   color: var(--color-text)
   background: var(--color-surface)
   cursor: pointer
@@ -172,11 +208,11 @@ export default {
     opacity: 0.6
     cursor: progress
 .copy--done
-  color: #6fce8c
-  border-color: rgba(111, 206, 140, 0.5)
+  color: var(--color-success)
+  border-color: var(--color-success-border)
 .copy--failed
-  color: #ff8f7a
-  border-color: rgba(255, 143, 122, 0.5)
+  color: var(--color-danger)
+  border-color: var(--color-danger-border)
 .copy-status
   min-height: 1.3em
   margin: 10px 0 0

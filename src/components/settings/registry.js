@@ -51,6 +51,14 @@ export const pages = groups.flatMap(group => group.items.map(item => ({ ...item,
 
 export const pagePermission = name => pages.find(page => page.name === name)?.permission
 
+// Whether `can` (the auth store's) lets someone open a settings page. Links to
+// pages they cannot open would only bounce them to their own profile.
+export function canOpenPage (name, can) {
+  const permission = pagePermission(name)
+
+  return !permission || can(permission)
+}
+
 // The groups and pages `can` (the auth store's permission check) allows.
 export function visibleGroups (can) {
   return groups

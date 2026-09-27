@@ -1,6 +1,8 @@
 <template>
   <section
     v-if="loading || error || items.length"
+    id="more-like-this"
+    ref="section"
     class="detail-section"
     aria-label="More like this"
   >
@@ -63,7 +65,8 @@
   </section>
 </template>
 <script setup>
-import { computed } from 'vue'
+import { computed, nextTick, ref, watch } from 'vue'
+import { useRoute } from 'vue-router'
 import oblectoClient from '@/oblectoClient'
 import MediaShelf from '@/components/media/MediaShelf.vue'
 import MediaCard from '@/components/media/MediaCard.vue'
@@ -75,6 +78,17 @@ const { data, loading, error, reload } = useDetailResource(
   [], Array.isArray
 )
 const items = computed(() => data.value.filter(item => !props.exclude.includes(item.id)))
+// Links to "#more-like-this" (the player's end screen) arrive before these
+// titles do, so the page cannot scroll to them itself; this does, once.
+const route = useRoute()
+const section = ref(null)
+let revealed = false
+watch(items, async list => {
+  if (revealed || !list.length || route.hash !== '#more-like-this') return
+  revealed = true
+  await nextTick()
+  section.value?.scrollIntoView({ block: 'start' })
+}, { immediate: true })
 function hasReasons (item) {
   const relationship = item.relationship || {}
   return Boolean(relationship.sharedCollections?.length || relationship.sharedPeople?.length || relationship.sharedGenres?.length)

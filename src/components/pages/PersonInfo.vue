@@ -31,12 +31,13 @@
           @load="backdropLoaded = true"
         >
         <div class="person-shade" />
-        <RouterLink
-          :to="{ name: 'Search' }"
+        <a
+          :href="back.href.value"
           class="back-link"
+          @click="back.go"
         >
-          ‹ Search
-        </RouterLink>
+          ‹ {{ back.label.value }}
+        </a>
         <div class="person-layout">
           <div class="person-portrait">
             <img
@@ -113,6 +114,8 @@ import { useAppStore } from '@/stores/app'
 import oblectoClient from '@/oblectoClient'
 import CreditGrid from '@/components/details/CreditGrid.vue'
 import { describeError } from '@/composables/useSaveState'
+import { usePageTitle } from '@/composables/usePageTitle'
+import { useBackLink } from '@/composables/useBackLink'
 import '@/assets/sass/details.sass'
 
 // Biographies run from a sentence to several paragraphs; past this many
@@ -129,6 +132,9 @@ const backdropLoaded = ref(false)
 const bioExpanded = ref(false)
 const portrait = computed(() => `${store.host}/person/${person.value?.id}/profile?size=large`)
 const initials = computed(() => (person.value?.name || '').split(/\s+/).map(part => part[0]).slice(0, 2).join('').toUpperCase())
+usePageTitle(() => person.value?.name)
+// Usually reached from a title's cast, which is where it should lead back to.
+const back = useBackLink({ name: 'Search' }, 'Search')
 const longBiography = computed(() => (person.value?.biography || '').length > BIO_CLAMP_CHARS)
 
 // Dates arrive as plain YYYY-MM-DD; parsed by hand so they stay on the day
@@ -227,7 +233,7 @@ watch(() => route.params.personId, load, { immediate: true })
   display: grid
   place-items: center
   aspect-ratio: 2 / 3
-  border-radius: 6px
+  border-radius: var(--radius-md)
   overflow: hidden
   background: var(--color-brand-blue)
   box-shadow: var(--shadow-strong)
@@ -240,12 +246,6 @@ watch(() => route.params.personId, load, { immediate: true })
 .person-headline
   grid-area: headline
   min-width: 0
-.eyebrow
-  display: block
-  color: var(--color-brand-turquoise)
-  font-size: 0.7rem
-  font-weight: 700
-  letter-spacing: 0.2em
 h1
   margin: 18px 0
   font-size: clamp(2.5rem, 5vw, 5.5rem)

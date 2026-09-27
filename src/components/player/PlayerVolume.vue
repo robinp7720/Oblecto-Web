@@ -7,6 +7,7 @@
       type="button"
       class="icon-button"
       :aria-label="muted || volume === 0 ? 'Unmute' : 'Mute'"
+      :title="`${muted || volume === 0 ? 'Unmute' : 'Mute'} (M)`"
       :aria-pressed="muted || volume === 0 ? 'true' : 'false'"
       @click="$emit('toggle-mute')"
     >

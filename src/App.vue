@@ -14,9 +14,12 @@
         mode="out-in"
         @after-leave="pageLeft"
       >
+        <!-- Behind a large or fullscreen player the page is inert: no tab
+             stops or screen reader content behind the video. -->
         <AppShell
           v-if="showShell"
           key="shell"
+          :inert="playerCoversPage || undefined"
         >
           <!-- A card transition animates the page change itself, so this
                one swaps instantly while it runs. -->
@@ -53,18 +56,11 @@ import PlayerRoot from '@/components/player/PlayerRoot.vue'
 import { ScreenFormats } from '@/enums/ScreenFormats'
 import ConfirmDialog from '@/components/system/ConfirmDialog.vue'
 import { useAuthStore } from '@/stores/auth'
-import { cardTransitionActive, pageLeft } from '@/router/transition'
+import { cardTransitionActive, pageKey, pageLeft } from '@/router/transition'
 
 const route = useRoute()
 const store = useAppStore()
 const authStore = useAuthStore()
-
-// Nested routes (settings) keep their layout and animate their own panel, so
-// they share one key. Everything else is keyed by path: another movie is a new
-// page, but a changed search or filter query is not.
-function pageKey (target) {
-  return target.matched.length > 1 ? target.matched[0].path : target.path
-}
 
 const showShell = computed(() => authStore.isAuthenticated && route.meta.layout !== 'auth')
 const playing = computed(() => store.playing)
@@ -72,12 +68,10 @@ const playSizeFormat = computed(() => store.playSizeFormat)
 
 // Both immersive modes lock the page. FULLSCREEN was previously left out, so
 // the page scrolled behind the video whenever a gesture ran past the stage.
-watch([playing, playSizeFormat], () => {
-  const immersive = playSizeFormat.value === ScreenFormats.LARGE ||
-    playSizeFormat.value === ScreenFormats.FULLSCREEN
+const playerCoversPage = computed(() => Boolean(playing.value?.entity) &&
+  (playSizeFormat.value === ScreenFormats.LARGE || playSizeFormat.value === ScreenFormats.FULLSCREEN))
 
-  const locked = immersive && Boolean(playing.value?.entity)
-
+watch(playerCoversPage, locked => {
   // Restore to '' rather than 'auto' so the stylesheet default wins back.
   document.body.style.overflow = locked ? 'hidden' : ''
   document.documentElement.style.overflow = locked ? 'hidden' : ''
@@ -109,6 +103,25 @@ watch([playing, playSizeFormat], () => {
     --color-accent-glow: rgba(241, 90, 36, 0.22)
     --color-border: rgba(255, 255, 255, 0.12)
     --color-border-strong: rgba(255, 255, 255, 0.3)
+    /* The edge of a control you type into or tick: at least 3:1 against the
+       dark surfaces (about 3.8:1 on --color-surface), where --color-border is
+       only about 1.4:1 and a field's outline all but disappeared. */
+    --color-border-control: rgba(255, 255, 255, 0.4)
+    /* Status colours: one red, one green, one amber and one blue for text and
+       icons on the dark surfaces, each with a soft fill and a border to match,
+       instead of the four reds and two greens pages had picked for
+       themselves. */
+    --color-danger: #ff8f7a
+    --color-danger-soft: rgba(255, 143, 122, 0.16)
+    --color-danger-soft-strong: rgba(255, 143, 122, 0.28)
+    --color-danger-border: rgba(255, 143, 122, 0.5)
+    --color-success: #6fce8c
+    --color-success-soft: rgba(111, 206, 140, 0.16)
+    --color-success-border: rgba(111, 206, 140, 0.5)
+    --color-warning: #f5c26b
+    --color-warning-soft: rgba(245, 194, 107, 0.16)
+    --color-info: #7cc4f0
+    --color-info-soft: rgba(124, 196, 240, 0.16)
     --color-shadow: rgba(0, 0, 0, 0.7)
     --color-shadow-soft: rgba(0, 0, 0, 0.4)
     --radius-sm: 4px
@@ -139,6 +152,16 @@ watch([playing, playSizeFormat], () => {
     /* Raised by the player only while the mini-player is docked, so pages do not
        reserve dead space when nothing is playing. */
     --mini-player-reserve: 0px
+    /* Set by the remote control bar while it floats over the page. */
+    --remote-bar-reserve: 0px
+    /* How much of the top of the viewport the sticky app header covers, for
+       anything else that sticks below it. On phones the header is three rows
+       tall, too much to pin, so it scrolls away there (AppShell.vue). */
+    --header-offset: 76px
+
+  @media (max-width: 760px)
+    :root
+      --header-offset: 0px
 
   *, *::before, *::after
     box-sizing: border-box
@@ -150,7 +173,12 @@ watch([playing, playSizeFormat], () => {
     letter-spacing: 0.01em
     margin: 0
     padding: 0
+    /* clip, not hidden: hidden makes <body> a scroll container that never
+       scrolls, and every position: sticky inside it (the header, the settings
+       sidebar) then sticks to nothing. hidden stays as the fallback for
+       browsers without clip. */
     overflow-x: hidden
+    overflow-x: clip
 
   /* Custom sleek scrollbars */
   ::-webkit-scrollbar

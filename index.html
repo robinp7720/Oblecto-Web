@@ -4,14 +4,19 @@
     <meta charset="utf-8">
     <meta name="theme-color" content="#141414">
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-    <link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet"
-          integrity="sha384-wvfXpqpZZVQGK6TAh5PVlGOfQNHSoD2xbE+QkPxCAFlNEevoEH3Sl0sibVcOQVnN" crossorigin="anonymous">
     <title>Oblecto</title>
     <style>
       * {
         -webkit-box-sizing: border-box;
         -moz-box-sizing: border-box;
         box-sizing: border-box;
+      }
+
+      /* The app's own dark background, before its stylesheet arrives, so a load
+         never flashes white; and dark form controls and autofill throughout. */
+      html {
+        color-scheme: dark;
+        background: #141414;
       }
 
       html, body {

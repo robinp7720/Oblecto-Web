@@ -83,18 +83,26 @@ export function usePlayerGestures (targetRef, options) {
     hudTimer = setTimeout(() => { volumeHud.value = null }, 700)
   }
 
-  function handleDoubleTap (x, bounds) {
-    const direction = x - bounds.left < bounds.width / 2 ? -1 : 1
+  // Shows a seek of `seconds` as a ripple. Repeated seeks the same way
+  // accumulate, the way YouTube chains skips. Also used for keyboard seeks.
+  function flashSeek (seconds) {
+    const direction = Math.sign(seconds)
+    const amount = Math.abs(seconds)
     const now = Date.now()
 
-    // Repeated taps on the same half accumulate, the way YouTube chains skips.
     if (chain && chain.direction === direction && now - chain.at < CHAIN_WINDOW_MS) {
-      chain = { direction, at: now, amount: chain.amount + 10 }
+      chain = { direction, at: now, amount: chain.amount + amount }
     } else {
-      chain = { direction, at: now, amount: 10 }
+      chain = { direction, at: now, amount }
     }
 
     showRipple(direction, chain.amount)
+  }
+
+  function handleDoubleTap (x, bounds) {
+    const direction = x - bounds.left < bounds.width / 2 ? -1 : 1
+
+    flashSeek(direction * 10)
     onDoubleTapSeek?.(direction * 10)
   }
 
@@ -274,6 +282,8 @@ export function usePlayerGestures (targetRef, options) {
     scrubPosition,
     ripple,
     volumeHud,
+    flashSeek,
+    showVolumeHud,
     handlers: {
       onPointerdown: onPointerDown,
       onPointermove: onPointerMove,

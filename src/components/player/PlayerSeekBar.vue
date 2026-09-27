@@ -35,7 +35,7 @@
     <div
       v-if="tooltip !== null"
       class="tooltip"
-      :style="{ left: `${tooltip.ratio * 100}%` }"
+      :style="{ left: `clamp(28px, ${tooltip.ratio * 100}%, calc(100% - 28px))` }"
       aria-hidden="true"
     >
       {{ formatSeconds(tooltip.time) }}
@@ -146,19 +146,26 @@ function onPointerCancel () {
   emit('scrub-end', null)
 }
 
+// Where the last key press asked to go. Repeated presses build on it rather
+// than on currentTime, which lags until each seek completes and made quick
+// presses stall on the same spot.
+let pendingTarget = null
+let pendingTimer = null
+
 function onKeydown (event) {
   if (props.disabled || !props.duration) return
 
+  // The same 10 seconds as the player's own arrow keys.
   const steps = {
-    ArrowLeft: -5,
-    ArrowRight: 5,
+    ArrowLeft: -10,
+    ArrowRight: 10,
     PageDown: -60,
     PageUp: 60
   }
 
   let target = null
 
-  if (event.key in steps) target = props.currentTime + steps[event.key]
+  if (event.key in steps) target = (pendingTarget ?? props.currentTime) + steps[event.key]
   else if (event.key === 'Home') target = 0
   else if (event.key === 'End') target = props.duration
 
@@ -166,8 +173,11 @@ function onKeydown (event) {
 
   event.preventDefault()
   event.stopPropagation()
+  pendingTarget = Math.min(props.duration, Math.max(0, target))
+  clearTimeout(pendingTimer)
+  pendingTimer = setTimeout(() => { pendingTarget = null }, 1000)
   emit('activity')
-  emit('scrub-end', Math.min(props.duration, Math.max(0, target)))
+  emit('scrub-end', pendingTarget)
 }
 </script>
 

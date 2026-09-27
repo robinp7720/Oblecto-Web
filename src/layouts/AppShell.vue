@@ -38,7 +38,7 @@
           :to="{ name: 'Discover' }"
           class="nav-link"
         >
-          New &amp; Popular
+          Discover
         </RouterLink>
       </nav>
       <form
@@ -64,12 +64,13 @@
           placeholder="Titles, movies, shows"
         >
       </form>
+      <RemoteTargetPill />
       <ConnectionStatus />
       <details
         ref="accountMenu"
         class="account-menu"
         @toggle="onMenuToggle"
-        @keydown.esc="closeMenu"
+        @keydown.esc="closeMenuFromKeyboard"
       >
         <summary :aria-label="t('menu.open')">
           <UserAvatar
@@ -217,11 +218,12 @@
 </template>
 
 <script setup>
-import { computed, getCurrentInstance, nextTick, ref, watch } from 'vue'
+import { computed, getCurrentInstance, nextTick, onBeforeUnmount, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import BrandLogo from '@/components/system/BrandLogo.vue'
 import ConnectionStatus from '@/components/system/ConnectionStatus.vue'
 import RemoteControlBar from '@/components/remote/RemoteControlBar.vue'
+import RemoteTargetPill from '@/components/remote/RemoteTargetPill.vue'
 import { useI18n } from 'vue-i18n'
 import { useAuthStore } from '@/stores/auth'
 import UserAvatar from '@/components/system/UserAvatar.vue'
@@ -251,13 +253,33 @@ const thisDeviceName = ref(getDeviceName())
 const targets = computed(() => remote.playbackTargets)
 const targetDeviceId = computed(() => remote.targetDeviceId)
 
-watch(() => route.query.q, value => { searchText.value = String(value || '') })
+// Only the search page's query belongs in this box; the library uses `q` for
+// its own title filter.
+watch(() => route.name === 'Search' ? route.query.q : '', value => { searchText.value = String(value || '') })
 watch(() => route.fullPath, closeMenu)
 
 function closeMenu () {
   if (accountMenu.value) accountMenu.value.open = false
   renaming.value = false
 }
+// Esc from inside the menu: the panel it was in has just gone, so focus goes
+// back to the button that opened it instead of being lost.
+function closeMenuFromKeyboard () {
+  const menu = accountMenu.value
+  const hadFocus = menu?.contains(document.activeElement)
+
+  closeMenu()
+  if (hadFocus) menu.querySelector('summary')?.focus()
+}
+// On phones a backdrop behind the sheet takes the outside click; on wider
+// screens there is none, so a press anywhere outside closes the menu.
+function onOutsidePointer (event) {
+  const menu = accountMenu.value
+
+  if (menu?.open && !menu.contains(event.target)) closeMenu()
+}
+document.addEventListener('pointerdown', onOutsidePointer, true)
+onBeforeUnmount(() => document.removeEventListener('pointerdown', onOutsidePointer, true))
 function submitSearch () {
   router.push({ name: 'Search', query: { q: searchText.value } })
 }
@@ -403,7 +425,7 @@ async function logout () {
   place-items: center
   width: 34px
   height: 34px
-  border-radius: 4px
+  border-radius: var(--radius-sm)
   background: var(--color-brand-blue)
   color: white
   font-weight: 700
@@ -522,7 +544,7 @@ async function logout () {
     flex: 1
     min-width: 0
     padding: 6px 8px
-    border: 1px solid #555
+    border: 1px solid var(--color-border-control)
     background: #101010
     color: white
     font-size: 0.8rem
@@ -530,7 +552,7 @@ async function logout () {
   button
     width: auto !important
     padding: 6px 10px !important
-    border: 1px solid #555 !important
+    border: 1px solid var(--color-border-control) !important
     font-size: 0.75rem !important
 
 .content
@@ -544,7 +566,7 @@ async function logout () {
   align-items: center
   flex-wrap: wrap
   gap: 20px
-  padding: 24px max(var(--page-gutter), var(--safe-right)) calc(24px + var(--safe-bottom) + var(--mini-player-reserve)) max(var(--page-gutter), var(--safe-left))
+  padding: 24px max(var(--page-gutter), var(--safe-right)) calc(24px + var(--safe-bottom) + var(--mini-player-reserve) + var(--remote-bar-reserve)) max(var(--page-gutter), var(--safe-left))
   color: var(--color-text-faint)
   font-size: 0.8rem
 .footer-brand
@@ -569,7 +591,10 @@ async function logout () {
   .brand
     font-size: 1.5rem
 @media (max-width: 760px)
+  // Wrapped onto three rows here, the header would pin a third of a phone
+  // screen, so it scrolls with the page (see --header-offset in App.vue).
   .shell-header
+    position: relative
     flex-wrap: wrap
     gap: 16px
     padding-top: 16px

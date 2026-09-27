@@ -16,12 +16,13 @@
     >
     <div class="detail-shade" />
     <div class="detail-content">
-      <RouterLink
-        :to="backTo"
+      <a
+        :href="back.href.value"
         class="back-link"
+        @click="back.go"
       >
-        ‹ {{ backLabel }}
-      </RouterLink>
+        ‹ {{ back.label.value }}
+      </a>
       <div class="detail-layout">
         <div class="detail-copy motion-stagger">
           <span class="detail-eyebrow">{{ type === 'movie' ? 'MOVIE' : type === 'series' ? 'TV SHOW' : 'EPISODE' }} · YOUR OBLECTO LIBRARY</span>
@@ -40,9 +41,23 @@
           >
             {{ tagline }}
           </p>
-          <p class="detail-overview">
-            {{ overview || 'No synopsis available yet.' }}
-          </p>
+          <div class="detail-overview-block">
+            <p
+              class="detail-overview"
+              :class="{ clamped: longOverview && !overviewOpen }"
+            >
+              {{ overview || 'No synopsis available yet.' }}
+            </p>
+            <button
+              v-if="longOverview"
+              type="button"
+              class="overview-toggle"
+              :aria-expanded="overviewOpen"
+              @click="overviewOpen = !overviewOpen"
+            >
+              {{ overviewOpen ? 'Less' : 'More' }}
+            </button>
+          </div>
           <div
             v-if="genres.length"
             class="detail-genres"
@@ -85,6 +100,8 @@
 </template>
 <script setup>
 import { computed, ref, watch } from 'vue'
+import { usePageTitle } from '@/composables/usePageTitle'
+import { useBackLink } from '@/composables/useBackLink'
 const props = defineProps({
   type: { type: String, required: true },
   title: { type: String, required: true },
@@ -99,6 +116,13 @@ const props = defineProps({
   backTo: { type: Object, required: true },
   backLabel: { type: String, required: true }
 })
+// Every title page renders this hero, so it names the tab for all of them.
+usePageTitle(() => props.title)
+const back = useBackLink(() => props.backTo, () => props.backLabel)
+// On phones a long synopsis is cut to a few lines (see the media query), so
+// Play is not pushed below the fold by it.
+const longOverview = computed(() => (props.overview || '').length > 240)
+const overviewOpen = ref(false)
 const backdropFailed = ref(false)
 const fallbackFailed = ref(false)
 const activeBackdrop = computed(() => !backdropFailed.value && props.backdrop ? props.backdrop : !fallbackFailed.value ? props.fallbackBackdrop : '')
@@ -186,7 +210,7 @@ h1
   a
     padding: 5px 10px
     border: 1px solid var(--color-border-strong)
-    border-radius: 4px
+    border-radius: var(--radius-sm)
     color: var(--color-text-muted)
     font-size: 0.75rem
 .detail-facts
@@ -211,10 +235,48 @@ h1
   width: clamp(180px, 20vw, 290px)
   aspect-ratio: 2 / 3
   object-fit: cover
-  border-radius: 6px
+  border-radius: var(--radius-md)
   box-shadow: var(--shadow-strong)
   flex-shrink: 0
+// The synopsis toggle only matters where the synopsis is cut.
+.overview-toggle
+  display: none
 @media (max-width: 760px)
+  // Title, then what to do: on a phone the buttons come straight after the
+  // name and facts line, ahead of tagline, synopsis and genres.
+  .detail-copy
+    display: flex
+    flex-direction: column
+  .detail-eyebrow
+    order: 1
+  h1
+    order: 2
+  .detail-subtitle
+    order: 3
+  .detail-actions
+    order: 4
+    margin: 18px 0 8px
+  .detail-tagline
+    order: 5
+  .detail-overview-block
+    order: 6
+  .detail-genres
+    order: 7
+  .detail-facts
+    order: 8
+  .detail-overview.clamped
+    display: -webkit-box
+    -webkit-line-clamp: 4
+    -webkit-box-orient: vertical
+    overflow: hidden
+  .overview-toggle
+    display: inline
+    padding: 0
+    border: 0
+    background: none
+    color: var(--color-brand-turquoise)
+    font-weight: 700
+    cursor: pointer
   .detail-content
     padding-bottom: 32px
   .detail-layout

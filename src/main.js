@@ -5,8 +5,6 @@ import router from './router'
 import { useAppStore } from '@/stores/app'
 import oblectoClient from '@/oblectoClient'
 import { initSocket, reconnectSocket } from '@/socket'
-import Tabs from '@/components/system/Tabs.vue'
-import Tab from '@/components/system/Tab.vue'
 import { useAuthStore } from '@/stores/auth'
 import { applyLocale, i18n } from '@/i18n'
 
@@ -14,6 +12,7 @@ import { applyLocale, i18n } from '@/i18n'
 // from inside its own scoped block, which shipped a dozen copies of it.
 import '@/assets/sass/settings.sass'
 import '@/assets/sass/motion.sass'
+import '@/assets/sass/ui.sass'
 
 const app = createApp(App)
 const pinia = createPinia()
@@ -22,8 +21,6 @@ app.use(pinia)
 const appStore = useAppStore(pinia)
 app.use(router)
 app.use(i18n)
-app.component('Tabs', Tabs)
-app.component('Tab', Tab)
 
 // The browser's language until the account's own preference arrives.
 applyLocale(null)

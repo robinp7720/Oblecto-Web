@@ -130,7 +130,7 @@ onBeforeUnmount(() => observer?.disconnect())
   color: var(--color-text-muted)
   font-size: 0.78rem
 .action-link
-  color: #bcbcbc
+  color: var(--color-text-muted)
   font-size: 0.78rem
   white-space: nowrap
   &:hover
@@ -143,7 +143,7 @@ onBeforeUnmount(() => observer?.disconnect())
     width: 36px
     height: 32px
     border: 1px solid #555
-    border-radius: 3px
+    border-radius: var(--radius-sm)
     background: #242424
     color: white
     font-size: 1.5rem

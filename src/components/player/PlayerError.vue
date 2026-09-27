@@ -74,24 +74,5 @@ defineEmits(['retry', 'choose-source'])
   gap: 10px
 
 button
-  min-height: 46px
-  padding: 12px 24px
-  border: 0
-  border-radius: var(--radius-sm)
-  font-size: 0.95rem
-  font-weight: 700
-  cursor: pointer
-
-.primary
-  background: var(--color-brand-coral)
-  color: #141414
-  &:hover
-    background: var(--color-brand-orange)
-
-.secondary
-  border: 1px solid var(--color-border-strong)
-  background: rgba(40, 40, 40, 0.8)
-  color: var(--color-text)
-  &:hover
-    background: #383838
+  +p.player-action
 </style>

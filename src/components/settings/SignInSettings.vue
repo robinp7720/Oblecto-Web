@@ -20,7 +20,7 @@
               v-model="authentication.profilePicker"
               :aria-invalid="Boolean(form.fields['authentication.profilePicker'])"
               type="checkbox"
-              @change="saveSettings"
+              @change="saveField('authentication.profilePicker')"
             >
             <span class="checkmark" />
           </label>
@@ -37,7 +37,7 @@
               v-model="authentication.localPasswordlessLogin"
               :aria-invalid="Boolean(form.fields['authentication.localPasswordlessLogin'])"
               type="checkbox"
-              @change="saveSettings"
+              @change="saveField('authentication.localPasswordlessLogin')"
             >
             <span class="checkmark" />
           </label>
@@ -54,7 +54,7 @@
               v-model="authentication.allowPasswordlessLogin"
               :aria-invalid="Boolean(form.fields['authentication.allowPasswordlessLogin'])"
               type="checkbox"
-              @change="saveSettings"
+              @change="saveField('authentication.allowPasswordlessLogin')"
             >
             <span class="checkmark" />
           </label>
@@ -99,7 +99,7 @@
               v-model="authentication.trustProxy"
               :aria-invalid="Boolean(form.fields['authentication.trustProxy'])"
               type="checkbox"
-              @change="saveSettings"
+              @change="saveField('authentication.trustProxy')"
             >
             <span class="checkmark" />
           </label>
@@ -115,6 +115,7 @@
       :dirty="settingsDirty"
       @retry="retrySettings"
       @revert="revertSettings"
+      @save="saveSettings()"
     />
   </div>
 </template>
@@ -145,8 +146,9 @@
     },
     methods: {
       setSubnets (text) {
+        // Typed text: saved with the page's Save changes button.
         this.authentication.localSubnets = text.split(/[\s,]+/).filter(Boolean)
-        this.saveSettings()
+        this.checkSettings()
       }
     }
   }

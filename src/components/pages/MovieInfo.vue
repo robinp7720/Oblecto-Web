@@ -37,6 +37,14 @@
           :label="playbackLabel('movie', movie)"
           @play="store.playMovie(movie.id)"
         />
+        <button
+          v-if="playbackLabel('movie', movie).startsWith('Resume')"
+          type="button"
+          class="detail-button secondary"
+          @click="store.playMovie(movie.id, { position: 0 })"
+        >
+          Start over
+        </button>
         <WatchStateButton
           :id="movie.id"
           :track="movie.TrackMovies?.[0]"
@@ -46,6 +54,7 @@
         <a
           href="#movie-files"
           class="detail-button secondary"
+          @click="filesSection && (filesSection.open = true)"
         >Available files</a>
       </MediaDetailHero>
       <div class="detail-body">
@@ -76,9 +85,13 @@
         </section>
         <details
           id="movie-files"
+          ref="filesSection"
           class="detail-section technical-details"
         >
-          <summary>Available files</summary><FileList :files="movie.Files || []" />
+          <summary>Available files</summary><FileList
+            :files="movie.Files || []"
+            @play="file => store.playMovie(movie.id, { fileId: file.id })"
+          />
         </details>
         <p
           v-if="relatedLoading"
@@ -115,9 +128,9 @@
   </div>
 </template>
 <script setup>
-import { playbackLabel } from '@/utils/media'
+import { playbackLabel, formatDate } from '@/utils/media'
 import PlaybackButton from '@/components/remote/PlaybackButton.vue'
-import { computed } from 'vue'
+import { computed, ref } from 'vue'
 import { useRoute } from 'vue-router'
 import { useAppStore } from '@/stores/app'
 import { useMediaStore } from '@/stores/media'
@@ -139,6 +152,9 @@ const { item: movie, related: sets, loading, error, relatedError, relatedLoading
   id => oblectoClient.movieLibrary.getInfo(id),
   id => oblectoClient.movieLibrary.getMovieSets(id), 'movie'
 )
+// Following a link to a closed <details> scrolls to its summary but leaves it
+// shut, so the hero's "Available files" link opens it on the way.
+const filesSection = ref(null)
 const genres = computed(() => normalizeGenres(movie.value?.genres || movie.value?.genre))
 const subtitle = computed(() => [formatYear(movie.value?.releaseDate), formatRuntime(movie.value?.runtime), ratingLabel(movie.value)].filter(Boolean).join(' · '))
 const keyCrew = computed(() => (movie.value?.credits?.crew || []).filter(credit => credit.roles?.some(role => ['Director', 'Writer', 'Screenplay', 'Story'].includes(role.job))))
@@ -152,7 +168,7 @@ const metadata = computed(() => {
   const data = movie.value || {}
   const currency = value => Number(value) > 0 ? new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 }).format(value) : null
   return [
-    { label: 'Release date', value: data.releaseDate },
+    { label: 'Release date', value: formatDate(data.releaseDate) },
     { label: 'Runtime', value: formatRuntime(data.runtime) },
     { label: 'Original language', value: data.originalLanguage?.toUpperCase() },
     { label: 'Original title', value: data.originalName },

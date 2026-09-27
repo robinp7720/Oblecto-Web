@@ -1,0 +1,60 @@
+// Small pieces every page shares. Pages used to define these in their own
+// scoped styles, and the copies had drifted apart: seven eyebrows in four
+// colours, three different state cards. A page that needs a variant adjusts
+// the shared one rather than redefining it.
+
+// The small capitals above a page or section title.
+.eyebrow
+  display: block
+  color: var(--color-brand-turquoise)
+  font-size: 0.72rem
+  font-weight: 700
+  letter-spacing: 0.18em
+  text-transform: uppercase
+
+// A message in the place of content: loading, empty, or failed, with an
+// action where there is one.
+.state-card
+  display: flex
+  flex-wrap: wrap
+  align-items: center
+  gap: 12px 16px
+  padding: 24px
+  border: 1px solid var(--color-border)
+  border-radius: var(--radius-md)
+  background: var(--color-surface)
+  color: var(--color-text-muted)
+  line-height: 1.5
+
+  &.error
+    border-color: var(--color-danger-border)
+    color: var(--color-danger)
+
+  button
+    min-height: var(--control-size)
+    padding: 8px 16px
+    border: 1px solid var(--color-border-strong)
+    border-radius: var(--radius-sm)
+    background: var(--color-surface-strong)
+    color: var(--color-text)
+    font: inherit
+    cursor: pointer
+
+    &:hover
+      background: var(--color-surface-hover)
+
+  a
+    color: var(--color-text)
+    text-decoration: underline
+
+// Read by screen readers, not shown.
+.sr-only
+  position: absolute
+  width: 1px
+  height: 1px
+  margin: -1px
+  padding: 0
+  overflow: hidden
+  clip: rect(0, 0, 0, 0)
+  white-space: nowrap
+  border: 0

@@ -55,3 +55,29 @@
   letter-spacing: 0.08em
   text-transform: uppercase
   color: var(--color-text-faint)
+
+// The labelled buttons on player cards (error, up next, end screen): coral
+// for the one thing to do, dark for the alternatives.
+=player-action
+  min-height: 46px
+  padding: 12px 22px
+  border: 0
+  border-radius: var(--radius-sm)
+  font-size: 0.95rem
+  font-weight: 700
+  cursor: pointer
+  touch-action: manipulation
+  &.primary
+    background: var(--color-brand-coral)
+    color: #141414
+    &:hover
+      background: var(--color-brand-orange)
+  &.secondary
+    border: 1px solid var(--color-border-strong)
+    background: rgba(40, 40, 40, 0.8)
+    color: var(--color-text)
+    &:hover
+      background: #383838
+  &:focus-visible
+    outline: 2px solid var(--color-text)
+    outline-offset: 2px

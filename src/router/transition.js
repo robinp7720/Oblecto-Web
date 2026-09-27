@@ -31,6 +31,14 @@ export function pageLeft () {
   pending?.()
 }
 
+// Which page a route shows, as the page transition keys it. Nested routes
+// (settings) keep their layout and animate their own panel, so they share one
+// key. Everything else is keyed by path: another movie is a new page, but a
+// changed search or filter query is not.
+export function pageKey (target) {
+  return target.matched.length > 1 ? target.matched[0].path : target.path
+}
+
 // Card transitions ------------------------------------------------------------
 //
 // Opening a title from a card grows the new page out of the card's artwork,
@@ -83,10 +91,12 @@ function run (kind, rect, originEl, scrollTo) {
   const root = document.documentElement
 
   setRect(rect)
-  // The header only holds still when it is on screen at the top; scrolled
-  // away, it arrives with the rest of the new page.
-  const headerTop = document.querySelector('.shell-header')?.getBoundingClientRect().top
-  root.classList.toggle('vt-hold-header', headerTop === 0 && scrollTo === 0)
+  // The header only holds still when it is at the top both before and after:
+  // a sticky one always is; one that scrolls with the page (phones) only when
+  // neither page is scrolled. Otherwise it arrives with the rest of the page.
+  const header = document.querySelector('.shell-header')
+  const sticky = header && getComputedStyle(header).position === 'sticky'
+  root.classList.toggle('vt-hold-header', header?.getBoundingClientRect().top === 0 && (sticky || scrollTo === 0))
   root.classList.add('vt-card', `vt-card-${kind}`)
   if (originEl) originEl.style.viewTransitionName = 'motion-origin'
   cardTransitionActive.value = true

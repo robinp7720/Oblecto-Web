@@ -50,6 +50,7 @@
         type="button"
         class="icon-button centre-side"
         aria-label="Back 10 seconds"
+        title="Back 10 seconds (←)"
         @click="$emit('seek-by', -10)"
       >
         <PlayerIcon name="replay-10" />
@@ -58,6 +59,7 @@
         type="button"
         class="centre-play"
         :aria-label="paused ? 'Play' : 'Pause'"
+        :title="`${paused ? 'Play' : 'Pause'} (Space)`"
         @click="$emit('toggle-play')"
       >
         <PlayerIcon :name="paused ? 'play' : 'pause'" />
@@ -66,6 +68,7 @@
         type="button"
         class="icon-button centre-side"
         aria-label="Forward 10 seconds"
+        title="Forward 10 seconds (→)"
         @click="$emit('seek-by', 10)"
       >
         <PlayerIcon name="forward-10" />
@@ -96,6 +99,7 @@
           type="button"
           class="icon-button"
           :aria-label="paused ? 'Play' : 'Pause'"
+          :title="`${paused ? 'Play' : 'Pause'} (Space)`"
           @click="$emit('toggle-play')"
         >
           <PlayerIcon :name="paused ? 'play' : 'pause'" />
@@ -105,6 +109,7 @@
           type="button"
           class="icon-button"
           aria-label="Back 10 seconds"
+          title="Back 10 seconds (←)"
           @click="$emit('seek-by', -10)"
         >
           <PlayerIcon name="replay-10" />
@@ -114,6 +119,7 @@
           type="button"
           class="icon-button"
           aria-label="Forward 10 seconds"
+          title="Forward 10 seconds (→)"
           @click="$emit('seek-by', 10)"
         >
           <PlayerIcon name="forward-10" />
@@ -131,19 +137,12 @@
         <span class="spacer" />
 
         <button
-          v-if="nextEpisode"
-          type="button"
-          class="next"
-          @click="$emit('play-next')"
-        >
-          Next episode
-        </button>
-
-        <button
+          v-if="subtitlesAvailable"
           type="button"
           class="icon-button"
           :class="{ on: subtitlesOn }"
           :aria-label="subtitlesOn ? 'Turn subtitles off' : 'Turn subtitles on'"
+          title="Subtitles (C)"
           :aria-pressed="subtitlesOn ? 'true' : 'false'"
           @click="$emit('toggle-subtitles')"
         >
@@ -155,6 +154,7 @@
           type="button"
           class="icon-button rate"
           aria-label="Change playback speed"
+          title="Playback speed ([ and ])"
           @click="$emit('cycle-rate')"
         >
           {{ playbackRate }}x
@@ -166,6 +166,7 @@
             type="button"
             class="icon-button"
             aria-label="Playback settings"
+            title="Settings (? for shortcuts)"
             :aria-expanded="settingsOpen ? 'true' : 'false'"
             @click="$emit('toggle-settings')"
           >
@@ -179,7 +180,7 @@
           type="button"
           class="icon-button"
           aria-label="Picture in picture"
-          @click="$emit('minimize')"
+          @click="$emit('pip')"
         >
           <PlayerIcon name="pip" />
         </button>
@@ -189,6 +190,7 @@
           type="button"
           class="icon-button"
           :aria-label="isFullscreen ? 'Exit full screen' : 'Full screen'"
+          :title="`${isFullscreen ? 'Exit full screen' : 'Full screen'} (F)`"
           :aria-pressed="isFullscreen ? 'true' : 'false'"
           @click="$emit('toggle-fullscreen')"
         >
@@ -221,7 +223,9 @@ const props = defineProps({
   volumeSupported: { type: Boolean, default: true },
   playbackRate: { type: Number, default: 1 },
   subtitlesOn: { type: Boolean, default: false },
-  nextEpisode: { type: Boolean, default: false },
+  // The file has subtitle tracks; without any, the captions button would only
+  // ever toggle nothing.
+  subtitlesAvailable: { type: Boolean, default: true },
   settingsOpen: { type: Boolean, default: false },
   pipSupported: { type: Boolean, default: false },
   fullscreenSupported: { type: Boolean, default: false },
@@ -233,10 +237,9 @@ const props = defineProps({
 })
 
 defineEmits([
-  'activity', 'minimize', 'stop', 'view-show', 'toggle-play', 'seek-by',
+  'activity', 'minimize', 'pip', 'stop', 'view-show', 'toggle-play', 'seek-by',
   'scrub-start', 'scrub', 'scrub-end', 'set-volume', 'toggle-mute',
-  'toggle-subtitles', 'cycle-rate', 'toggle-settings', 'toggle-fullscreen',
-  'play-next'
+  'toggle-subtitles', 'cycle-rate', 'toggle-settings', 'toggle-fullscreen'
 ])
 
 const showCentreTransport = computed(() => props.compact)
@@ -388,21 +391,7 @@ button.subtitle
   position: relative
   display: inline-flex
 
-.next
-  flex: none
-  min-height: 38px
-  margin-right: 4px
-  padding: 8px 16px
-  border: 0
-  border-radius: var(--radius-sm)
-  background: var(--color-brand-coral)
-  color: #141414
-  font-size: 0.85rem
-  font-weight: 700
-  white-space: nowrap
-  cursor: pointer
-  &:hover
-    background: var(--color-brand-orange)
+
 
 @media (min-width: 761px)
   .top

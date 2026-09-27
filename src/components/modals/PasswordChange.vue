@@ -1,6 +1,7 @@
 <template>
   <AppDialog
     :open="open"
+    :dirty="password !== ''"
     title="Set password"
     :subtitle="user ? `This replaces the password for ${user.username}. They are not notified.` : ''"
     size="sm"

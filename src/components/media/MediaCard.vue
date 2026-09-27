@@ -8,10 +8,13 @@
       class="poster"
       data-motion-origin
     >
+      <!-- The same link as the title below, for the pointer; keyboard and
+           screen reader users get the title, so a card is one stop, not two. -->
       <RouterLink
         :to="detailsRoute"
         class="poster-link"
-        :aria-label="`More info about ${title}`"
+        tabindex="-1"
+        aria-hidden="true"
       >
         <img
           v-if="!imageFailed"
@@ -33,7 +36,7 @@
         v-if="playable"
         type="button"
         class="play-button"
-        :aria-label="`${playLabel} ${title}`"
+        :aria-label="`${playLabel} ${title}${remote.isRemote && remote.activeDevice ? ` on ${remote.activeDevice.name}` : ''}`"
         @click="play"
       >
         <span aria-hidden="true">▶</span>
@@ -77,6 +80,7 @@
 import { computed, ref, watch } from 'vue'
 import { useAppStore } from '@/stores/app'
 import { useMediaStore } from '@/stores/media'
+import { useRemoteStore } from '@/remote/state'
 import { titleForItem, subtitleForItem, progressForItem, playbackLabel } from '@/utils/media'
 
 const props = defineProps({
@@ -93,6 +97,8 @@ const props = defineProps({
 
 const store = useAppStore()
 const media = useMediaStore()
+// Play follows the device chosen for playback; the label says where.
+const remote = useRemoteStore()
 const trackedItem = computed(() => media.withProgress(props.type, props.item))
 
 const title = computed(() => titleForItem(props.type, props.item))
@@ -149,7 +155,7 @@ function play () {
 .poster
   position: relative
   aspect-ratio: 2 / 3
-  border-radius: 4px
+  border-radius: var(--radius-sm)
   overflow: hidden
   background: #252525
   transition: transform var(--motion-base) var(--ease-out), box-shadow var(--motion-base) var(--ease-out)
@@ -159,6 +165,15 @@ function play () {
     .play-button
       opacity: 1
       transform: none
+// Keyboard focus on the title lifts and rings the artwork, which is what
+// identifies the card; the poster clips an outline, so this is a shadow ring.
+.media-card:focus-within .poster
+  transform: translateY(-4px)
+  .play-button
+    opacity: 1
+    transform: none
+.media-card:has(.title:focus-visible) .poster
+  box-shadow: 0 0 0 2px white, 0 8px 24px #0008
 .landscape .poster
   aspect-ratio: 16 / 9
 .poster-link
@@ -207,8 +222,8 @@ function play () {
   transition: opacity var(--motion-base) var(--ease-out), transform var(--motion-base) var(--ease-out), background-color var(--motion-fast)
   &:hover
     background: #ddd
-// Beats the hover reveal above, which also sets the transform.
-.poster .play-button:active
+// Beats the hover and focus reveals above, which also set the transform.
+.media-card .poster .play-button:active
   transform: scale(0.92)
 .progress
   position: absolute

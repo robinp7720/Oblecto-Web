@@ -4,6 +4,10 @@
     ref="root"
     class="player-root"
     :data-mode="modeName"
+    :role="isMini ? undefined : 'dialog'"
+    :aria-modal="isMini ? undefined : 'true'"
+    :aria-label="isMini ? undefined : `Player: ${title}`"
+    tabindex="-1"
   >
     <div
       ref="stage"
@@ -38,7 +42,7 @@
         />
 
         <PlayerOverlay
-          :visible="chromeVisible"
+          :visible="chromeVisible && !ended"
           :title="title"
           :subtitle="subtitle"
           :can-view-show="playing.type === 'episode'"
@@ -51,15 +55,16 @@
           :muted="video.muted.value"
           :volume-supported="env.volumeSupported.value"
           :playback-rate="video.playbackRate.value"
-          :subtitles-on="subtitleMode !== 'off'"
-          :next-episode="showNextEpisode"
+          :subtitles-on="subtitlesShowing"
+          :subtitles-available="subtitleStreams.length > 0"
           :settings-open="settingsOpen"
           :pip-supported="env.pipSupported.value"
           :fullscreen-supported="env.fullscreenSupported.value"
           :is-fullscreen="isFullscreenMode"
-          :compact="env.narrow.value || env.coarsePointer.value"
+          :compact="env.narrow.value"
           @activity="visibility.notifyActivity"
           @minimize="setMode(ScreenFormats.SMALL)"
+          @pip="enterPip"
           @stop="stopPlaying"
           @view-show="viewShow"
           @toggle-play="togglePlay"
@@ -73,7 +78,6 @@
           @cycle-rate="cycleRate"
           @toggle-settings="settingsOpen = !settingsOpen"
           @toggle-fullscreen="toggleFullscreen"
-          @play-next="playNext"
         >
           <template #settings>
             <PlayerSettingsSurface
@@ -93,16 +97,61 @@
                 :subtitle-mode="subtitleMode"
                 :playback-rate="video.playbackRate.value"
                 :speed-options="speedOptions"
+                :keyboard="!env.coarsePointer.value"
                 @select-quality="selectQuality"
                 @select-file="changeFileId"
                 @select-audio="selectAudioStream"
                 @select-subtitle="selectSubtitleTrack"
                 @set-subtitle-mode="setSubtitleMode"
                 @set-rate="video.setRate"
+                @show-shortcuts="settingsOpen = false; shortcutsOpen = true"
               />
             </PlayerSettingsSurface>
           </template>
         </PlayerOverlay>
+
+        <div
+          v-if="resumedFrom !== null && !ended"
+          class="resumed"
+          role="status"
+        >
+          <span>Resumed from {{ formatSeconds(resumedFrom) }}</span>
+          <button
+            type="button"
+            @click="startOver"
+          >
+            Start over
+          </button>
+        </div>
+
+        <PlayerUpNext
+          v-if="upNext"
+          :title="upNext.title"
+          :numbering="upNext.numbering"
+          :countdown="upNext.countdown"
+          :remaining="upNext.remaining"
+          :total="UP_NEXT_COUNTDOWN"
+          @play="playNext"
+          @cancel="cancelCountdown"
+          @dismiss="upNextDismissed = true"
+        />
+
+        <PlayerShortcuts
+          v-if="shortcutsOpen"
+          @close="shortcutsOpen = false"
+        />
+
+        <PlayerEndScreen
+          v-if="ended"
+          :kind="playing.type"
+          :title="title"
+          :next="playing.type === 'episode' ? nextInfo?.title || '' : ''"
+          @play-next="playNext"
+          @more-like-this="leaveFor('related')"
+          @details="leaveFor('details')"
+          @replay="watchAgain"
+          @close="stopPlaying"
+        />
       </template>
 
       <PlayerMini
@@ -128,18 +177,21 @@ import { useAppStore } from '@/stores/app'
 import { useMediaStore } from '@/stores/media'
 
 import PlayerBuffering from './PlayerBuffering.vue'
+import PlayerEndScreen from './PlayerEndScreen.vue'
 import PlayerError from './PlayerError.vue'
 import PlayerGestureLayer from './PlayerGestureLayer.vue'
 import PlayerMini from './PlayerMini.vue'
 import PlayerOverlay from './PlayerOverlay.vue'
 import PlayerSettingsPanel from './PlayerSettingsPanel.vue'
 import PlayerSettingsSurface from './PlayerSettingsSurface.vue'
+import PlayerShortcuts from './PlayerShortcuts.vue'
+import PlayerUpNext from './PlayerUpNext.vue'
 
 import PlaybackController, { browserCapabilities } from '@/playback/PlaybackController'
 import { ScreenFormats } from '@/enums/ScreenFormats'
 import oblectoClient from '@/oblectoClient'
 import { imageUrl, subtitleForItem } from '@/utils/media'
-import { describeSeconds } from '@/utils/time'
+import { describeSeconds, formatSeconds } from '@/utils/time'
 
 import { useControlsVisibility } from '@/composables/player/useControlsVisibility'
 import { useFullscreen } from '@/composables/player/useFullscreen'
@@ -152,9 +204,14 @@ import { useVideoElement } from '@/composables/player/useVideoElement'
 import { useAuthStore } from '@/stores/auth'
 import { streamInLanguage } from '@/playback/languages'
 
-const AUTOPLAY_TIME_LEFT_THRESHOLD = 5
 import { IGNORE_RESTORE_PROGRESS_THRESHOLD } from '@/utils/media'
+// Past this share of an episode the next one is offered.
 const NEXT_EPISODE_PROGRESS_THRESHOLD = 0.9
+// With autoplay on, the countdown to the next episode starts this many seconds
+// before the end (roughly where credits begin) and lasts UP_NEXT_COUNTDOWN
+// seconds of playback, so the credits are skipped unless the user cancels.
+const UP_NEXT_LEAD = 30
+const UP_NEXT_COUNTDOWN = 10
 
 const store = useAppStore()
 const mediaStore = useMediaStore()
@@ -191,12 +248,23 @@ const playbackError = ref('')
 const loading = ref(false)
 const paused = ref(true)
 const settingsOpen = ref(false)
+const shortcutsOpen = ref(false)
 const scrubPreview = ref(null)
 const announcement = ref('')
 const nextEpisode = ref(null)
 const initialProgress = ref(0)
 const resumeAfterStreamChange = ref(true)
+// Set once the next episode has been asked for, so it is only asked once.
 const autoplaying = ref(false)
+// The title ran to its end; the end screen offers what to do next.
+const ended = ref(false)
+// Playback time at which the up-next countdown began; null when not counting.
+const countdownStart = ref(null)
+const countdownCancelled = ref(false)
+const upNextDismissed = ref(false)
+// Where playback resumed, shown briefly with a Start over button.
+const resumedFrom = ref(null)
+let resumedTimer = null
 // The browser refused to start playback and wants a gesture on this device.
 const autoplayBlocked = ref(false)
 
@@ -221,7 +289,7 @@ const modeName = computed(() => {
 })
 
 const video = useVideoElement(videoEl, {
-  onEnded: () => mediaStore.scheduleRefresh('watch'),
+  onEnded,
   onLoadedData: element => {
     env.probeVolumeSupport(element)
     // A new source resets rate and volume on the element, so the user's
@@ -254,9 +322,27 @@ const artwork = computed(() => {
     : imageUrl(host.value, 'movie', entity.id, 'poster')
 })
 
-const showNextEpisode = computed(() => Boolean(
-  nextEpisode.value?.id && playing.value?.type === 'episode' && progress.value > NEXT_EPISODE_PROGRESS_THRESHOLD
-))
+const nextInfo = computed(() => {
+  const next = nextEpisode.value
+  if (!next?.id || playing.value?.type !== 'episode') return null
+
+  return {
+    title: next.episodeName || 'Next episode',
+    numbering: Number.isInteger(next.airedSeason) && Number.isInteger(next.airedEpisodeNumber) ? `S${next.airedSeason} E${next.airedEpisodeNumber}` : ''
+  }
+})
+
+// Counting down (autoplay on), or offered once most of the episode is done;
+// never alongside the end screen.
+const upNext = computed(() => {
+  if (!nextInfo.value || ended.value || !duration.value) return null
+  if (countdownStart.value !== null) {
+    const remaining = Math.ceil(UP_NEXT_COUNTDOWN - (video.currentTime.value - countdownStart.value))
+    return { ...nextInfo.value, countdown: true, remaining: Math.min(UP_NEXT_COUNTDOWN, Math.max(0, remaining)) }
+  }
+  if (!upNextDismissed.value && progress.value > NEXT_EPISODE_PROGRESS_THRESHOLD) return { ...nextInfo.value, countdown: false }
+  return null
+})
 
 function streamsOfType (type) {
   const streams = playbackSession.value?.tracks || currentFile.value?.Streams || []
@@ -267,13 +353,16 @@ function streamsOfType (type) {
 
 const audioStreams = computed(() => streamsOfType('audio'))
 const subtitleStreams = computed(() => streamsOfType('subtitle'))
+// "On" only when a track is actually showing. The mode alone said on for every
+// video, since 'auto' may well pick no track at all.
+const subtitlesShowing = computed(() => subtitleMode.value !== 'off' && Number.isInteger(selectedSubtitleStreamIndex.value))
 
 const useSheet = computed(() => env.narrow.value || env.coarsePointer.value)
 
 // The chrome stays up while the user is doing something with it, or while
 // there is something to read.
 const chromePinned = computed(() => Boolean(
-  settingsOpen.value || playbackError.value || scrubPreview.value !== null
+  settingsOpen.value || shortcutsOpen.value || playbackError.value || scrubPreview.value !== null
 ))
 
 const visibility = useControlsVisibility({
@@ -316,15 +405,41 @@ const gestures = usePlayerGestures(computed(() => gestureLayer.value?.layer || n
   onToggleFullscreen: toggleFullscreen
 })
 
+// Keys act on a video whose controls may be hidden (fullscreen, idle), so
+// each shows what it did, the way the matching touch gesture does, and says
+// it for screen readers.
 usePlayerHotkeys({
   togglePlay,
-  seekBy,
-  nudgeVolume: delta => video.setVolume(video.volume.value + delta),
-  toggleMute: video.toggleMute,
+  seekBy: seconds => {
+    seekBy(seconds)
+    gestures.flashSeek(seconds)
+    visibility.notifyActivity()
+    announcement.value = `Seeking ${seconds < 0 ? 'back' : 'forward'} ${describeSeconds(Math.abs(seconds))}`
+  },
+  nudgeVolume: delta => {
+    const next = Math.min(1, Math.max(0, video.volume.value + delta))
+    video.setVolume(next)
+    gestures.showVolumeHud(next)
+    announcement.value = `Volume ${Math.round(next * 100)}%`
+  },
+  toggleMute: () => {
+    video.toggleMute()
+    gestures.showVolumeHud(video.muted.value ? 0 : video.volume.value)
+    announcement.value = video.muted.value ? 'Muted' : 'Unmuted'
+  },
   toggleFullscreen,
   toggleSubtitles,
   adjustRate,
+  showShortcuts: () => {
+    if (isMini.value) return
+    settingsOpen.value = false
+    shortcutsOpen.value = !shortcutsOpen.value
+  },
   escape: () => {
+    if (shortcutsOpen.value) {
+      shortcutsOpen.value = false
+      return
+    }
     if (settingsOpen.value) {
       settingsOpen.value = false
       return
@@ -333,7 +448,8 @@ usePlayerHotkeys({
   }
 }, {
   enabled: hasPlayback,
-  rootRef: root
+  rootRef: root,
+  scoped: isMini
 })
 
 // Publishes what this player is doing to the user's other devices, and lets
@@ -469,12 +585,71 @@ function onTimeUpdate () {
   // Throttled inside the transport, so this is one call per second on the wire.
   reportProgress()
 
-  if (autoplay.value && !autoplaying.value && duration.value > 0) {
-    if (duration.value - video.currentTime.value <= AUTOPLAY_TIME_LEFT_THRESHOLD) {
-      autoplaying.value = true
-      playNext()
-    }
+  if (autoplay.value && nextEpisode.value?.id && !countdownCancelled.value && !autoplaying.value && duration.value > 0) {
+    const position = video.currentTime.value
+
+    // Seeking back out of the credits calls the countdown off until they
+    // come round again.
+    if (duration.value - position > UP_NEXT_LEAD) countdownStart.value = null
+    else if (countdownStart.value === null) countdownStart.value = position
+    else if (position - countdownStart.value >= UP_NEXT_COUNTDOWN) playNext()
   }
+
+  // Seeking back from the end screen puts the title back on.
+  if (ended.value && duration.value - video.currentTime.value > 1) ended.value = false
+}
+
+function onEnded () {
+  mediaStore.scheduleRefresh('watch')
+
+  // A title shorter than the countdown, or a countdown that never got to run.
+  if (autoplay.value && nextEpisode.value?.id && !countdownCancelled.value) {
+    playNext()
+    return
+  }
+
+  ended.value = true
+}
+
+// Too short a resume is not worth announcing.
+const RESUME_NOTE_MIN_SECONDS = 10
+const RESUME_NOTE_MS = 8000
+
+function showResumed (position) {
+  clearTimeout(resumedTimer)
+  resumedFrom.value = position >= RESUME_NOTE_MIN_SECONDS ? position : null
+  if (resumedFrom.value !== null) resumedTimer = setTimeout(() => { resumedFrom.value = null }, RESUME_NOTE_MS)
+}
+
+function startOver () {
+  clearTimeout(resumedTimer)
+  resumedFrom.value = null
+  video.seekTo(0, duration.value)
+  announcement.value = 'Playing from the beginning'
+}
+
+function cancelCountdown () {
+  countdownCancelled.value = true
+  countdownStart.value = null
+}
+
+function watchAgain () {
+  ended.value = false
+  countdownCancelled.value = true
+  video.seekTo(0, duration.value)
+  void video.play()
+}
+
+// From the end screen: the title is over, so the player closes and the page
+// it belongs to opens (for a movie, optionally at "More like this").
+function leaveFor (target) {
+  const { type, entity } = playing.value
+  const destination = type === 'movie'
+    ? { name: 'MovieInfo', params: { movieId: entity.id }, ...(target === 'related' ? { hash: '#more-like-this' } : {}) }
+    : { name: 'SeriesView', params: { seriesId: entity.Series?.id ?? entity.SeriesId } }
+
+  stopPlaying()
+  router.push(destination)
 }
 
 async function updateSession (offset = null) {
@@ -588,7 +763,15 @@ async function setSubtitleMode (mode) {
 }
 
 async function toggleSubtitles () {
-  await setSubtitleMode(subtitleMode.value === 'off' ? 'auto' : 'off')
+  if (subtitlesShowing.value) return setSubtitleMode('off')
+
+  // Turning captions on shows a track: the user's subtitle language when the
+  // file has it, otherwise the first.
+  const streams = subtitleStreams.value
+  if (!streams.length) return
+  const preferred = streamInLanguage(streams, authStore.preferences.subtitleLanguage)
+
+  await selectSubtitleTrack(Number.isInteger(preferred) ? preferred : streams[0].index)
 }
 
 async function selectSubtitleTrack (streamIndex) {
@@ -604,10 +787,14 @@ function retry () {
 }
 
 function playNext () {
+  if (!nextEpisode.value?.id || autoplaying.value) return
+  autoplaying.value = true
+  countdownStart.value = null
   // Explicitly local: `playEpisode` would route to whatever remote target this
   // device has selected, so a device playing under remote control would fling
-  // its own next episode at a third device.
-  if (nextEpisode.value?.id) store.playEpisodeLocal(nextEpisode.value.id)
+  // its own next episode at a third device. Continuous: it takes over this
+  // player as it is, fullscreen or docked.
+  store.playEpisodeLocal(nextEpisode.value.id, { continuous: true })
 }
 
 function stopPlaying () {
@@ -662,14 +849,39 @@ watch(playSizeFormat, async mode => {
       }
       break
 
+    // The in-page mini player; the browser's own window is a separate choice
+    // (enterPip), and entering it lands here through onPipEnter.
     case ScreenFormats.SMALL:
       await fullscreen.exit()
-      if (env.pipSupported.value && videoEl.value && !document.pictureInPictureElement) {
-        await videoEl.value.requestPictureInPicture().catch(() => {})
-      }
       break
   }
 })
+
+// Large or fullscreen, the player covers the page and behaves as a dialog: the
+// page behind is inert (App.vue), focus moves into the player, and comes back
+// to where it was (the Play button, usually) when the player is docked or
+// closed.
+const immersive = computed(() => hasPlayback.value && !isMini.value)
+let returnFocus = null
+watch(immersive, async (now, before) => {
+  if (now && !before) {
+    returnFocus = document.activeElement
+    await nextTick()
+    root.value?.focus({ preventScroll: true })
+  } else if (!now && before) {
+    const target = returnFocus
+    returnFocus = null
+    await nextTick()
+    if (target?.isConnected && !root.value?.contains(target)) target.focus({ preventScroll: true })
+  }
+})
+
+// Called straight from the click, which the browser requires: by the time a
+// mode watcher runs, the user activation may already have lapsed.
+function enterPip () {
+  if (!env.pipSupported.value || !videoEl.value || document.pictureInPictureElement) return
+  videoEl.value.requestPictureInPicture().catch(() => {})
+}
 
 // The browser's own fullscreen exit (Esc, the system button) must push the
 // store back, or the UI keeps claiming it is fullscreen.
@@ -679,15 +891,24 @@ watch(fullscreen.isFullscreen, active => {
   }
 })
 
-watch(playing, async (newState, oldState) => {
-  if (!oldState?.entity || !oldState.entity.title) setMode(ScreenFormats.LARGE)
+watch(playing, async newState => {
+  // A new title opens large; one that continues from the last (the next
+  // episode) keeps whatever size the player already has.
+  if (newState?.entity && !newState.continuous) setMode(ScreenFormats.LARGE)
 
   initialProgress.value = 0
-  playingFileId.value = 0
+  // A particular version asked for by id ("Play this version"), else the first.
+  playingFileId.value = Math.max(0, (newState?.entity?.Files || []).findIndex(file => file.id === newState?.fileId))
   settingsOpen.value = false
+  shortcutsOpen.value = false
   paused.value = true
   loading.value = false
   autoplaying.value = false
+  ended.value = false
+  resumedFrom.value = null
+  countdownStart.value = null
+  countdownCancelled.value = false
+  upNextDismissed.value = false
   playbackError.value = ''
   scrubPreview.value = null
   applyTrackPreferences()
@@ -708,7 +929,12 @@ watch(playing, async (newState, oldState) => {
   const tracking = getTracking()
   const shouldPreSeek = tracking[0] ? tracking[0].progress < IGNORE_RESTORE_PROGRESS_THRESHOLD : false
 
-  if (tracking[0] !== undefined && shouldPreSeek) initialProgress.value = tracking[0].time
+  if (Number.isFinite(newState.startAt)) initialProgress.value = newState.startAt
+  else if (tracking[0] !== undefined && shouldPreSeek) initialProgress.value = tracking[0].time
+
+  // Picking up where the user left off is said out loud, with the way back
+  // to the beginning next to it.
+  showResumed(Number.isFinite(newState.startAt) ? 0 : initialProgress.value)
 
   resumeAfterStreamChange.value = true
 
@@ -748,6 +974,7 @@ watch([hasPlayback, isMini, env.narrow], ([active, mini, narrow]) => {
 }, { immediate: true })
 
 onBeforeUnmount(() => {
+  clearTimeout(resumedTimer)
   mediaSession.clear()
   document.documentElement.style.setProperty('--mini-player-reserve', '0px')
   void controller?.destroy()
@@ -758,6 +985,9 @@ onBeforeUnmount(() => {
 .player-root
   position: fixed
   color: var(--color-text)
+  // Focus lands here when the player opens; the controls inside show their own.
+  &:focus
+    outline: none
 
 .stage
   position: relative
@@ -790,6 +1020,40 @@ video
 
 .player-root[data-mode='small'] .stage
   animation: motion-rise var(--motion-slow) var(--ease-out)
+
+// A brief note that playback picked up where the user left off.
+.resumed
+  position: absolute
+  left: 24px
+  bottom: 112px
+  display: flex
+  align-items: center
+  gap: 12px
+  padding: 8px 8px 8px 16px
+  border: 1px solid var(--color-border)
+  border-radius: 999px
+  background: rgba(20, 20, 20, 0.88)
+  font-size: 0.9rem
+  animation: motion-rise var(--motion-base) var(--ease-out)
+  button
+    min-height: var(--control-size)
+    padding: 6px 14px
+    border: 0
+    border-radius: 999px
+    background: rgba(255, 255, 255, 0.14)
+    color: var(--color-text)
+    font-weight: 700
+    cursor: pointer
+    &:hover
+      background: rgba(255, 255, 255, 0.24)
+    &:focus-visible
+      outline: 2px solid var(--color-text)
+      outline-offset: 2px
+
+@media (max-width: 600px)
+  .resumed
+    left: 12px
+    bottom: 96px
 
 .player-root[data-mode='small']
   z-index: var(--z-player-mini)

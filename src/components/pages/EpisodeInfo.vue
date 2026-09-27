@@ -35,6 +35,14 @@
           :label="playbackLabel('episode', episode)"
           @play="store.playEpisode(episode.id)"
         />
+        <button
+          v-if="playbackLabel('episode', episode).startsWith('Resume')"
+          type="button"
+          class="detail-button secondary"
+          @click="store.playEpisode(episode.id, { position: 0 })"
+        >
+          Start over
+        </button>
         <WatchStateButton
           :id="episode.id"
           :track="episode.TrackEpisodes?.[0]"
@@ -118,14 +126,17 @@
           </dl>
         </section>
         <details class="detail-section technical-details">
-          <summary>Available files</summary><FileList :files="episode.Files || []" />
+          <summary>Available files</summary><FileList
+            :files="episode.Files || []"
+            @play="file => store.playEpisode(episode.id, { fileId: file.id })"
+          />
         </details>
       </div>
     </template>
   </div>
 </template>
 <script setup>
-import { playbackLabel } from '@/utils/media'
+import { playbackLabel, formatDate } from '@/utils/media'
 import PlaybackButton from '@/components/remote/PlaybackButton.vue'
 import { computed } from 'vue'
 import { useRoute } from 'vue-router'
@@ -179,7 +190,7 @@ function updateWatchState (track) { episode.value = { ...episode.value, TrackEpi
 const metadata = computed(() => {
   const data = episode.value || {}
   return [
-    { label: 'First aired', value: data.firstAired || data.aired || data.airDate },
+    { label: 'First aired', value: formatDate(data.firstAired || data.aired || data.airDate) },
     { label: 'Runtime', value: formatRuntime(data.runtime) },
     { label: 'Rating', value: ratingLabel(data) }
   ].filter(entry => entry.value)
@@ -198,7 +209,7 @@ const metadata = computed(() => {
     gap: 7px
     padding: 16px
     border: 1px solid var(--color-border)
-    border-radius: 5px
+    border-radius: var(--radius-sm)
     background: var(--color-surface)
     min-width: 0
     &:hover

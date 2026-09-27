@@ -35,7 +35,10 @@
         :class="{ selected: index === fileIndex }"
         @click="$emit('select-file', index)"
       >
-        <span class="row-label">{{ file.name }}</span>
+        <span class="row-label">
+          {{ fileSummary(file) || file.name }}
+          <small v-if="fileSummary(file)">{{ file.name }}</small>
+        </span>
         <span class="chip">{{ file.extension }}</span>
       </button>
     </section>
@@ -56,7 +59,7 @@
         :class="{ selected: audioIndex === stream.index }"
         @click="$emit('select-audio', stream.index)"
       >
-        {{ formatStreamLabel(stream, 'audio') }}
+        {{ labels.audio[stream.index] }}
       </button>
     </section>
 
@@ -80,12 +83,25 @@
           :class="{ selected: subtitleMode === mode }"
           @click="$emit('set-subtitle-mode', mode)"
         >
-          {{ mode }}
+          {{ MODE_LABELS[mode]?.label || mode }}
         </button>
       </div>
-      <template v-if="subtitleStreams.length > 0">
+      <p
+        v-if="MODE_LABELS[subtitleMode]?.hint"
+        class="note"
+      >
+        {{ MODE_LABELS[subtitleMode].hint }}
+      </p>
+      <div
+        v-if="subtitleStreams.length > 0"
+        class="tracks"
+        role="radiogroup"
+        aria-label="Subtitle track"
+      >
         <button
           type="button"
+          role="radio"
+          :aria-checked="subtitleMode !== 'off' && subtitleIndex === null"
           :disabled="subtitleMode === 'off'"
           :class="{ selected: subtitleMode !== 'off' && subtitleIndex === null }"
           @click="$emit('select-subtitle', null)"
@@ -96,13 +112,15 @@
           v-for="stream in subtitleStreams"
           :key="`subtitle-${stream.index}`"
           type="button"
+          role="radio"
+          :aria-checked="subtitleIndex === stream.index"
           :disabled="subtitleMode === 'off'"
           :class="{ selected: subtitleIndex === stream.index }"
           @click="$emit('select-subtitle', stream.index)"
         >
-          {{ formatStreamLabel(stream, 'subtitle') }}
+          {{ labels.subtitle[stream.index] }}
         </button>
-      </template>
+      </div>
       <p
         v-else
         class="note"
@@ -132,13 +150,29 @@
         </button>
       </div>
     </section>
+
+    <button
+      v-if="keyboard"
+      type="button"
+      class="shortcuts-link"
+      @click="$emit('show-shortcuts')"
+    >
+      Keyboard shortcuts <kbd>?</kbd>
+    </button>
   </div>
 </template>
 
 <script setup>
-import { formatStreamLabel } from '@/utils/media'
+import { computed } from 'vue'
+import { fileSummary, formatStreamLabel } from '@/utils/media'
 
-defineProps({
+const MODE_LABELS = {
+  off: { label: 'Off' },
+  auto: { label: 'Automatic', hint: 'Shows subtitles in your language when the audio is not.' },
+  forced: { label: 'Forced only', hint: 'Only signs and lines in another language.' }
+}
+
+const props = defineProps({
   files: { type: Array, default: () => [] },
   fileIndex: { type: Number, default: 0 },
   quality: { type: [String, Number], default: 'original' },
@@ -150,8 +184,26 @@ defineProps({
   subtitleMode: { type: String, default: 'auto' },
   subtitleModes: { type: Array, default: () => ['off', 'auto', 'forced'] },
   playbackRate: { type: Number, default: 1 },
-  speedOptions: { type: Array, default: () => [] }
+  speedOptions: { type: Array, default: () => [] },
+  // A keyboard is likely (a fine pointer), so the shortcuts are worth a link.
+  keyboard: { type: Boolean, default: false }
 })
+
+// Two tracks can read alike (two English commentaries); number the repeats so
+// the choice is still a choice.
+function labelsFor (streams, type) {
+  const labels = streams.map(stream => formatStreamLabel(stream, type))
+  const seen = {}
+
+  return Object.fromEntries(streams.map((stream, position) => {
+    const label = labels[position]
+    const repeated = labels.filter(entry => entry === label).length > 1
+
+    seen[label] = (seen[label] || 0) + 1
+    return [stream.index, repeated ? `${label} · Track ${seen[label]}` : label]
+  }))
+}
+const labels = computed(() => ({ audio: labelsFor(props.audioStreams, 'audio'), subtitle: labelsFor(props.subtitleStreams, 'subtitle') }))
 
 defineEmits([
   'select-quality',
@@ -159,7 +211,8 @@ defineEmits([
   'select-audio',
   'select-subtitle',
   'set-subtitle-mode',
-  'set-rate'
+  'set-rate',
+  'show-shortcuts'
 ])
 </script>
 
@@ -178,7 +231,7 @@ defineEmits([
     +p.player-label
     padding: 0 12px 6px
 
-  > button
+  > button, .tracks > button
     display: flex
     align-items: center
     justify-content: space-between
@@ -203,10 +256,22 @@ defineEmits([
       color: var(--color-accent-strong)
       font-weight: 700
 
+.tracks
+  display: grid
+  gap: 2px
+
 .row-label
+  display: grid
+  min-width: 0
   overflow: hidden
   text-overflow: ellipsis
   white-space: nowrap
+  small
+    overflow: hidden
+    text-overflow: ellipsis
+    color: var(--color-text-faint)
+    font-size: 0.75rem
+    font-weight: 400
 
 .chip
   flex: none
@@ -242,8 +307,24 @@ defineEmits([
     color: var(--color-accent-strong)
     font-weight: 700
 
-.mode
-  text-transform: capitalize
+.shortcuts-link
+  justify-self: start
+  margin: 0 12px
+  padding: 6px 0
+  border: 0
+  background: none
+  color: var(--color-text-muted)
+  font-size: 0.82rem
+  cursor: pointer
+  &:hover
+    color: var(--color-text)
+    text-decoration: underline
+  kbd
+    margin-left: 4px
+    padding: 1px 6px
+    border: 1px solid var(--color-border-strong)
+    border-radius: var(--radius-sm)
+    font-family: inherit
 
 .note
   margin: 0

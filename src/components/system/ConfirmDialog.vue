@@ -13,10 +13,13 @@
       {{ state.message }}
     </p>
 
+    <!-- Focus starts on the safe answer: Cancel when confirming would destroy
+         something, so a reflexive Enter does nothing harmful. -->
     <template #footer>
       <button
         type="button"
         class="btn btn-secondary"
+        :autofocus="state.destructive"
         @click="settleConfirm(false)"
       >
         {{ state.cancelLabel }}
@@ -24,7 +27,8 @@
       <button
         type="submit"
         class="btn"
-        :class="{ 'btn-destructive': state.destructive }"
+        :class="state.destructive ? 'btn-destructive' : 'btn-primary'"
+        :autofocus="!state.destructive"
       >
         {{ state.confirmLabel }}
       </button>

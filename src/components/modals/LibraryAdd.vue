@@ -1,6 +1,7 @@
 <template>
   <AppDialog
     :open="open"
+    :dirty="path.trim() !== ''"
     :title="`Add ${typeLabel} library`"
     subtitle="Point Oblecto at a folder on the server. It is scanned on the next index run."
     size="md"

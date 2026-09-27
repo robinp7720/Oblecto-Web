@@ -2,6 +2,7 @@
   <svg
     v-if="iconDefinition"
     class="fa-icon"
+    :class="{ 'fa-spin': spin }"
     viewBox="0 0 512 512"
     aria-hidden="true"
     fill="currentColor"
@@ -62,6 +63,11 @@ export default {
     icon: {
       type: [String, Object],
       required: true
+    },
+    // Turns while work is in progress, e.g. a refresh icon on a busy button.
+    spin: {
+      type: Boolean,
+      default: false
     }
   },
   computed: {
@@ -93,4 +99,14 @@ export default {
   width: 1em
   height: 1em
   vertical-align: -0.125em
+.fa-spin
+  animation: fa-spin 1s linear infinite
+// The app-wide reduced-motion rule only shortens animations, which would leave
+// an endless spin flickering; the busy button's disabled state says enough.
+@media (prefers-reduced-motion: reduce)
+  .fa-spin
+    animation: none
+@keyframes fa-spin
+  to
+    transform: rotate(360deg)
 </style>

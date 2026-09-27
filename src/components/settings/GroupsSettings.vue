@@ -36,7 +36,7 @@
               type="checkbox"
               :checked="group.permissions.includes(permission.key)"
               :disabled="locked(group, permission.key)"
-              @change="toggle(group, permission.key, $event.target.checked)"
+              @change="toggle(group, permission, $event.target)"
             >
             <span class="checkmark" />
           </label>
@@ -81,7 +81,6 @@
         >
       </div>
       <div class="settings-card-actions">
-        <SaveState :state="status" />
         <button
           type="submit"
           class="btn btn-primary"
@@ -91,6 +90,15 @@
         </button>
       </div>
     </form>
+
+    <!-- Permission toggles, renames and new groups all report here, in view
+         wherever on the page the change was made. -->
+    <div
+      class="status-bar"
+      :class="{ idle: status.status === 'idle' }"
+    >
+      <SaveState :state="status" />
+    </div>
   </div>
 </template>
 
@@ -150,8 +158,27 @@ async function change (group, changes) {
   await authStore.loadMe(true)
 }
 
-function toggle (group, key, enabled) {
-  const next = enabled ? [...group.permissions, key] : group.permissions.filter(permission => permission !== key)
+async function toggle (group, permission, checkbox) {
+  const key = permission.key
+  const enabled = checkbox.checked
+
+  // Taking a permission from your own group takes it from you, possibly the
+  // one that lets you open this page to put it back.
+  if (!enabled && group.id === authStore.me?.groupId) {
+    const confirmed = await confirm({
+      title: t('groups.selfRemoveTitle', { permission: permissionName(permission) }),
+      message: t('groups.selfRemoveMessage', { name: group.name }),
+      confirmLabel: t('groups.selfRemoveConfirm'),
+      destructive: true
+    })
+
+    if (!confirmed) {
+      checkbox.checked = true
+      return
+    }
+  }
+
+  const next = enabled ? [...group.permissions, key] : group.permissions.filter(entry => entry !== key)
 
   return change(group, { permissions: next })
 }

@@ -7,7 +7,7 @@
       class="episode-art"
       data-motion-origin
       type="button"
-      :aria-label="`${playLabel} ${title}`"
+      :aria-label="`${playLabel} ${title}${remote.isRemote && remote.activeDevice ? ` on ${remote.activeDevice.name}` : ''}`"
       @click="store.playEpisode(episode.id)"
     >
       <img
@@ -48,9 +48,6 @@
       >
         {{ title }}
       </RouterLink>
-      <p class="episode-overview">
-        {{ episode.overview || 'No synopsis available yet.' }}
-      </p>
       <WatchStateButton
         :id="episode.id"
         :track="media.trackFor('episode', episode)"
@@ -68,6 +65,7 @@
 import { computed, ref, watch } from 'vue'
 import { useAppStore } from '@/stores/app'
 import { useMediaStore } from '@/stores/media'
+import { useRemoteStore } from '@/remote/state'
 import { formatRuntime, progressForItem, playbackLabel } from '@/utils/media'
 import WatchStateButton from './WatchStateButton.vue'
 
@@ -75,6 +73,8 @@ const props = defineProps({ episode: { type: Object, required: true } })
 defineEmits(['watch-state'])
 const store = useAppStore()
 const media = useMediaStore()
+// Play follows the device chosen for playback; the label says where.
+const remote = useRemoteStore()
 const trackedEpisode = computed(() => media.withProgress('episode', props.episode))
 const imageFailed = ref(false)
 const title = computed(() => props.episode.episodeName || `Episode ${props.episode.airedEpisodeNumber ?? ''}`)
@@ -95,7 +95,7 @@ watch(artwork, () => { imageFailed.value = false })
   aspect-ratio: 16 / 9
   padding: 0
   border: 0
-  border-radius: 8px
+  border-radius: var(--radius-lg)
   overflow: hidden
   background: linear-gradient(135deg, var(--color-brand-blue), var(--color-surface))
   color: white
@@ -130,7 +130,7 @@ watch(artwork, () => { imageFailed.value = false })
   position: absolute
   right: 8px
   bottom: 10px
-  border-radius: 4px
+  border-radius: var(--radius-sm)
   padding: 3px 6px
   background: rgba(15, 15, 15, 0.8)
   font-size: 0.7rem
@@ -144,30 +144,27 @@ watch(artwork, () => { imageFailed.value = false })
     height: 100%
     background: var(--color-brand-turquoise)
 .episode-copy
+  display: grid
+  grid-template-columns: minmax(0, 1fr) auto
+  align-items: center
+  column-gap: 8px
   padding: 12px 2px 0
 .episode-number
-  display: block
-  margin-bottom: 5px
+  grid-column: 1 / -1
+  margin-bottom: 3px
   color: var(--color-text-muted)
   font-size: 0.72rem
 .episode-title
-  display: block
+  display: -webkit-box
+  -webkit-box-orient: vertical
+  -webkit-line-clamp: 2
   overflow: hidden
-  text-overflow: ellipsis
-  white-space: nowrap
+  min-width: 0
   color: var(--color-text)
   font-size: 0.95rem
   font-weight: 600
   &:hover
     color: var(--color-brand-turquoise)
-.episode-overview
-  display: -webkit-box
-  -webkit-box-orient: vertical
-  -webkit-line-clamp: 2
-  overflow: hidden
-  min-height: 2.9em
-  margin: 8px 0 2px
-  color: var(--color-text-muted)
-  font-size: 0.8rem
-  line-height: 1.45
+.episode-copy :deep(.watch-control)
+  justify-self: end
 </style>
