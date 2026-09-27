@@ -66,7 +66,6 @@
           v-if="keyCrew.length"
           title="Directed and written by"
           :credits="keyCrew"
-          :limit="10"
         />
         <section
           v-if="metadata.length"
