@@ -70,6 +70,8 @@ const props = defineProps({
   title: { type: String, required: true },
   subtitle: { type: String, default: '' },
   size: { type: String, default: 'md' },
+  // Navigation dialogs should open without raising the mobile keyboard.
+  autofocusField: { type: Boolean, default: true },
   // Something has been typed. Esc or a stray click outside then asks before
   // throwing it away; the close button, a deliberate choice, does not.
   dirty: { type: Boolean, default: false }
@@ -96,7 +98,8 @@ function sync (open) {
   if (open && !el.open) {
     el.showModal()
     lockScroll()
-    focusFirstField(el)
+    if (props.autofocusField) focusFirstField(el)
+    else el.querySelector('.app-dialog__close')?.focus()
   } else if (!open && el.open) {
     el.close()
     unlockScroll()
