@@ -79,6 +79,10 @@
         "label": "Sign-in",
         "description": "Profile picker and password-less sign-in on the local network."
       },
+      "JellyfinSettings": {
+        "label": "Jellyfin apps",
+        "description": "Let Jellyfin apps connect, and how they show this server."
+      },
       "FederationSettings": {
         "label": "Federation",
         "description": "Share libraries and streaming capacity with other Oblecto servers."

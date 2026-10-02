@@ -41,6 +41,7 @@ export const groups = [
   {
     id: 'network',
     items: [
+      { name: 'JellyfinSettings', permission: 'settings.manage' },
       { name: 'FederationSettings', permission: 'settings.manage' },
       { name: 'SeedboxSettings', permission: 'settings.manage' }
     ]
@@ -77,6 +78,11 @@ export const settingsFields = [
   { name: 'SignInSettings', label: 'Password-less sign-in on the local network', anchor: 'setting-authentication-localPasswordlessLogin', keywords: 'login password lan local network' },
   { name: 'SignInSettings', label: 'Additional local subnets', anchor: 'setting-authentication-localSubnets', keywords: 'lan vpn cidr network' },
   { name: 'SignInSettings', label: 'Behind a reverse proxy', anchor: 'setting-authentication-trustProxy', keywords: 'x-forwarded-for proxy nginx' },
+  { name: 'JellyfinSettings', label: 'Let Jellyfin apps connect', anchor: 'setting-jellyfin-enabled', keywords: 'jellyfin emby apps android tv' },
+  { name: 'JellyfinSettings', label: 'Jellyfin port', anchor: 'setting-jellyfin-port', keywords: 'jellyfin 8096 listen address host' },
+  { name: 'JellyfinSettings', label: 'Jellyfin server name', anchor: 'setting-jellyfin-serverName', keywords: 'jellyfin name' },
+  { name: 'JellyfinSettings', label: 'Text under the Jellyfin sign-in form', anchor: 'setting-jellyfin-loginDisclaimer', keywords: 'jellyfin login disclaimer branding' },
+  { name: 'JellyfinSettings', label: 'Custom CSS for the Jellyfin web client', anchor: 'setting-jellyfin-customCss', keywords: 'jellyfin css theme branding' },
   { name: 'IndexerSettings', label: 'Video file extensions', anchor: 'setting-video-extensions', keywords: 'mkv mp4 file types' },
   { name: 'SettingsLibraries', label: 'Movie library folders', anchor: 'setting-movie-folders', keywords: 'directories paths source' },
   { name: 'SettingsLibraries', label: 'TV show library folders', anchor: 'setting-tv-folders', keywords: 'directories paths source' },
@@ -192,6 +198,9 @@ export const settingsFields = [
     "description": "",
     "keywords": "files.doHash"
   },
+  { name: 'FederationSettings', label: 'Pair servers', anchor: 'setting-federation-pairing', description: 'Create or accept an invitation for mutual library sharing', keywords: 'federation pairing invitation trust' },
+  { name: 'FederationSettings', label: 'Peers and synchronization', anchor: 'setting-federation-peers', description: 'Manage peers and inspect synchronization health', keywords: 'federation peers sync health' },
+  { name: 'FederationSettings', label: 'TLS certificate', anchor: 'setting-federation-cert', description: 'Certificate used for federation connections', keywords: 'federation certificate tls' },
   {
     "name": "FederationSettings",
     "label": "Enable federation",

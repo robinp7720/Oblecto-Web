@@ -23,6 +23,7 @@ import Sets from '@/components/settings/Sets'
 import IndexerSettings from '@/components/settings/IndexerSettings'
 import ArtworkSettings from '@/components/settings/ArtworkSettings'
 import FederationSettings from '@/components/settings/FederationSettings'
+import JellyfinSettings from '@/components/settings/JellyfinSettings.vue'
 import SeedboxSettings from '@/components/settings/SeedboxSettings'
 import ProblematicFiles from '@/components/settings/ProblematicFiles'
 import ServerStatus from '@/components/settings/ServerStatus'
@@ -202,6 +203,11 @@ const router = createRouter({
           name: 'ArtworkSettings',
           path: 'artwork',
           component: ArtworkSettings
+        },
+        {
+          name: 'JellyfinSettings',
+          path: 'jellyfin',
+          component: JellyfinSettings
         },
         {
           name: 'FederationSettings',
