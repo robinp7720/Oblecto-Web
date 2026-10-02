@@ -198,6 +198,9 @@ export const settingsFields = [
     "description": "",
     "keywords": "files.doHash"
   },
+  { name: 'FederationSettings', label: 'Pair servers', anchor: 'setting-federation-pairing', description: 'Create or accept an invitation for mutual library sharing', keywords: 'federation pairing invitation trust' },
+  { name: 'FederationSettings', label: 'Peers and synchronization', anchor: 'setting-federation-peers', description: 'Manage peers and inspect synchronization health', keywords: 'federation peers sync health' },
+  { name: 'FederationSettings', label: 'TLS certificate', anchor: 'setting-federation-cert', description: 'Certificate used for federation connections', keywords: 'federation certificate tls' },
   {
     "name": "FederationSettings",
     "label": "Enable federation",
