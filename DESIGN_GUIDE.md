@@ -14,7 +14,8 @@ Use the CSS variables in `src/App.vue`:
 - Brand colors, sampled from `images/logomark.png`: turquoise `#68e0dc`, deep blue `#096f93`, orange `#f15a24`, coral `#ff734d`.
 - Accent: `--color-accent` (brand orange) for progress and selected states; turquoise for navigation and labels; coral with dark text for primary playback actions.
 - Typography: Arial / Helvetica / system sans-serif for body and display text. Use bold weight and tight tracking for hero titles.
-- Corners: 4px controls and artwork, 6px panels, 8px dialogs.
+- Status: `--color-danger`, `--color-success`, `--color-warning` and `--color-info`, each with a `-soft` background (and `-border` for danger and success). Use them for messages and badges, never raw colours.
+- Corners: `--radius-sm` (4px) for controls and artwork, `--radius-md` (6px) for panels, `--radius-lg` (8px) for dialogs.
 - Page gutters: `--page-gutter`, responsive from 20px to 80px.
 
 ## Browsing
