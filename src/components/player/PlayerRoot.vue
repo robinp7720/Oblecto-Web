@@ -51,6 +51,8 @@
           :duration="duration"
           :buffered-end="video.bufferedEnd.value"
           :scrub-position="scrubPreview"
+          :chapters="chapters"
+          :trickplay="trickplay"
           :volume="video.volume.value"
           :muted="video.muted.value"
           :volume-supported="env.volumeSupported.value"
@@ -98,6 +100,9 @@
                 :playback-rate="video.playbackRate.value"
                 :speed-options="speedOptions"
                 :keyboard="!env.coarsePointer.value"
+                :chapters="chapters"
+                :current-time="video.currentTime.value"
+                @select-chapter="seekToChapter"
                 @select-quality="selectQuality"
                 @select-file="changeFileId"
                 @select-audio="selectAudioStream"
@@ -124,6 +129,15 @@
           </button>
         </div>
 
+        <button
+          v-if="activeSegment && !upNext && !ended && !playbackError"
+          type="button"
+          class="skip-segment"
+          @click="skipSegment"
+        >
+          {{ segmentLabel(activeSegment.type) }}
+        </button>
+
         <PlayerUpNext
           v-if="upNext"
           :title="upNext.title"
@@ -131,6 +145,8 @@
           :countdown="upNext.countdown"
           :remaining="upNext.remaining"
           :total="UP_NEXT_COUNTDOWN"
+          :skip-label="activeSegment ? segmentLabel(activeSegment.type) : ''"
+          @skip="skipSegment"
           @play="playNext"
           @cancel="cancelCountdown"
           @dismiss="upNextDismissed = true"
@@ -305,6 +321,39 @@ const video = useVideoElement(videoEl, {
     if (playSizeFormat.value === ScreenFormats.SMALL) setMode(ScreenFormats.LARGE)
   }
 })
+
+const chapters = computed(() => playbackSession.value.chapters || [])
+const segments = computed(() => playbackSession.value.segments || [])
+const trickplay = computed(() => {
+  const info = playbackSession.value.trickplay
+  return info ? { ...info, sheets: info.sheets.map(url => oblectoClient.sessions.mediaUrl(url)) } : null
+})
+const activeSegment = computed(() => segments.value.find(segment =>
+  video.currentTime.value >= segment.start && video.currentTime.value < segment.end
+))
+// A credits sequence followed by another scene should not start autoplay early.
+const creditsStart = computed(() => {
+  const credits = segments.value.filter(segment => segment.type === 'credits')
+  return credits.find(segment => segment.end >= duration.value - 4)?.start
+    ?? (credits.length ? duration.value : Math.max(0, duration.value - UP_NEXT_LEAD))
+})
+
+function segmentLabel (type) {
+  return { intro: 'Skip intro', credits: 'Skip credits', recap: 'Skip recap', preview: 'Skip preview' }[type] || 'Skip segment'
+}
+
+function skipSegment () {
+  if (!activeSegment.value) return
+  announcement.value = segmentLabel(activeSegment.value.type)
+  video.seekTo(activeSegment.value.end, duration.value)
+  visibility.notifyActivity()
+}
+
+function seekToChapter (position) {
+  video.seekTo(position, duration.value)
+  settingsOpen.value = false
+  visibility.notifyActivity()
+}
 
 const progress = computed(() => {
   if (!duration.value) return 0
@@ -590,7 +639,7 @@ function onTimeUpdate () {
 
     // Seeking back out of the credits calls the countdown off until they
     // come round again.
-    if (duration.value - position > UP_NEXT_LEAD) countdownStart.value = null
+    if (position < creditsStart.value) countdownStart.value = null
     else if (countdownStart.value === null) countdownStart.value = position
     else if (position - countdownStart.value >= UP_NEXT_COUNTDOWN) playNext()
   }
@@ -1098,4 +1147,23 @@ video
       border-radius: var(--radius-sm)
       object-fit: cover
       transform: translateY(-50%)
+</style>
+
+<style scoped lang="sass">
+.skip-segment
+  position: absolute
+  right: calc(20px + var(--safe-right))
+  bottom: calc(150px + var(--safe-bottom))
+  z-index: 3
+  min-height: 44px
+  padding: 10px 18px
+  border: 1px solid var(--color-border-strong)
+  border-radius: var(--radius-sm)
+  background: var(--color-surface-card)
+  color: var(--color-text)
+  font-weight: 700
+  cursor: pointer
+  &:focus-visible
+    outline: 2px solid var(--color-accent)
+    outline-offset: 3px
 </style>

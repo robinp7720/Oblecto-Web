@@ -28,6 +28,22 @@
     </div>
 
     <div class="settings-card">
+      <h3>Playback analysis</h3>
+      <p class="settings-description">
+        Read chapters, generate seek thumbnails, and detect intros and credits for existing library files. New files are analysed during indexing.
+      </p>
+      <div class="actions-group">
+        <button
+          class="btn"
+          :disabled="isActive('analyse', 'all')"
+          @click="triggerMaintenance('analyse', 'all', 'Playback analysis')"
+        >
+          <font-awesome-icon icon="sync" /> Analyse playback
+        </button>
+      </div>
+    </div>
+
+    <div class="settings-card">
       <h3>Library cleanup</h3>
       <p class="settings-description">
         Remove database entries with missing files or links. Media files on disk are not deleted.

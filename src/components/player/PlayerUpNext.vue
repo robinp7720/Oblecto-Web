@@ -17,6 +17,14 @@
     </div>
     <div class="actions">
       <button
+        v-if="skipLabel"
+        type="button"
+        class="secondary"
+        @click="$emit('skip')"
+      >
+        {{ skipLabel }}
+      </button>
+      <button
         type="button"
         class="primary"
         :style="countdown ? { '--elapsed': `${elapsed * 100}%` } : null"
@@ -51,13 +59,14 @@ import { computed } from 'vue'
 // (pausing pauses it), and starts the episode itself.
 const props = defineProps({
   title: { type: String, required: true },
+  skipLabel: { type: String, default: '' },
   numbering: { type: String, default: '' },
   countdown: { type: Boolean, default: false },
   remaining: { type: Number, default: 0 },
   total: { type: Number, default: 10 }
 })
 
-defineEmits(['play', 'cancel', 'dismiss'])
+defineEmits(['play', 'cancel', 'dismiss', 'skip'])
 
 const elapsed = computed(() => props.total ? 1 - props.remaining / props.total : 0)
 </script>

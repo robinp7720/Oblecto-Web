@@ -1,6 +1,24 @@
 <template>
   <div class="panel">
     <section
+      v-if="chapters.length"
+      class="section"
+      aria-label="Chapters"
+    >
+      <h4>Chapters</h4>
+      <button
+        v-for="(chapter, index) in chapters"
+        :key="chapter.start"
+        type="button"
+        :class="{ selected: currentTime >= chapter.start && currentTime < chapter.end }"
+        @click="$emit('select-chapter', chapter.start)"
+      >
+        <span>{{ chapter.title || `Chapter ${index + 1}` }}</span>
+        <small>{{ formatSeconds(chapter.start) }}</small>
+      </button>
+    </section>
+
+    <section
       class="section"
       role="radiogroup"
       aria-label="Quality"
@@ -164,6 +182,7 @@
 
 <script setup>
 import { computed } from 'vue'
+import { formatSeconds } from '@/utils/time'
 import { fileSummary, formatStreamLabel } from '@/utils/media'
 
 const MODE_LABELS = {
@@ -173,6 +192,8 @@ const MODE_LABELS = {
 }
 
 const props = defineProps({
+  chapters: { type: Array, default: () => [] },
+  currentTime: { type: Number, default: 0 },
   files: { type: Array, default: () => [] },
   fileIndex: { type: Number, default: 0 },
   quality: { type: [String, Number], default: 'original' },
@@ -206,6 +227,7 @@ function labelsFor (streams, type) {
 const labels = computed(() => ({ audio: labelsFor(props.audioStreams, 'audio'), subtitle: labelsFor(props.subtitleStreams, 'subtitle') }))
 
 defineEmits([
+  'select-chapter',
   'select-quality',
   'select-file',
   'select-audio',

@@ -57,7 +57,7 @@
 <script setup>
 import { computed } from 'vue'
 const props = defineProps({ jobs: { type: Array, required: true }, error: { type: String, default: '' }, loading: Boolean })
-const actionLabels = { scan: 'Library scan', clean: 'Library cleanup', update_metadata: 'Metadata update', update_artwork: 'Artwork download' }
+const actionLabels = { analyse: 'Playback analysis', scan: 'Library scan', clean: 'Library cleanup', update_metadata: 'Metadata update', update_artwork: 'Artwork download' }
 const targetLabels = { all: 'All libraries', series: 'TV shows', tvshows: 'TV shows', episodes: 'Episodes', movies: 'Movies', files: 'Files' }
 const summary = computed(() => {
   const running = props.jobs.filter(job => !job.finishedAt).length

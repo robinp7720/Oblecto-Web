@@ -81,6 +81,8 @@
         :duration="duration"
         :buffered-end="bufferedEnd"
         :scrub-position="scrubPosition"
+        :chapters="chapters"
+        :trickplay="trickplay"
         :disabled="!duration"
         @scrub-start="$emit('scrub-start', $event)"
         @scrub="$emit('scrub', $event)"
@@ -218,6 +220,8 @@ const props = defineProps({
   duration: { type: Number, default: 0 },
   bufferedEnd: { type: Number, default: 0 },
   scrubPosition: { type: Number, default: null },
+  chapters: { type: Array, default: () => [] },
+  trickplay: { type: Object, default: null },
   volume: { type: Number, default: 1 },
   muted: { type: Boolean, default: false },
   volumeSupported: { type: Boolean, default: true },

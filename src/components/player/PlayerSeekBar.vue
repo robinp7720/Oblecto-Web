@@ -27,6 +27,12 @@
         class="played"
         :style="{ width: `${playedRatio * 100}%` }"
       />
+      <span
+        v-for="chapter in chapters.filter(chapter => chapter.start > 0 && chapter.start < duration)"
+        :key="chapter.start"
+        class="chapter-marker"
+        :style="{ left: `${ratio(chapter.start) * 100}%` }"
+      />
       <div
         class="thumb"
         :style="{ left: `${playedRatio * 100}%` }"
@@ -35,10 +41,28 @@
     <div
       v-if="tooltip !== null"
       class="tooltip"
-      :style="{ left: `clamp(28px, ${tooltip.ratio * 100}%, calc(100% - 28px))` }"
+      :class="{ preview: thumbnail }"
+      :style="{ left: `clamp(${thumbnail ? 88 : 28}px, ${tooltip.ratio * 100}%, calc(100% - ${thumbnail ? 88 : 28}px))` }"
       aria-hidden="true"
     >
-      {{ formatSeconds(tooltip.time) }}
+      <div
+        v-if="thumbnail"
+        class="thumbnail"
+        :style="{ width: '160px', height: `${thumbnail.height}px` }"
+      >
+        <img
+          :src="thumbnail.url"
+          alt=""
+          referrerpolicy="no-referrer"
+          :style="thumbnail.style"
+          @error="failedSheet = $event.target.src"
+        >
+      </div>
+      <span>{{ formatSeconds(tooltip.time) }}</span>
+      <span
+        v-if="tooltipChapter"
+        class="chapter-title"
+      >{{ tooltipChapter }}</span>
     </div>
   </div>
 </template>
@@ -52,10 +76,38 @@ const props = defineProps({
   duration: { type: Number, default: 0 },
   bufferedEnd: { type: Number, default: 0 },
   scrubPosition: { type: Number, default: null },
+  chapters: { type: Array, default: () => [] },
+  trickplay: { type: Object, default: null },
   disabled: { type: Boolean, default: false }
 })
 
 const emit = defineEmits(['scrub-start', 'scrub', 'scrub-end', 'activity'])
+
+const failedSheet = ref(null)
+const thumbnail = computed(() => {
+  const info = props.trickplay
+  if (!tooltip.value || !info || !(info.interval > 0) || !(info.count > 0)) return null
+  const index = Math.min(info.count - 1, Math.max(0, Math.floor(tooltip.value.time / info.interval)))
+  const perSheet = info.tileWidth * info.tileHeight
+  const url = info.sheets?.[Math.floor(index / perSheet)]
+  if (!url || url === failedSheet.value) return null
+  const height = 160 * info.height / info.width
+  const tile = index % perSheet
+  return {
+    url,
+    height,
+    style: {
+      width: `${160 * info.tileWidth}px`,
+      height: `${height * info.tileHeight}px`,
+      left: `${-(tile % info.tileWidth) * 160}px`,
+      top: `${-Math.floor(tile / info.tileWidth) * height}px`
+    }
+  }
+})
+const tooltipChapter = computed(() => {
+  const index = props.chapters.findIndex(chapter => tooltip.value && tooltip.value.time >= chapter.start && tooltip.value.time < chapter.end)
+  return index >= 0 ? props.chapters[index].title || `Chapter ${index + 1}` : ''
+})
 
 const rail = ref(null)
 const dragging = ref(false)
@@ -74,7 +126,7 @@ const bufferedRatio = computed(() => ratio(props.bufferedEnd))
 const valueText = computed(() => `${formatSeconds(displayTime.value)} of ${formatSeconds(props.duration)}`)
 
 const tooltip = computed(() => {
-  if (dragging.value) return { ratio: playedRatio.value, time: displayTime.value }
+  if (dragging.value || props.scrubPosition !== null) return { ratio: playedRatio.value, time: displayTime.value }
   if (hover.value !== null) return hover.value
   return null
 })
@@ -263,4 +315,33 @@ function onKeydown (event) {
     height: 16px
     margin-left: -8px
     transform: translateY(-50%) scale(1)
+</style>
+
+<style scoped lang="sass">
+.chapter-marker
+  position: absolute
+  top: 0
+  height: 100%
+  width: 2px
+  background: rgba(0, 0, 0, 0.8)
+  pointer-events: none
+
+.tooltip.preview
+  padding: 4px
+  text-align: center
+
+.thumbnail
+  position: relative
+  overflow: hidden
+  margin-bottom: 4px
+  border-radius: 3px
+  img
+    position: absolute
+    max-width: none
+
+.chapter-title
+  display: block
+  max-width: 160px
+  overflow: hidden
+  text-overflow: ellipsis
 </style>
