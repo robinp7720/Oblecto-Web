@@ -1,3 +1,4 @@
+import PlaybackTelemetry from './PlaybackTelemetry.js'
 import Hls from 'hls.js'
 
 export function browserCapabilities(video) {
@@ -38,6 +39,7 @@ export default class PlaybackController {
       let next
       try {
         if (this.session && this.fileId === fileId) {
+          await this.report()
           next = await this.client.update(this.session.sessionId, { ...options, revision: this.session.revision })
         } else {
           await this.releaseSession()
@@ -48,6 +50,7 @@ export default class PlaybackController {
           this.session = null
           return null
         }
+        if (this.session?.sessionId !== next.sessionId) { this.telemetry = new PlaybackTelemetry(); this.failureReported = false }
         this.session = next
         this.fileId = fileId
         this.emit({ session: next, loading: true })
@@ -92,9 +95,12 @@ export default class PlaybackController {
       if (autoplay) video.play().catch(() => this.emit({ paused: true, loading: false, blocked: true }))
       else video.pause()
     })
-    on('waiting', () => { this.emit({ loading: true }); this.report(true) })
-    on('playing', () => { this.autoplay = true; this.emit({ loading: false, paused: false, error: '', blocked: false }) })
+    on('waiting', () => { this.telemetry.sample(video); this.telemetry.buffering = true; this.emit({ loading: true }); this.report() })
+    on('playing', () => { this.telemetry.buffering = false; this.report(); this.autoplay = true; this.emit({ loading: false, paused: false, error: '', blocked: false }) })
     on('pause', () => { this.autoplay = false; this.emit({ paused: true }); this.report() })
+    on('timeupdate', () => this.telemetry.sample(video))
+    on('seeking', () => this.report())
+    on('ratechange', () => this.report())
     on('seeked', () => this.report())
     on('ended', () => this.report())
     on('error', () => this.fallback())
@@ -153,16 +159,17 @@ export default class PlaybackController {
     const session = await this.open(this.fileId, options)
     if (session) this.attach(video, true)
   }
-  report(buffering = false) {
+  report(failed = false) {
     if (!this.session || !this.video || this.video.readyState === 0) return Promise.resolve()
     const session = this.session
-    const body = { revision: session.revision, position: this.video.currentTime, paused: this.video.paused, buffering }
+    const body = { revision: session.revision, position: this.video.currentTime, paused: this.video.paused, ...this.telemetry.report(this.video), ...(failed ? { failed: true } : {}) }
     this.progressSerial = this.progressSerial.catch(() => {}).then(() => this.client.progress(session.sessionId, body)).catch(error => {
       if (error.response?.status === 404 && this.session === session) this.fail('Playback session expired. Retry to resume.')
     })
     return this.progressSerial
   }
   fail(error) {
+    if (this.session && this.video && this.telemetry && !this.failureReported) { this.failureReported = true; void this.report(true) }
     this.hls?.stopLoad()
     clearInterval(this.watchdog)
     clearTimeout(this.retryTimer)

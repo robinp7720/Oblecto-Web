@@ -18,6 +18,7 @@
       "network": "Network"
     },
     "pages": {
+      "ServerStatistics": { "label": "Statistics", "description": "Viewing history, library inventory and playback health." },
       "AccountProfile": {
         "label": "Profile",
         "description": "Your name, e-mail address and profile picture."
@@ -194,6 +195,7 @@
     "deleted": "Deleted {name}",
     "deleteFailed": "Could not delete {name}",
     "permissionNames": {
+      "statistics": { "view": "View server statistics and viewing history" },
       "settings": { "manage": "Change server settings" },
       "users": { "manage": "Manage users and groups" },
       "libraries": { "manage": "Manage libraries" },

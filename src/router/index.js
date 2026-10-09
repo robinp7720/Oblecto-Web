@@ -1,3 +1,4 @@
+import StatisticsView from '@/views/StatisticsView.vue'
 import { createRouter, createWebHistory } from 'vue-router'
 import oblectoClient from '@/oblectoClient'
 
@@ -54,6 +55,7 @@ const router = createRouter({
     return { top: 0 }
   },
   routes: [
+    { path: '/statistics', name: 'Statistics', component: StatisticsView, meta: { requiresAuth: true, title: 'Statistics' } },
     {
       path: '/',
       name: 'Main',
@@ -139,6 +141,7 @@ const router = createRouter({
       component: SettingsView,
       meta: { requiresAuth: true },
       children: [
+        { path: 'statistics', name: 'ServerStatistics', component: StatisticsView, props: { admin: true } },
         {
           path: '',
           name: 'SettingsOverview',

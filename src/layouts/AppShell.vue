@@ -101,6 +101,9 @@
           >
             {{ authStore.displayName }}
           </p>
+          <RouterLink :to="{ name: 'Statistics' }">
+            Statistics
+          </RouterLink>
           <RouterLink :to="{ name: 'AccountProfile' }">
             {{ t('menu.account') }}
           </RouterLink>

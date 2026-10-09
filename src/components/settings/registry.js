@@ -17,6 +17,7 @@ export const groups = [
       { name: 'SettingsOverview', permission: 'settings.manage' },
       { name: 'SettingsMaintenance', permission: 'system.manage' },
       { name: 'ServerStatus', permission: 'system.manage' },
+      { name: 'ServerStatistics', permission: 'statistics.view' },
       { name: 'ProblematicFiles', permission: 'libraries.manage' }
     ]
   },
