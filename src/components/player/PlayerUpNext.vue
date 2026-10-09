@@ -7,35 +7,27 @@
       <p class="label">
         {{ countdown ? `Next episode in ${remaining}` : 'Up next' }}
       </p>
-      <p class="title">
-        <span
-          v-if="numbering"
-          class="numbering"
-        >{{ numbering }}</span>
-        {{ title }}
-      </p>
+      <PlayerEpisodePreview
+        :info="{ title, numbering, artwork, runtime }"
+        playable
+        :action-label="countdown ? 'Play now' : 'Play next'"
+        :countdown="countdown"
+        :elapsed="elapsed"
+        @play="$emit('play')"
+      />
     </div>
     <div class="actions">
       <button
         v-if="skipLabel"
         type="button"
-        class="secondary"
+        class="text-action"
         @click="$emit('skip')"
       >
         {{ skipLabel }}
       </button>
       <button
         type="button"
-        class="primary"
-        :style="countdown ? { '--elapsed': `${elapsed * 100}%` } : null"
-        :class="{ counting: countdown }"
-        @click="$emit('play')"
-      >
-        {{ countdown ? 'Play now' : 'Play next' }}
-      </button>
-      <button
-        type="button"
-        class="secondary"
+        class="text-action"
         @click="$emit(countdown ? 'cancel' : 'dismiss')"
       >
         {{ countdown ? 'Cancel' : 'Not now' }}
@@ -53,12 +45,15 @@
 
 <script setup>
 import { computed } from 'vue'
+import PlayerEpisodePreview from './PlayerEpisodePreview.vue'
 
 // The next episode, offered outside the auto-hiding controls so it is there
 // when the credits roll. With autoplay on it counts down, in playback time
 // (pausing pauses it), and starts the episode itself.
 const props = defineProps({
   title: { type: String, required: true },
+  artwork: { type: String, default: '' },
+  runtime: { type: String, default: '' },
   skipLabel: { type: String, default: '' },
   numbering: { type: String, default: '' },
   countdown: { type: Boolean, default: false },
@@ -75,49 +70,72 @@ const elapsed = computed(() => props.total ? 1 - props.remaining / props.total :
 @use '@/assets/sass/player' as p
 
 .up-next
-  +p.player-panel
   position: absolute
   right: 24px
   bottom: 112px
   display: grid
-  gap: 14px
-  width: min(360px, calc(100% - 32px))
-  padding: 18px
-  border-radius: var(--radius-lg)
+  grid-template-rows: minmax(0, 1fr) auto
+  gap: 2px
+  width: min(260px, calc(100% - 32px))
+  max-height: calc(100% - 130px)
+  overflow: hidden
   animation: motion-rise var(--motion-base) var(--ease-out)
+
+.copy
+  display: grid
+  gap: 8px
+  min-height: 0
+  overflow: auto
 
 .label
   +p.player-label
+  color: rgba(255, 255, 255, 0.85)
+  font-weight: 500
+  letter-spacing: 0
+  text-transform: none
+  text-shadow: 0 1px 4px #000, 0 0 8px #000
 
-.title
-  margin: 6px 0 0
-  font-weight: 700
-  line-height: 1.35
+.copy :deep(.episode-copy)
+  padding-top: 8px
+  text-shadow: 0 1px 4px #000, 0 0 8px #000
 
-.numbering
-  margin-right: 6px
-  color: var(--color-text-muted)
-  font-weight: 600
+.copy :deep(.countdown-progress)
+  height: 2px
 
 .actions
   display: flex
-  flex-wrap: wrap
-  gap: 10px
+  justify-content: space-between
+  gap: 12px
 
-button
-  +p.player-action
-  flex: 1 1 auto
-
-// The countdown fills the Play now button from the left.
-.primary.counting
-  background: linear-gradient(90deg, var(--color-brand-orange) var(--elapsed), var(--color-brand-coral) var(--elapsed))
+.text-action
+  min-width: 44px
+  min-height: 44px
+  padding: 0 4px
+  border: 0
+  border-radius: var(--radius-sm)
+  background: transparent
+  color: rgba(255, 255, 255, 0.85)
+  font-size: 0.8rem
+  font-weight: 500
+  text-shadow: 0 1px 4px #000, 0 0 8px #000
+  cursor: pointer
+  touch-action: manipulation
+  &:last-child
+    margin-left: auto
+  &:hover
+    color: white
+    text-decoration: underline
+    text-underline-offset: 3px
+  &:focus-visible
+    outline: 2px solid white
+    outline-offset: -2px
 
 .sr-only
   +p.visually-hidden
 
-@media (max-width: 600px)
+@media (max-width: 760px)
   .up-next
     right: 12px
     bottom: 96px
-    width: calc(100% - 24px)
+    width: min(220px, calc(100% - 24px))
 </style>

@@ -19,7 +19,11 @@
         playsinline
       />
 
-      <template v-if="!isMini">
+      <div
+        v-if="!isMini"
+        class="player-surfaces"
+        :inert="watchingPrompt"
+      >
         <PlayerGestureLayer
           ref="gestureLayer"
           :handlers="gestures.handlers"
@@ -142,6 +146,8 @@
           v-if="upNext"
           :title="upNext.title"
           :numbering="upNext.numbering"
+          :artwork="upNext.artwork"
+          :runtime="upNext.runtime"
           :countdown="upNext.countdown"
           :remaining="upNext.remaining"
           :total="UP_NEXT_COUNTDOWN"
@@ -149,7 +155,7 @@
           @skip="skipSegment"
           @play="playNext"
           @cancel="cancelCountdown"
-          @dismiss="upNextDismissed = true"
+          @dismiss="dismissUpNext"
         />
 
         <PlayerShortcuts
@@ -158,17 +164,17 @@
         />
 
         <PlayerEndScreen
-          v-if="ended"
+          v-if="ended && !watchingPrompt"
           :kind="playing.type"
           :title="title"
-          :next="playing.type === 'episode' ? nextInfo?.title || '' : ''"
+          :next="nextInfo"
           @play-next="playNext"
           @more-like-this="leaveFor('related')"
           @details="leaveFor('details')"
           @replay="watchAgain"
           @close="stopPlaying"
         />
-      </template>
+      </div>
 
       <PlayerMini
         v-else
@@ -180,6 +186,12 @@
         :progress="progress"
         @expand="setMode(ScreenFormats.LARGE)"
         @toggle-play="togglePlay"
+        @stop="stopPlaying"
+      />
+      <PlayerStillWatching
+        v-if="watchingPrompt && nextInfo"
+        :next="nextInfo"
+        @continue="continueWatching"
         @stop="stopPlaying"
       />
     </div>
@@ -202,11 +214,13 @@ import PlayerSettingsPanel from './PlayerSettingsPanel.vue'
 import PlayerSettingsSurface from './PlayerSettingsSurface.vue'
 import PlayerShortcuts from './PlayerShortcuts.vue'
 import PlayerUpNext from './PlayerUpNext.vue'
+import PlayerStillWatching from './PlayerStillWatching.vue'
+import { useWatchingActivity } from '@/composables/player/useWatchingActivity'
 
 import PlaybackController, { browserCapabilities } from '@/playback/PlaybackController'
 import { ScreenFormats } from '@/enums/ScreenFormats'
 import oblectoClient from '@/oblectoClient'
-import { imageUrl, subtitleForItem } from '@/utils/media'
+import { imageUrl, subtitleForItem, formatRuntime } from '@/utils/media'
 import { describeSeconds, formatSeconds } from '@/utils/time'
 
 import { useControlsVisibility } from '@/composables/player/useControlsVisibility'
@@ -221,8 +235,6 @@ import { useAuthStore } from '@/stores/auth'
 import { streamInLanguage } from '@/playback/languages'
 
 import { IGNORE_RESTORE_PROGRESS_THRESHOLD } from '@/utils/media'
-// Past this share of an episode the next one is offered.
-const NEXT_EPISODE_PROGRESS_THRESHOLD = 0.9
 // With autoplay on, the countdown to the next episode starts this many seconds
 // before the end (roughly where credits begin) and lasts UP_NEXT_COUNTDOWN
 // seconds of playback, so the credits are skipped unless the user cancels.
@@ -274,6 +286,7 @@ const resumeAfterStreamChange = ref(true)
 const autoplaying = ref(false)
 // The title ran to its end; the end screen offers what to do next.
 const ended = ref(false)
+const watchingPrompt = ref(false)
 // Playback time at which the up-next countdown began; null when not counting.
 const countdownStart = ref(null)
 const countdownCancelled = ref(false)
@@ -294,6 +307,9 @@ const fullscreen = useFullscreen(stage)
 const hasPlayback = computed(() => Boolean(
   playing.value?.entity && Array.isArray(playing.value.entity.Files) && playing.value.entity.Files.length > 0
 ))
+const watchingActivity = useWatchingActivity({ active: hasPlayback, awaitingConfirmation: watchingPrompt })
+const needsConfirmation = () => authStore.preferences.stillWatchingPrompt && watchingActivity.overdue()
+
 const files = computed(() => playing.value?.entity?.Files || [])
 const currentFile = computed(() => files.value[playingFileId.value] || null)
 const duration = computed(() => playbackSession.value?.duration || currentFile.value?.duration || 0)
@@ -377,19 +393,21 @@ const nextInfo = computed(() => {
 
   return {
     title: next.episodeName || 'Next episode',
-    numbering: Number.isInteger(next.airedSeason) && Number.isInteger(next.airedEpisodeNumber) ? `S${next.airedSeason} E${next.airedEpisodeNumber}` : ''
+    artwork: mediaStore.artworkUrl(host.value, 'episode', next.id, 'banner'),
+    runtime: formatRuntime(next.runtime) || '',
+    numbering: next.airedSeason != null && next.airedEpisodeNumber != null && Number.isInteger(Number(next.airedSeason)) && Number.isInteger(Number(next.airedEpisodeNumber)) ? `S${Number(next.airedSeason)} E${Number(next.airedEpisodeNumber)}` : ''
   }
 })
 
-// Counting down (autoplay on), or offered once most of the episode is done;
+// Counting down (autoplay on), or offered at terminal credits;
 // never alongside the end screen.
 const upNext = computed(() => {
-  if (!nextInfo.value || ended.value || !duration.value) return null
+  if (!nextInfo.value || watchingPrompt.value || ended.value || !duration.value) return null
   if (countdownStart.value !== null) {
     const remaining = Math.ceil(UP_NEXT_COUNTDOWN - (video.currentTime.value - countdownStart.value))
     return { ...nextInfo.value, countdown: true, remaining: Math.min(UP_NEXT_COUNTDOWN, Math.max(0, remaining)) }
   }
-  if (!upNextDismissed.value && progress.value > NEXT_EPISODE_PROGRESS_THRESHOLD) return { ...nextInfo.value, countdown: false }
+  if (!upNextDismissed.value && video.currentTime.value >= creditsStart.value) return { ...nextInfo.value, countdown: false }
   return null
 })
 
@@ -496,7 +514,7 @@ usePlayerHotkeys({
     if (isFullscreenMode.value) setMode(ScreenFormats.LARGE)
   }
 }, {
-  enabled: hasPlayback,
+  enabled: computed(() => hasPlayback.value && !watchingPrompt.value),
   rootRef: root,
   scoped: isMini
 })
@@ -518,14 +536,14 @@ const { reportProgress } = useRemoteBroadcast({
   canSeek: computed(() => duration.value > 0),
   autoplayBlocked,
   controls: {
-    play: () => video.play(),
-    pause: () => video.pause(),
+    play: userControl(resumePlayback),
+    pause: userControl(() => video.pause()),
     stop: () => stopPlaying(),
-    seek: position => video.seekTo(position, duration.value),
-    setVolume: value => video.setVolume(value),
-    setMuted: value => {
+    seek: userControl(position => { if (!watchingPrompt.value) video.seekTo(position, duration.value) }),
+    setVolume: userControl(value => video.setVolume(value)),
+    setMuted: userControl(value => {
       if (video.muted.value !== value) video.toggleMute()
-    },
+    }),
     next: () => playNext()
   }
 })
@@ -540,6 +558,7 @@ function openSettings () {
 
 function togglePlay () {
   if (!hasPlayback.value) return
+  if (watchingPrompt.value) return continueWatching()
   video.togglePlay(paused.value)
 }
 
@@ -636,16 +655,15 @@ function onTimeUpdate () {
 
   if (autoplay.value && nextEpisode.value?.id && !countdownCancelled.value && !autoplaying.value && duration.value > 0) {
     const position = video.currentTime.value
-
     // Seeking back out of the credits calls the countdown off until they
     // come round again.
-    if (position < creditsStart.value) countdownStart.value = null
+    if (needsConfirmation() || position < creditsStart.value) countdownStart.value = null
     else if (countdownStart.value === null) countdownStart.value = position
-    else if (position - countdownStart.value >= UP_NEXT_COUNTDOWN) playNext()
+    else if (position - countdownStart.value >= UP_NEXT_COUNTDOWN) playNext({ automatic: true })
   }
 
   // Seeking back from the end screen puts the title back on.
-  if (ended.value && duration.value - video.currentTime.value > 1) ended.value = false
+  if (ended.value && !watchingPrompt.value && duration.value - video.currentTime.value > 1) ended.value = false
 }
 
 function onEnded () {
@@ -653,7 +671,9 @@ function onEnded () {
 
   // A title shorter than the countdown, or a countdown that never got to run.
   if (autoplay.value && nextEpisode.value?.id && !countdownCancelled.value) {
-    playNext()
+    if (needsConfirmation()) {
+      showWatchingPrompt()
+    } else playNext({ automatic: true })
     return
   }
 
@@ -680,6 +700,11 @@ function startOver () {
 function cancelCountdown () {
   countdownCancelled.value = true
   countdownStart.value = null
+}
+
+function dismissUpNext () {
+  cancelCountdown()
+  upNextDismissed.value = true
 }
 
 function watchAgain () {
@@ -835,8 +860,44 @@ function retry () {
   void controller?.retry()
 }
 
-function playNext () {
+function showWatchingPrompt () {
+  watchingPrompt.value = true
+  ended.value = true
+  countdownStart.value = null
+  settingsOpen.value = false
+  shortcutsOpen.value = false
+  video.pause()
+  if (isMini.value) setMode(ScreenFormats.LARGE)
+  if (document.pictureInPictureElement) void document.exitPictureInPicture().catch(() => {})
+}
+
+function continueWatching () {
+  watchingActivity.reset()
+  watchingPrompt.value = false
+  playNext()
+}
+
+// User commands reset activity even when they arrive through another device
+// or the browser's media controls, rather than DOM input.
+function userControl (action) {
+  return (...args) => {
+    watchingActivity.notify()
+    return action(...args)
+  }
+}
+
+function resumePlayback () {
+  if (watchingPrompt.value) return continueWatching()
+  return video.play()
+}
+
+function playNext ({ automatic = false } = {}) {
   if (!nextEpisode.value?.id || autoplaying.value) return
+  if (automatic && needsConfirmation()) return
+  if (!automatic) {
+    watchingActivity.reset()
+    watchingPrompt.value = false
+  }
   autoplaying.value = true
   countdownStart.value = null
   // Explicitly local: `playEpisode` would route to whatever remote target this
@@ -851,6 +912,8 @@ function stopPlaying () {
 
   if (videoEl.value) videoEl.value.src = ''
 
+  watchingPrompt.value = false
+  watchingActivity.reset()
   store.clearPlaying()
   mediaStore.scheduleRefresh('watch')
 
@@ -916,7 +979,8 @@ watch(immersive, async (now, before) => {
   if (now && !before) {
     returnFocus = document.activeElement
     await nextTick()
-    root.value?.focus({ preventScroll: true })
+    const focusTarget = watchingPrompt.value ? root.value?.querySelector('.still-watching button') : root.value
+    focusTarget?.focus({ preventScroll: true })
   } else if (!now && before) {
     const target = returnFocus
     returnFocus = null
@@ -940,7 +1004,21 @@ watch(fullscreen.isFullscreen, active => {
   }
 })
 
+watch(() => authStore.me?.id, () => {
+  watchingActivity.reset()
+  if (watchingPrompt.value) stopPlaying()
+})
+
+watch(() => authStore.preferences.stillWatchingPrompt, enabled => {
+  if (!enabled && watchingPrompt.value) {
+    watchingPrompt.value = false
+    nextTick(() => root.value?.querySelector('.end-screen button')?.focus())
+  }
+})
+
 watch(playing, async newState => {
+  watchingPrompt.value = false
+  if (!newState?.continuous || !newState?.entity) watchingActivity.reset()
   // A new title opens large; one that continues from the last (the next
   // episode) keeps whatever size the player already has.
   if (newState?.entity && !newState.continuous) setMode(ScreenFormats.LARGE)
@@ -997,19 +1075,24 @@ watch(playing, async newState => {
   })
 
   mediaSession.setHandlers({
-    play: () => video.play(),
-    pause: () => video.pause(),
+    play: userControl(resumePlayback),
+    pause: userControl(() => video.pause()),
     stop: stopPlaying,
     nexttrack: playNext,
-    seekbackward: () => seekBy(-10),
-    seekforward: () => seekBy(10),
-    seekto: details => {
-      if (typeof details?.seekTime === 'number') video.seekTo(details.seekTime, duration.value)
-    }
+    seekbackward: userControl(() => { if (!watchingPrompt.value) seekBy(-10) }),
+    seekforward: userControl(() => { if (!watchingPrompt.value) seekBy(10) }),
+    seekto: userControl(details => {
+      if (!watchingPrompt.value && typeof details?.seekTime === 'number') video.seekTo(details.seekTime, duration.value)
+    })
   })
 
   if (newState.type === 'episode') {
-    nextEpisode.value = await oblectoClient.episodeLibrary.getNext(newState.entity.id)
+    try {
+      const next = await oblectoClient.episodeLibrary.getNext(newState.entity.id)
+      if (playing.value === newState) nextEpisode.value = next
+    } catch {
+      // Missing next-episode metadata must not interrupt the current video.
+    }
   }
 })
 
@@ -1037,6 +1120,9 @@ onBeforeUnmount(() => {
   // Focus lands here when the player opens; the controls inside show their own.
   &:focus
     outline: none
+
+.player-surfaces
+  display: contents
 
 .stage
   position: relative

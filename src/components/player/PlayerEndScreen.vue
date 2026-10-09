@@ -22,15 +22,13 @@
         {{ label }}
       </p>
       <h2>{{ heading }}</h2>
+      <PlayerEpisodePreview
+        v-if="next"
+        :info="next"
+        playable
+        @play="$emit('play-next')"
+      />
       <div class="actions">
-        <button
-          v-if="next"
-          type="button"
-          class="primary"
-          @click="$emit('play-next')"
-        >
-          Play next: {{ next }}
-        </button>
         <button
           v-if="kind === 'movie'"
           type="button"
@@ -61,6 +59,7 @@
 <script setup>
 import { computed, onMounted, ref } from 'vue'
 import PlayerIcon from './PlayerIcon.vue'
+import PlayerEpisodePreview from './PlayerEpisodePreview.vue'
 
 // What to do once a title has finished, instead of a black frame. Only shown
 // when nothing plays on by itself: a movie, the last episode, or an episode
@@ -68,7 +67,7 @@ import PlayerIcon from './PlayerIcon.vue'
 const props = defineProps({
   kind: { type: String, required: true }, // 'movie' | 'episode'
   title: { type: String, required: true },
-  next: { type: String, default: '' }
+  next: { type: Object, default: null }
 })
 
 defineEmits(['play-next', 'more-like-this', 'details', 'replay', 'close'])
@@ -90,6 +89,7 @@ onMounted(() => panel.value?.querySelector('button')?.focus())
   display: grid
   place-items: center
   padding: 24px
+  overflow: auto
   background: rgba(0, 0, 0, 0.8)
   animation: motion-fade var(--motion-base) var(--ease-out)
 
@@ -97,7 +97,7 @@ onMounted(() => panel.value?.querySelector('button')?.focus())
   display: grid
   justify-items: center
   gap: 12px
-  max-width: 560px
+  width: min(400px, 100%)
   text-align: center
 
 .label

@@ -128,6 +128,25 @@
             <span class="checkmark" />
           </label>
         </div>
+        <div class="setting-row">
+          <label class="checkbox-container">
+            {{ t('account.preferences.stillWatchingPrompt') }}
+            <input
+              id="preference-stillWatchingPrompt"
+              type="checkbox"
+              :checked="preferences.stillWatchingPrompt"
+              aria-describedby="still-watching-hint"
+              @change="update('stillWatchingPrompt', $event.target.checked)"
+            >
+            <span class="checkmark" />
+          </label>
+        </div>
+        <p
+          id="still-watching-hint"
+          class="form-hint"
+        >
+          {{ t('account.preferences.stillWatchingHint') }}
+        </p>
       </div>
     </fieldset>
     <div class="settings-card-actions">

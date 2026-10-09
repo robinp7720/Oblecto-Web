@@ -159,6 +159,8 @@
         "height": "{height}p"
       },
       "autoplayNext": "Play the next episode automatically",
+      "stillWatchingPrompt": "Ask if I’m still watching",
+      "stillWatchingHint": "After 90 minutes without interaction, finish the current episode and ask before automatically playing another.",
       "saving": "Saving…",
       "saved": "Saved",
       "saveFailed": "Could not save your preferences"

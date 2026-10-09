@@ -28,7 +28,8 @@ const DEFAULT_PREFERENCES = {
   subtitleLanguage: null,
   subtitleMode: 'auto',
   quality: 'original',
-  autoplayNext: true
+  autoplayNext: true,
+  stillWatchingPrompt: true
 }
 
 let loadingMe = null
