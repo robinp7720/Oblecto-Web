@@ -271,7 +271,7 @@ function closeMenuFromKeyboard () {
   closeMenu()
   if (hadFocus) menu.querySelector('summary')?.focus()
 }
-// On phones a backdrop behind the sheet takes the outside click; on wider
+// On phones a backdrop behind the panel takes the outside click; on wider
 // screens there is none, so a press anywhere outside closes the menu.
 function onOutsidePointer (event) {
   const menu = accountMenu.value
@@ -279,12 +279,36 @@ function onOutsidePointer (event) {
   if (menu?.open && !menu.contains(event.target)) closeMenu()
 }
 document.addEventListener('pointerdown', onOutsidePointer, true)
-onBeforeUnmount(() => document.removeEventListener('pointerdown', onOutsidePointer, true))
+// Follow the trigger as the header wraps, the page scrolls, or the keyboard
+// changes the visible viewport. The panel itself scrolls within that space.
+function positionMenu () {
+  const menu = accountMenu.value
+  if (!menu?.open) return
+  const trigger = menu.querySelector('summary').getBoundingClientRect()
+  const viewport = window.visualViewport
+  const viewportTop = viewport?.offsetTop || 0
+  const top = Math.max(viewportTop + 12, trigger.bottom + 8)
+  const bottom = viewportTop + (viewport?.height || window.innerHeight)
+  menu.style.setProperty('--account-panel-top', `${top}px`)
+  menu.style.setProperty('--account-panel-height', `${Math.max(0, bottom - top - 12)}px`)
+}
+window.addEventListener('resize', positionMenu)
+window.addEventListener('scroll', positionMenu, { capture: true, passive: true })
+window.visualViewport?.addEventListener('resize', positionMenu)
+window.visualViewport?.addEventListener('scroll', positionMenu)
+onBeforeUnmount(() => {
+  document.removeEventListener('pointerdown', onOutsidePointer, true)
+  window.removeEventListener('resize', positionMenu)
+  window.removeEventListener('scroll', positionMenu, true)
+  window.visualViewport?.removeEventListener('resize', positionMenu)
+  window.visualViewport?.removeEventListener('scroll', positionMenu)
+})
 function submitSearch () {
   router.push({ name: 'Search', query: { q: searchText.value } })
 }
 function onMenuToggle (event) {
   if (!event.target.open) renaming.value = false
+  else positionMenu()
 }
 function describeDevice (device) {
   const state = device.state
@@ -601,8 +625,15 @@ async function logout () {
     padding-bottom: 0
   .account-menu
     position: static
+    summary
+      position: relative
+      min-width: 44px
+      min-height: 44px
+      justify-content: center
+    &[open] summary
+      z-index: 3
     &[open] .account-options
-      animation: account-sheet-in var(--motion-base) var(--ease-out)
+      animation: motion-pop var(--motion-fast) var(--ease-out)
     &[open] .menu-backdrop
       display: block
       animation: account-backdrop-in var(--motion-base) ease-out
@@ -613,31 +644,23 @@ async function logout () {
     width: 100%
     padding: 0
     border: 0
-    background: rgba(0, 0, 0, 0.62)
+    background: rgba(0, 0, 0, 0.32)
     cursor: default
     touch-action: none
   .account-options
     position: fixed
     z-index: 2
-    inset: auto 0 0
-    width: 100%
-    max-height: min(78dvh, 620px)
-    padding: 22px 0 calc(10px + var(--safe-bottom))
+    inset: var(--account-panel-top, 68px) max(12px, var(--safe-right)) auto max(12px, var(--safe-left))
+    width: auto
+    max-height: calc(var(--account-panel-height, 70dvh) - var(--safe-bottom))
+    overscroll-behavior: contain
+    padding: 8px 0
     border: 1px solid #444
-    border-bottom: 0
-    border-radius: 14px 14px 0 0
-    box-shadow: 0 -16px 48px rgba(0, 0, 0, 0.55)
-    transform-origin: bottom center
-    &::before
-      content: ""
-      position: absolute
-      top: 8px
-      left: 50%
-      width: 36px
-      height: 4px
-      border-radius: 999px
-      background: #666
-      transform: translateX(-50%)
+    border-radius: 10px
+    box-shadow: var(--shadow-strong)
+    transform-origin: top right
+    a, button
+      min-height: 44px
   .primary-nav
     order: 4
     width: 100%
@@ -668,14 +691,6 @@ async function logout () {
     margin-left: 0
   .primary-nav
     order: 4
-
-@keyframes account-sheet-in
-  from
-    opacity: 0
-    transform: translateY(28px)
-  to
-    opacity: 1
-    transform: translateY(0)
 
 @keyframes account-backdrop-in
   from
