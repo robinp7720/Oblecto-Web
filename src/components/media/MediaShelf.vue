@@ -21,7 +21,7 @@
           :to="actionTo"
           class="action-link"
         >
-          {{ actionLabel }} <span aria-hidden="true">›</span>
+          {{ actionLabel }} <ChevronIcon />
         </RouterLink>
       </slot>
       <div
@@ -34,7 +34,7 @@
           :disabled="atStart"
           @click="scroll(-1)"
         >
-          ‹
+          <ChevronIcon direction="left" />
         </button>
         <button
           type="button"
@@ -42,7 +42,7 @@
           :disabled="atEnd"
           @click="scroll(1)"
         >
-          ›
+          <ChevronIcon />
         </button>
       </div>
     </div>
@@ -75,6 +75,7 @@
 <script setup>
 import { computed, ref, onMounted, onBeforeUnmount, watch, nextTick } from 'vue'
 import MediaCard from '@/components/media/MediaCard.vue'
+import ChevronIcon from '@/components/icons/ChevronIcon.vue'
 const props = defineProps({
   title: { type: String, required: true },
   subtitle: { type: String, default: '' },
@@ -130,6 +131,9 @@ onBeforeUnmount(() => observer?.disconnect())
   color: var(--color-text-muted)
   font-size: 0.78rem
 .action-link
+  display: inline-flex
+  align-items: center
+  gap: 4px
   color: var(--color-text-muted)
   font-size: 0.78rem
   white-space: nowrap
@@ -140,13 +144,17 @@ onBeforeUnmount(() => observer?.disconnect())
   gap: 6px
   margin-left: auto
   button
+    display: flex
+    align-items: center
+    justify-content: center
     width: 36px
     height: 32px
+    padding: 0
     border: 1px solid #555
     border-radius: var(--radius-sm)
     background: #242424
     color: white
-    font-size: 1.5rem
+    line-height: 1
     cursor: pointer
     transition: background-color var(--motion-fast), transform var(--motion-fast) var(--ease-out), opacity var(--motion-base)
     &:hover:not(:disabled)

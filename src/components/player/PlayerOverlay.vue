@@ -322,6 +322,13 @@ button.subtitle
     text-decoration: underline
 
 .centre
+  // Center on the video itself; the top and bottom bars have different
+  // heights, so the middle item of the overlay's flex layout sits too high.
+  position: absolute
+  top: 50%
+  left: 0
+  right: 0
+  transform: translateY(-50%)
   display: flex
   align-items: center
   justify-content: center

@@ -39,7 +39,7 @@
         :aria-label="`${playLabel} ${title}${remote.isRemote && remote.activeDevice ? ` on ${remote.activeDevice.name}` : ''}`"
         @click="play"
       >
-        <span aria-hidden="true">▶</span>
+        <CardPlayIndicator />
       </button>
       <div
         v-if="progress > 0"
@@ -78,6 +78,7 @@
 
 <script setup>
 import { computed, ref, watch } from 'vue'
+import CardPlayIndicator from './CardPlayIndicator.vue'
 import { useAppStore } from '@/stores/app'
 import { useMediaStore } from '@/stores/media'
 import { useRemoteStore } from '@/remote/state'
@@ -162,16 +163,10 @@ function play () {
   &:hover, &:focus-within
     transform: translateY(-4px)
     box-shadow: 0 8px 24px #0008
-    .play-button
-      opacity: 1
-      transform: none
 // Keyboard focus on the title lifts and rings the artwork, which is what
 // identifies the card; the poster clips an outline, so this is a shadow ring.
 .media-card:focus-within .poster
   transform: translateY(-4px)
-  .play-button
-    opacity: 1
-    transform: none
 .media-card:has(.title:focus-visible) .poster
   box-shadow: 0 0 0 2px white, 0 8px 24px #0008
 .landscape .poster
@@ -189,7 +184,7 @@ function play () {
   inset: 35% 0 0
   display: flex
   align-items: flex-end
-  padding: 16px 60px 16px 16px
+  padding: 16px
   background: linear-gradient(transparent, #000c)
   font-size: clamp(1rem, 1.5vw, 1.35rem)
   font-weight: 800
@@ -205,26 +200,29 @@ function play () {
   font-weight: 700
   background: linear-gradient(135deg, #353535, #202020)
 .play-button
+  --card-play-opacity: 1
   position: absolute
-  right: 12px
-  bottom: 14px
-  display: grid
-  place-items: center
-  width: var(--control-size)
-  height: var(--control-size)
+  inset: 50% auto auto 50%
+  transform: translate(-50%, -50%)
+  width: 44px
+  height: 44px
+  padding: 0
   border: 0
   border-radius: 50%
-  background: white
-  color: #141414
+  background: transparent
   cursor: pointer
   opacity: 0
-  transform: translateY(6px)
-  transition: opacity var(--motion-base) var(--ease-out), transform var(--motion-base) var(--ease-out), background-color var(--motion-fast)
-  &:hover
-    background: #ddd
-// Beats the hover and focus reveals above, which also set the transform.
-.media-card .poster .play-button:active
-  transform: scale(0.92)
+  pointer-events: none
+  transition: opacity var(--motion-fast)
+  &:focus-visible
+    outline: 2px solid var(--color-text)
+    outline-offset: 3px
+  :deep(.card-play)
+    inset: 50% auto auto 50%
+    transform: translate(-50%, -50%)
+.media-card:hover .play-button, .media-card:focus-within .play-button
+  opacity: 1
+  pointer-events: auto
 .progress
   position: absolute
   inset: auto 0 0
@@ -254,8 +252,16 @@ function play () {
   white-space: nowrap
   overflow: hidden
   text-overflow: ellipsis
-@media (hover: none)
+@media (hover: none), (pointer: coarse)
   .play-button
-    opacity: 1
+    inset: auto 5px 5px auto
     transform: none
+    opacity: 1
+    pointer-events: auto
+  .media-card:has(.play-button) .artwork-title
+    padding-right: 54px
+
+@media (prefers-reduced-motion: reduce)
+  .play-button
+    transition: none
 </style>

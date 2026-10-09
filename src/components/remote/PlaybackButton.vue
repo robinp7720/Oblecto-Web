@@ -7,7 +7,7 @@
         :aria-label="deviceName ? `${label} on ${deviceName}` : label"
         @click="$emit('play')"
       >
-        <span aria-hidden="true">▶</span>
+        <PlayIcon />
         <span class="copy">
           <span
             class="label"
@@ -63,6 +63,7 @@
 </template>
 
 <script setup>
+import PlayIcon from '@/components/icons/PlayIcon.vue'
 import { computed } from 'vue'
 import { storeToRefs } from 'pinia'
 import { useRemoteStore } from '@/remote/state'
@@ -112,7 +113,7 @@ const deviceName = computed(() => activeDevice.value?.name || '')
   cursor: pointer
   &:hover
     background: rgba(0, 0, 0, 0.08)
-.play > span[aria-hidden]
+.play > svg
   flex-shrink: 0
 .label
   overflow: hidden

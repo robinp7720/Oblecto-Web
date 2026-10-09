@@ -58,19 +58,16 @@
       :items="searchStore.results.movies"
       eyebrow="Search"
     />
-    <section
+    <MediaShelf
       v-if="searchStore.results.people.length"
-      class="people-results"
+      title="People"
+      type="person"
+      :items="searchStore.results.people"
     >
-      <h2>People</h2>
-      <div class="people-grid motion-stagger">
-        <PersonCard
-          v-for="person in searchStore.results.people"
-          :key="person.id"
-          :credit="{ person, job: person.knownForDepartment }"
-        />
-      </div>
-    </section>
+      <template #item="{ item }">
+        <PersonCard :credit="{ person: item, job: item.knownForDepartment }" />
+      </template>
+    </MediaShelf>
     <MediaShelf
       v-if="searchStore.results.series.length"
       title="Series Results"
@@ -170,18 +167,7 @@ watch(() => route.query.q, value => {
     font-weight: 800
     cursor: pointer
 
-.people-results
-  h2
-    margin-bottom: 18px
-.people-grid
-  display: grid
-  grid-template-columns: repeat(auto-fill, minmax(130px, 1fr))
-  gap: 20px
-
 @media screen and (max-width: 720px)
   .search-form
     grid-template-columns: 1fr
-</style>
-
-<style scoped lang="sass">
 </style>

@@ -1,0 +1,74 @@
+// Shared presentation for library episode cards and player previews.
+=episode-card
+  min-width: 0
+  &:hover, &:focus-within
+    --card-play-opacity: 1
+  .episode-art
+    position: relative
+    display: block
+    width: 100%
+    aspect-ratio: 16 / 9
+    padding: 0
+    border: 0
+    border-radius: var(--radius-lg)
+    overflow: hidden
+    background: linear-gradient(135deg, var(--color-brand-blue), var(--color-surface))
+    color: white
+    cursor: pointer
+    img
+      display: block
+      width: 100%
+      height: 100%
+      object-fit: cover
+  .art-fallback
+    display: grid
+    place-items: center
+    height: 100%
+    padding-bottom: 44px
+    color: var(--color-text-muted)
+    font-size: 0.8rem
+  .runtime
+    position: absolute
+    right: 8px
+    bottom: 10px
+    border-radius: var(--radius-sm)
+    padding: 3px 6px
+    background: rgba(15, 15, 15, 0.8)
+    font-size: 0.7rem
+  .episode-progress
+    position: absolute
+    inset: auto 0 0
+    height: 3px
+    background: rgba(255, 255, 255, 0.2)
+    span
+      display: block
+      height: 100%
+      background: var(--color-brand-turquoise)
+  .episode-copy
+    display: grid
+    grid-template-columns: minmax(0, 1fr) auto
+    align-items: center
+    column-gap: 8px
+    padding: 12px 2px 0
+  .episode-number
+    grid-column: 1 / -1
+    margin-bottom: 3px
+    color: var(--color-text-muted)
+    font-size: 0.72rem
+  .episode-title
+    display: -webkit-box
+    -webkit-box-orient: vertical
+    -webkit-line-clamp: 2
+    overflow: hidden
+    min-width: 0
+    color: var(--color-text)
+    font-size: 0.95rem
+    font-weight: 600
+    &:hover
+      color: var(--color-brand-turquoise)
+  .episode-copy :deep(.watch-control)
+    justify-self: end
+  @media (hover: none), (pointer: coarse)
+    .episode-art:has(.card-play) .runtime
+      left: 8px
+      right: auto
