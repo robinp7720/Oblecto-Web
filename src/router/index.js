@@ -183,6 +183,12 @@ const router = createRouter({
           component: SignInSettings
         },
         {
+          name: 'SeriesLibrary',
+          path: 'libraries/series/:seriesId',
+          component: () => import('@/components/settings/SeriesLibrary.vue'),
+          meta: { permission: 'libraries.manage' }
+        },
+        {
           name: 'SettingsLibraries',
           path: 'libraries',
           component: Libraries
@@ -256,7 +262,7 @@ router.beforeEach(async (to) => {
 
   // Settings pages the user's group does not allow lead to the first page it
   // does, which is always one of their own account pages.
-  const permission = pagePermission(to.name)
+  const permission = to.meta.permission || pagePermission(to.name)
 
   if (permission && hasToken) {
     const authStore = useAuthStore()

@@ -8,6 +8,22 @@
         </div>
       </div>
 
+      <nav
+        class="saved-lists"
+        :aria-label="isMovieLibrary ? 'Movie lists' : 'TV show lists'"
+      >
+        <button
+          v-for="list in movieLists"
+          :key="list.value"
+          type="button"
+          class="genre-chip"
+          :class="{ active: filters.list === list.value }"
+          :aria-pressed="filters.list === list.value"
+          @click="filters.list = list.value; applyFilters()"
+        >
+          {{ list.label }}
+        </button>
+      </nav>
       <div class="quick-controls">
         <div class="search-box">
           <input
@@ -324,6 +340,7 @@ const filters = reactive({
   sort: 'createdAt',
   order: 'desc',
   watched: 'all',
+  list: 'all',
   genre: [],
   libraryPath: '',
   personId: '',
@@ -332,6 +349,7 @@ const filters = reactive({
 })
 const personQuery = ref('')
 const peopleOptions = ref([])
+const movieLists = computed(() => [{ value: 'all', label: isMovieLibrary.value ? 'All movies' : 'All shows' }, { value: 'favourites', label: 'Favourites' }, { value: 'watchlist', label: 'Watchlist' }])
 
 const query = computed({
   get: () => filters.q,
@@ -377,6 +395,7 @@ function syncFromRoute () {
   filters.sort = String(route.query.sort || 'createdAt')
   filters.order = String(route.query.order || naturalOrder(filters.sort))
   filters.watched = String(route.query.watched || 'all')
+  filters.list = ['favourites', 'watchlist'].includes(route.query.list) ? route.query.list : 'all'
   filters.genre = route.query.genre ? String(route.query.genre).split(',').filter(Boolean) : []
   filters.libraryPath = String(route.query.libraryPath || '')
   filters.personId = String(route.query.personId || '')
@@ -399,6 +418,7 @@ function applyFilters () {
       sort: filters.sort !== 'createdAt' ? filters.sort : undefined,
       order: filters.order !== naturalOrder(filters.sort) ? filters.order : undefined,
       watched: filters.watched !== 'all' ? filters.watched : undefined,
+      list: filters.list !== 'all' ? filters.list : undefined,
       genre: filters.genre.length ? filters.genre.join(',') : undefined,
       libraryPath: filters.libraryPath || undefined,
       personId: filters.personId || undefined,
@@ -429,7 +449,7 @@ function loadMore () {
 const filtersOpen = ref(false)
 let filterTimer
 let peopleTimer
-const hasConstraints = computed(() => Boolean(filters.q || filters.genre.length || filters.watched !== 'all' || filters.libraryPath || filters.personId))
+const hasConstraints = computed(() => Boolean(filters.q || filters.genre.length || filters.watched !== 'all' || filters.list !== 'all' || filters.libraryPath || filters.personId))
 const WATCH_LABELS = { watched: 'Watched', unwatched: 'Unwatched', inprogress: 'In progress' }
 const ROLE_LABELS = { cast: 'actor', director: 'director', writer: 'writer', creator: 'creator' }
 function libraryLabel (path) {
@@ -438,6 +458,7 @@ function libraryLabel (path) {
 }
 // Chips read as sentences, not raw query values ("inprogress", "asc", a path).
 const activeChips = computed(() => [
+  ...(filters.list !== 'all' ? [{ key: 'list', value: filters.list, label: movieLists.value.find(list => list.value === filters.list)?.label }] : []),
   ...(filters.q ? [{ key: 'q', value: filters.q, label: `Title: “${filters.q}”` }] : []),
   ...(filters.sort !== 'createdAt' ? [{ key: 'sort', value: filters.sort, label: `Sort: ${sortOptions.value.find(option => option.value === filters.sort)?.label || filters.sort}` }] : []),
   ...(filters.order !== naturalOrder(filters.sort) ? [{ key: 'order', value: filters.order, label: directionLabels.value[filters.order] }] : []),
@@ -459,12 +480,12 @@ function removeFilter (chip) {
   else if (chip.key === 'personId') Object.assign(filters, { personId: '', personName: '', creditRole: 'any' })
   else if (chip.key === 'sort') Object.assign(filters, { sort: 'createdAt', order: naturalOrder('createdAt') })
   else if (chip.key === 'order') filters.order = naturalOrder(filters.sort)
-  else filters[chip.key] = ({ q: '', watched: 'all', libraryPath: '' })[chip.key]
+  else filters[chip.key] = ({ q: '', watched: 'all', list: 'all', libraryPath: '' })[chip.key]
   applyFilters()
 }
 function clearFilters () {
   clearTimeout(filterTimer)
-  Object.assign(filters, { q: '', sort: 'createdAt', order: 'desc', watched: 'all', genre: [], libraryPath: '', personId: '', personName: '', creditRole: 'any' })
+  Object.assign(filters, { q: '', sort: 'createdAt', order: 'desc', watched: 'all', list: 'all', genre: [], libraryPath: '', personId: '', personName: '', creditRole: 'any' })
   personQuery.value = ''
   applyFilters()
 }
@@ -546,6 +567,11 @@ onBeforeUnmount(() => clearTimeout(peopleTimer))
   cursor: pointer
 
 .genre-list
+  display: flex
+  flex-wrap: wrap
+  gap: 8px
+
+.saved-lists
   display: flex
   flex-wrap: wrap
   gap: 8px

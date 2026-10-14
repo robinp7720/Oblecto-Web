@@ -1,7 +1,7 @@
 <template>
   <section
     class="detail-hero"
-    :class="{ 'portrait-backdrop': type === 'series' && backdropFailed && !fallbackFailed }"
+    :class="{ focused, 'portrait-backdrop': type === 'series' && backdropFailed && !fallbackFailed }"
     aria-labelledby="detail-title"
   >
     <img
@@ -25,7 +25,10 @@
       </a>
       <div class="detail-layout">
         <div class="detail-copy motion-stagger">
-          <span class="detail-eyebrow">{{ type === 'movie' ? 'MOVIE' : type === 'series' ? 'TV SHOW' : 'EPISODE' }} · YOUR OBLECTO LIBRARY</span>
+          <span
+            v-if="!focused"
+            class="detail-eyebrow"
+          >{{ type === 'movie' ? 'MOVIE' : type === 'series' ? 'TV SHOW' : 'EPISODE' }} · YOUR OBLECTO LIBRARY</span>
           <h1 id="detail-title">
             {{ title }}
           </h1>
@@ -36,15 +39,16 @@
             {{ subtitle }}
           </p>
           <p
-            v-if="tagline"
+            v-if="tagline && !focused"
             class="detail-tagline"
           >
             {{ tagline }}
           </p>
           <div class="detail-overview-block">
             <p
+              ref="overviewElement"
               class="detail-overview"
-              :class="{ clamped: longOverview && !overviewOpen }"
+              :class="{ clamped: (focused || longOverview) && !overviewOpen }"
             >
               {{ overview || 'No synopsis available yet.' }}
             </p>
@@ -59,7 +63,7 @@
             </button>
           </div>
           <div
-            v-if="genres.length"
+            v-if="genres.length && !focused"
             class="detail-genres"
           >
             <RouterLink
@@ -71,7 +75,7 @@
             </RouterLink>
           </div>
           <ul
-            v-if="facts.length"
+            v-if="facts.length && !focused"
             class="detail-facts"
             aria-label="Available media features"
           >
@@ -85,9 +89,15 @@
           <div class="detail-actions">
             <slot />
           </div>
+          <div
+            v-if="$slots['after-actions']"
+            class="detail-after-actions"
+          >
+            <slot name="after-actions" />
+          </div>
         </div>
         <img
-          v-if="poster && !posterFailed"
+          v-if="poster && !posterFailed && !focused"
           :key="poster"
           class="detail-poster"
           :src="poster"
@@ -99,11 +109,12 @@
   </section>
 </template>
 <script setup>
-import { computed, ref, watch } from 'vue'
+import { computed, ref, watch, onMounted, onBeforeUnmount } from 'vue'
 import { usePageTitle } from '@/composables/usePageTitle'
 import { useBackLink } from '@/composables/useBackLink'
 const props = defineProps({
   type: { type: String, required: true },
+  focused: { type: Boolean, default: false },
   title: { type: String, required: true },
   subtitle: { type: String, default: '' },
   tagline: { type: String, default: '' },
@@ -121,8 +132,24 @@ usePageTitle(() => props.title)
 const back = useBackLink(() => props.backTo, () => props.backLabel)
 // On phones a long synopsis is cut to a few lines (see the media query), so
 // Play is not pushed below the fold by it.
-const longOverview = computed(() => (props.overview || '').length > 240)
+const overviewElement = ref(null)
+const overviewOverflow = ref(false)
+const longOverview = computed(() => props.focused ? overviewOverflow.value : (props.overview || '').length > 240)
 const overviewOpen = ref(false)
+function measureOverview () {
+  if (overviewElement.value && !overviewOpen.value) {
+    overviewOverflow.value = overviewElement.value.scrollHeight > overviewElement.value.clientHeight + 1
+  }
+}
+let overviewObserver
+onMounted(() => {
+  overviewObserver = new ResizeObserver(measureOverview)
+  overviewObserver.observe(overviewElement.value)
+  measureOverview()
+})
+onBeforeUnmount(() => overviewObserver?.disconnect())
+watch(() => [props.title, props.overview], () => { overviewOpen.value = false }, { flush: 'pre' })
+watch(() => [props.overview, props.focused, overviewOpen.value], measureOverview, { flush: 'post' })
 const backdropFailed = ref(false)
 const fallbackFailed = ref(false)
 const activeBackdrop = computed(() => !backdropFailed.value && props.backdrop ? props.backdrop : !fallbackFailed.value ? props.fallbackBackdrop : '')
@@ -256,6 +283,8 @@ h1
   .detail-actions
     order: 4
     margin: 18px 0 8px
+  .detail-after-actions
+    order: 4
   .detail-tagline
     order: 5
   .detail-overview-block
@@ -285,4 +314,78 @@ h1
     display: none
   .back-link
     margin-bottom: 36px
+.focused
+  // Keep the action disclosure above the next section, while the app header
+  // and player retain their own higher stacking layers.
+  z-index: 1
+  .detail-content
+    padding-top: 20px
+    padding-bottom: 32px
+  .back-link
+    margin-bottom: 30px
+  .detail-layout
+    min-height: 0
+  .detail-copy
+    display: block
+    width: 100%
+    max-width: 680px
+  h1
+    margin: 0 0 16px
+    font-size: clamp(2.5rem, 5.5vw, 4.5rem)
+  .detail-subtitle
+    margin: 0
+    color: var(--color-text-muted)
+    font-size: 0.85rem
+  .detail-overview-block
+    margin-top: 20px
+    max-width: 52ch
+  .detail-overview
+    margin: 0
+    color: var(--color-text-muted)
+    font-size: 0.95rem
+    line-height: 1.65
+    &.clamped
+      display: -webkit-box
+      -webkit-line-clamp: 2
+      -webkit-box-orient: vertical
+      overflow: hidden
+  .overview-toggle
+    display: inline-block
+    min-height: 36px
+    padding: 6px 0
+    border: 0
+    background: none
+    color: var(--color-brand-turquoise)
+    font-size: 0.8rem
+    cursor: pointer
+  .detail-actions
+    // Staggered siblings create stacking contexts, so disclosures must also
+    // sit above the progress row inside this hero.
+    position: relative
+    z-index: 2
+    align-items: center
+    gap: 12px
+    margin: 26px 0 0
+@media (max-width: 540px)
+  .focused
+    .back-link
+      margin-bottom: 24px
+    .detail-overview.clamped
+      -webkit-line-clamp: 3
+    .detail-actions
+      display: grid
+      grid-template-columns: minmax(0, 1fr) 44px 44px
+      gap: 10px
+      :deep(.playback-control)
+        grid-column: 1 / -1
+        width: 100%
+      :deep(.playback-button)
+        width: 100%
+      :deep(.movie-watchlist), :deep(.episode-favourite)
+        grid-column: 2
+      :deep(.movie-actions-menu), :deep(.detail-actions-menu)
+        grid-column: 3
+      :deep(.movie-trailer-trigger)
+        justify-content: flex-start
+        padding-left: 0
 </style>

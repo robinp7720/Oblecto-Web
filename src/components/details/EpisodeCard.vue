@@ -7,11 +7,12 @@
       class="episode-art"
       data-motion-origin
       type="button"
+      :disabled="Array.isArray(episode.Files) && !episode.Files.length"
       :aria-label="`${playLabel} ${title}${remote.isRemote && remote.activeDevice ? ` on ${remote.activeDevice.name}` : ''}`"
       @click="store.playEpisode(episode.id)"
     >
       <img
-        v-if="!imageFailed"
+        v-if="!hidden && !imageFailed"
         :src="artwork"
         alt=""
         loading="lazy"
@@ -45,6 +46,15 @@
       >
         {{ title }}
       </RouterLink>
+      <button
+        v-if="hidden"
+        type="button"
+        class="reveal-spoilers"
+        :aria-label="`Reveal details for ${episodeNumber}`"
+        @click="reveal"
+      >
+        Reveal details
+      </button>
       <WatchStateButton
         :id="episode.id"
         :track="media.trackFor('episode', episode)"
@@ -59,6 +69,7 @@
 </template>
 
 <script setup>
+import { useEpisodeSpoilers } from '@/composables/useEpisodeSpoilers'
 import CardPlayIndicator from '@/components/media/CardPlayIndicator.vue'
 import { computed, ref, watch } from 'vue'
 import { useAppStore } from '@/stores/app'
@@ -75,7 +86,7 @@ const media = useMediaStore()
 const remote = useRemoteStore()
 const trackedEpisode = computed(() => media.withProgress('episode', props.episode))
 const imageFailed = ref(false)
-const title = computed(() => props.episode.episodeName || `Episode ${props.episode.airedEpisodeNumber ?? ''}`)
+const { title, hidden, reveal } = useEpisodeSpoilers(() => props.episode)
 const episodeNumber = computed(() => `Episode ${props.episode.airedEpisodeNumber ?? '—'}`)
 const progress = computed(() => Math.max(0, Math.min(1, progressForItem('episode', trackedEpisode.value))))
 const playLabel = computed(() => playbackLabel('episode', trackedEpisode.value).split(' · ')[0])
@@ -88,4 +99,13 @@ watch(artwork, () => { imageFailed.value = false })
 
 .episode-card
   +card.episode-card
+.reveal-spoilers
+  min-height: 44px
+  padding: 0
+  border: 0
+  background: transparent
+  color: var(--color-brand-turquoise)
+  cursor: pointer
+  text-align: left
+  font-size: 0.75rem
 </style>

@@ -17,7 +17,7 @@
         aria-hidden="true"
       >
         <img
-          v-if="!imageFailed"
+          v-if="!hideSpoilers && !imageFailed"
           :src="artwork"
           alt=""
           loading="lazy"
@@ -28,7 +28,7 @@
           class="artwork-fallback"
         >{{ title }}</span>
         <span
-          v-if="landscape && !imageFailed"
+          v-if="landscape && !hideSpoilers && !imageFailed"
           class="artwork-title"
         >{{ title }}</span>
       </RouterLink>
@@ -77,6 +77,7 @@
 </template>
 
 <script setup>
+import { useEpisodeSpoilers } from '@/composables/useEpisodeSpoilers'
 import { computed, ref, watch } from 'vue'
 import CardPlayIndicator from './CardPlayIndicator.vue'
 import { useAppStore } from '@/stores/app'
@@ -102,7 +103,9 @@ const media = useMediaStore()
 const remote = useRemoteStore()
 const trackedItem = computed(() => media.withProgress(props.type, props.item))
 
-const title = computed(() => titleForItem(props.type, props.item))
+const spoilers = useEpisodeSpoilers(() => props.item)
+const hideSpoilers = computed(() => props.type === 'episode' && spoilers.hidden.value)
+const title = computed(() => props.type === 'episode' ? spoilers.title.value : titleForItem(props.type, props.item))
 const subtitle = computed(() => subtitleForItem(props.type, props.item))
 const playLabel = computed(() => playbackLabel(props.type, trackedItem.value))
 const progress = computed(() => progressForItem(props.type, trackedItem.value))

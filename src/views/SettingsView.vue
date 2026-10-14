@@ -65,7 +65,7 @@
             :key="item.name"
             :to="{ name: item.name }"
             class="settings-link"
-            :aria-current="item.name === route.name ? 'page' : undefined"
+            :aria-current="item.name === (route.name === 'SeriesLibrary' ? 'SettingsLibraries' : route.name) ? 'page' : undefined"
           >
             {{ item.label }}
           </RouterLink>
@@ -126,7 +126,7 @@
             :key="item.name"
             :to="{ name: item.name }"
             class="settings-link"
-            :aria-current="item.name === route.name ? 'page' : undefined"
+            :aria-current="item.name === (route.name === 'SeriesLibrary' ? 'SettingsLibraries' : route.name) ? 'page' : undefined"
             @click="closeIfCurrent($event, { name: item.name })"
           >
             {{ item.label }}
@@ -141,6 +141,7 @@
         mode="out-in"
       >
         <header
+          v-show="route.name !== 'SeriesLibrary'"
           :key="route.name"
           class="panel-header"
         >
@@ -240,7 +241,7 @@ watch(() => route.fullPath, async () => {
 }, { immediate: true, flush: 'post' })
 
 const current = computed(() => {
-  const page = pages.find(item => item.name === route.name)
+  const page = pages.find(item => item.name === (route.name === 'SeriesLibrary' ? 'SettingsLibraries' : route.name))
 
   if (!page) return { eyebrow: '', label: t('menu.settings'), description: '' }
 
@@ -297,7 +298,7 @@ usePageTitle(() => current.value.label)
     background: var(--color-surface)
     color: var(--color-text)
 
-  &.router-link-exact-active
+  &.router-link-exact-active, &[aria-current="page"]
     border-left-color: var(--color-accent)
     background: var(--color-surface)
     color: var(--color-text)

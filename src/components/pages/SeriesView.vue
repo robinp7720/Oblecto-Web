@@ -24,6 +24,7 @@
     <template v-else-if="show">
       <MediaDetailHero
         type="series"
+        focused
         :title="show.seriesName || 'Untitled show'"
         :subtitle="subtitle"
         :overview="show.overview || ''"
@@ -39,20 +40,56 @@
           :label="suggested.label"
           @play="store.playEpisode(suggested.episode.id)"
         />
-        <button
-          v-if="suggested?.label.startsWith('Resume')"
-          type="button"
-          class="detail-button secondary"
-          @click="store.playEpisode(suggested.episode.id, { position: 0 })"
+        <MovieTrailerButton
+          :trailers="extras?.trailers || []"
+          :title="show.seriesName"
+          quiet
+        />
+        <MovieSaveButtons
+          :id="show.id"
+          type="series"
+          :state="show.userState"
+          kind="watchlist"
+          icon-only
+          @updated="updateUserState"
+        />
+        <DetailActionsMenu
+          :id="`series-${show.id}`"
+          label="More series actions"
         >
-          Start over
-        </button>
-        <a
-          href="#show-episodes"
-          class="detail-button secondary"
-        >Browse episodes</a>
+          <template #default="{ close }">
+            <button
+              v-if="suggested?.label.startsWith('Resume')"
+              class="menu-action"
+              @click="store.playEpisode(suggested.episode.id, { position: 0 }); close()"
+            >
+              Start over
+            </button>
+            <MovieSaveButtons
+              :id="show.id"
+              type="series"
+              :state="show.userState"
+              kind="favourite"
+              @updated="updateUserState"
+            />
+            <a
+              href="#show-episodes"
+              class="menu-action"
+              @click="close()"
+            >Browse episodes</a>
+            <RouterLink
+              v-if="auth.can('libraries.manage')"
+              :to="{ name: 'SeriesLibrary', params: { seriesId: show.id } }"
+              class="menu-action"
+              @click="close()"
+            >
+              Library tools
+            </RouterLink>
+          </template>
+        </DetailActionsMenu>
       </MediaDetailHero>
       <div class="detail-body">
+        <SeriesProgress :episodes="episodes" />
         <section
           id="show-episodes"
           class="detail-section episodes-section"
@@ -160,6 +197,14 @@
               type="episode"
               :items="group.episodes"
             >
+              <template #action>
+                <SeasonActions
+                  :series-id="show.id"
+                  :season="group.season"
+                  :episodes="grouped.get(group.season) || []"
+                  @updated="updateSeasonWatch"
+                />
+              </template>
               <template #item="{ item }">
                 <EpisodeCard
                   :episode="item"
@@ -178,6 +223,7 @@
           title="Created by"
           :credits="creators"
         />
+        <FullCrew :credits="show.credits?.crew || []" />
         <p
           v-if="setsLoading"
           role="status"
@@ -206,10 +252,16 @@
           :items="set.Series || set.series"
         />
         <section
-          v-if="metadata.length"
+          v-if="metadata.length || providerLinks.length || extras?.certifications?.length"
           class="detail-section"
         >
           <h2>About this show</h2>
+          <p
+            v-if="normalizeGenres(show.genre).length"
+            class="detail-notice"
+          >
+            {{ normalizeGenres(show.genre).join(' · ') }}
+          </p>
           <dl class="detail-metadata">
             <div
               v-for="entry in metadata"
@@ -218,6 +270,23 @@
               <dt>{{ entry.label }}</dt><dd>{{ entry.value }}</dd>
             </div>
           </dl>
+          <RegionalCertification
+            :id="show.id"
+            :certifications="extras?.certifications || []"
+          />
+          <nav
+            v-if="providerLinks.length"
+            class="provider-links"
+            aria-label="External series pages"
+          >
+            <a
+              v-for="link in providerLinks"
+              :key="link.label"
+              :href="link.url"
+              target="_blank"
+              rel="noopener noreferrer"
+            >{{ link.label }} ↗</a>
+          </nav>
         </section>
         <RelatedTitles
           :id="show.id"
@@ -228,6 +297,16 @@
   </div>
 </template>
 <script setup>
+import { useAuthStore } from '@/stores/auth'
+import MovieTrailerButton from '@/components/details/MovieTrailerButton.vue'
+import MovieSaveButtons from '@/components/details/MovieSaveButtons.vue'
+import DetailActionsMenu from '@/components/details/DetailActionsMenu.vue'
+import FullCrew from '@/components/details/FullCrew.vue'
+import RegionalCertification from '@/components/details/RegionalCertification.vue'
+import SeriesProgress from '@/components/details/SeriesProgress.vue'
+import SeasonActions from '@/components/details/SeasonActions.vue'
+import { playableEpisode, tvProviderLinks } from '@/utils/tvDetails'
+import { episodeSpoilerState } from '@/composables/useEpisodeSpoilers'
 import PlaybackButton from '@/components/remote/PlaybackButton.vue'
 import { computed, ref, watch, nextTick, onBeforeUnmount } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
@@ -246,6 +325,7 @@ const route = useRoute()
 const router = useRouter()
 const store = useAppStore()
 const media = useMediaStore()
+const auth = useAuthStore()
 const episodeQuery = ref(String(route.query.q || ''))
 const watchedFilter = ref(['unwatched', 'inprogress', 'watched'].includes(String(route.query.watched)) ? String(route.query.watched) : 'all')
 const filterActive = computed(() => Boolean(episodeQuery.value.trim()) || watchedFilter.value !== 'all')
@@ -260,10 +340,18 @@ const { data: sets, loading: setsLoading, error: setsError, reload: reloadSets }
   id => oblectoClient.seriesLibrary.getSeriesSets(id),
   [], Array.isArray
 )
+const { data: extras } = useDetailResource(
+  () => route.params.seriesId,
+  id => oblectoClient.seriesLibrary.getExtras(id), null,
+  value => Array.isArray(value?.trailers) && Array.isArray(value?.certifications)
+)
+const providerLinks = computed(() => tvProviderLinks('series', show.value))
+function updateUserState (state) { show.value = { ...show.value, userState: { ...show.value.userState, ...state } } }
+function updateSeasonWatch (rows) { for (const row of rows) updateEpisodeWatch(row.id, row.track) }
 const collections = computed(() => sets.value.filter(set => (set.Series || set.series)?.length))
 const fanart = computed(() => media.artworkUrl(store.host, 'series', show.value?.id, 'fanart'))
 const poster = computed(() => media.artworkUrl(store.host, 'series', show.value?.id, 'poster'))
-const subtitle = computed(() => [formatYear(show.value?.firstAired), show.value?.rating, show.value?.status, ratingLabel(show.value)].filter(Boolean).join(' · '))
+const subtitle = computed(() => [formatYear(show.value?.firstAired), show.value?.status, ratingLabel(show.value)].filter(Boolean).join(' · '))
 const creators = computed(() => (show.value?.credits?.crew || []).filter(credit => credit.roles?.some(role => role.job === 'Creator')))
 function groupEpisodes (values) {
   const groups = new Map()
@@ -310,7 +398,7 @@ function seasonDescription (season) {
   const summary = seasonStats.value.get(season)
   return `${summary.episodeCount} ${summary.episodeCount === 1 ? 'episode' : 'episodes'} · ${summary.watchedCount} watched`
 }
-const suggested = computed(() => nextSeriesEpisode(episodes.value))
+const suggested = computed(() => nextSeriesEpisode(episodes.value.filter(playableEpisode)))
 const filteredEpisodes = computed(() => {
   const query = episodeQuery.value.trim().toLocaleLowerCase()
   return episodes.value.filter(episode => {
@@ -321,7 +409,8 @@ const filteredEpisodes = computed(() => {
     if (!query) return true
     const season = episode.airedSeason ?? ''
     const number = episode.airedEpisodeNumber ?? ''
-    const haystack = [episode.episodeName, episode.overview, `s${season}e${number}`, `s${String(season).padStart(2, '0')}e${String(number).padStart(2, '0')}`, `season ${season} episode ${number}`].filter(Boolean).join(' ').toLocaleLowerCase()
+    const safe = episodeSpoilerState(episode, !auth.me && !auth.legacyServer ? 'hide-titles' : auth.preferences.episodeSpoilers)
+    const haystack = [safe.title, safe.overview, `s${season}e${number}`, `s${String(season).padStart(2, '0')}e${String(number).padStart(2, '0')}`, `season ${season} episode ${number}`].filter(Boolean).join(' ').toLocaleLowerCase()
     return haystack.includes(query)
   })
 })
@@ -361,7 +450,6 @@ const metadata = computed(() => {
     { label: 'Network', value: data.network },
     { label: 'Status', value: data.status },
     { label: 'Runtime', value: formatRuntime(data.runtime) },
-    { label: 'Content rating', value: data.rating },
     { label: 'Rating', value: ratingLabel(data) },
     { label: 'Airs', value: [data.airsDayOfWeek, data.airsTime].filter(Boolean).join(' ') },
     { label: 'Popularity', value: Number(data.popularity) > 0 ? String(Math.round(data.popularity * 10) / 10) : null }
@@ -369,6 +457,16 @@ const metadata = computed(() => {
 })
 </script>
 <style scoped lang="sass">
+.provider-links
+  display: flex
+  flex-wrap: wrap
+  gap: 16px
+  margin-top: 20px
+  a
+    min-height: 44px
+    display: inline-flex
+    align-items: center
+    color: var(--color-brand-turquoise)
 .episodes-heading
   display: flex
   align-items: center

@@ -9,10 +9,10 @@
         :key="file.id"
         class="file-list-item"
       >
-        <span class="file-name">
+        <div class="file-name">
           {{ file.name }}
           <small v-if="summary(file)">{{ summary(file) }}</small>
-        </span><span class="badge">{{ file.extension }}</span>
+        </div><span class="badge">{{ file.extension }}</span>
         <div class="file-item-right">
           <!-- With several versions, Play picks the first; this picks this one. -->
           <button
@@ -35,6 +35,10 @@
             <FontAwesomeIcon :icon="states[file.id] === 'copied' ? 'check' : iconCopy" />
           </button>
         </div>
+        <FileTrackDetails
+          :file="file"
+          class="file-track-details"
+        />
       </li>
     </ul>
 
@@ -63,6 +67,7 @@ import faCopy from '@fortawesome/fontawesome-free-solid/faCopy'
 import oblectoClient from '@/oblectoClient'
 import { describeError } from '@/composables/useSaveState'
 import { fileSummary } from '@/utils/media'
+import FileTrackDetails from './FileTrackDetails.vue'
 
 const RESET_AFTER = 2500
 
@@ -94,7 +99,7 @@ async function writeToClipboard (text) {
 
 export default {
   name: 'FileList',
-  components: { FontAwesomeIcon },
+  components: { FontAwesomeIcon, FileTrackDetails },
   props: { files: { type: Array, default: () => [] } },
   emits: ['play'],
   data () {
@@ -159,6 +164,7 @@ export default {
   gap: 12px
   padding: 16px 0
   border-bottom: 1px solid var(--color-border)
+  flex-wrap: wrap
 .file-name
   display: grid
   gap: 4px
@@ -173,6 +179,8 @@ export default {
   display: flex
   align-items: center
   gap: 8px
+.file-track-details
+  flex: 0 0 100%
 .play-version
   min-height: 40px
   padding: 8px 14px

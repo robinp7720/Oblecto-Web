@@ -29,6 +29,7 @@ const DEFAULT_PREFERENCES = {
   subtitleMode: 'auto',
   quality: 'original',
   autoplayNext: true,
+  episodeSpoilers: 'off',
   stillWatchingPrompt: true
 }
 

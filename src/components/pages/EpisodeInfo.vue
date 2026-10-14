@@ -22,50 +22,77 @@
     <template v-else-if="episode">
       <MediaDetailHero
         type="episode"
-        :title="episode.episodeName || 'Untitled episode'"
+        focused
+        :title="safeTitle"
         :subtitle="subtitle"
-        :overview="episode.overview || ''"
+        :overview="hidden ? 'Synopsis hidden until you reveal episode details.' : safeOverview"
         :facts="capabilities"
-        :backdrop="banner"
+        :backdrop="hidden ? '' : banner"
         :poster="poster"
         :back-to="seriesRoute"
         :back-label="episode.Series?.seriesName || episode.seriesName || 'TV Shows'"
       >
         <PlaybackButton
-          :label="playbackLabel('episode', episode)"
+          :label="playLabel"
           @play="store.playEpisode(episode.id)"
         />
-        <button
-          v-if="playbackLabel('episode', episode).startsWith('Resume')"
-          type="button"
-          class="detail-button secondary"
-          @click="store.playEpisode(episode.id, { position: 0 })"
-        >
-          Start over
-        </button>
-        <WatchStateButton
+        <MovieSaveButtons
           :id="episode.id"
-          :track="episode.TrackEpisodes?.[0]"
           type="episode"
-          @updated="updateWatchState"
+          :state="episode.userState"
+          kind="favourite"
+          icon-only
+          @updated="updateUserState"
         />
-        <RouterLink
-          v-if="seriesId"
-          :to="seriesRoute"
-          class="detail-button secondary"
+        <DetailActionsMenu
+          :id="`episode-${episode.id}`"
+          label="More episode actions"
         >
-          All episodes
-        </RouterLink>
+          <template #default="{ close }">
+            <button
+              v-if="playLabel === 'Resume'"
+              class="menu-action"
+              @click="store.playEpisode(episode.id, { position: 0 }); close()"
+            >
+              Start over
+            </button>
+            <WatchStateButton
+              :id="episode.id"
+              :track="episode.TrackEpisodes?.[0]"
+              type="episode"
+              @updated="updateWatchState"
+            />
+            <RouterLink
+              v-if="seriesId"
+              :to="seriesRoute"
+              class="menu-action"
+              @click="close()"
+            >
+              All episodes
+            </RouterLink>
+            <a
+              href="#episode-files"
+              class="menu-action"
+              @click="filesOpen = true; close()"
+            >Available files</a>
+          </template>
+        </DetailActionsMenu>
+        <template #after-actions>
+          <MovieProgress :episode="episode" />
+          <button
+            v-if="hidden"
+            type="button"
+            class="reveal-spoilers"
+            @click="reveal"
+          >
+            Spoilers hidden · Reveal episode details
+          </button>
+        </template>
       </MediaDetailHero>
       <div class="detail-body">
-        <PeopleRow
-          title="Guest stars"
-          :credits="episode.credits?.cast || []"
-        />
-        <PeopleRow
-          v-if="keyCrew.length"
-          title="Directed and written by"
-          :credits="keyCrew"
+        <EpisodeChapters
+          :episode="episode"
+          :hide-titles="hidden"
         />
         <section
           v-if="contextLoading || contextError || context"
@@ -96,6 +123,32 @@
             <p class="context-summary">
               {{ contextSummary }}
             </p>
+            <div
+              v-if="context.nearby?.length"
+              ref="navigatorElement"
+              class="nearby-episodes"
+              aria-label="Season navigator"
+            >
+              <div
+                v-for="item in context.nearby"
+                :key="item.id"
+                :class="{ current: String(item.id) === String(episode.id) }"
+                :aria-current="String(item.id) === String(episode.id) ? 'true' : undefined"
+              >
+                <span
+                  v-if="String(item.id) === String(episode.id)"
+                  class="current-label"
+                >Current episode</span>
+                <EpisodeCard :episode="item" />
+              </div>
+            </div>
+            <RouterLink
+              v-if="context.nextUnwatched"
+              class="next-unwatched"
+              :to="{ name: 'EpisodeInfo', params: { episodeId: context.nextUnwatched.id } }"
+            >
+              Next unwatched · S{{ context.nextUnwatched.airedSeason }} E{{ context.nextUnwatched.airedEpisodeNumber }} →
+            </RouterLink>
             <nav aria-label="Adjacent episodes">
               <RouterLink
                 v-if="context.previous"
@@ -112,8 +165,18 @@
             </nav>
           </template>
         </section>
+        <PeopleRow
+          title="Guest stars"
+          :credits="episode.credits?.cast || []"
+        />
+        <PeopleRow
+          v-if="keyCrew.length"
+          title="Directed and written by"
+          :credits="keyCrew"
+        />
+        <FullCrew :credits="episode.credits?.crew || []" />
         <section
-          v-if="metadata.length"
+          v-if="metadata.length || providerLinks.length"
           class="detail-section"
         >
           <h2>About this episode</h2><dl class="detail-metadata">
@@ -124,9 +187,34 @@
               <dt>{{ entry.label }}</dt><dd>{{ entry.value }}</dd>
             </div>
           </dl>
+          <nav
+            v-if="providerLinks.length"
+            class="provider-links"
+            aria-label="External episode pages"
+          >
+            <a
+              v-for="link in providerLinks"
+              :key="link.label"
+              :href="link.url"
+              target="_blank"
+              rel="noopener noreferrer"
+            >{{ link.label }} ↗</a>
+          </nav>
         </section>
-        <details class="detail-section technical-details">
-          <summary>Available files</summary><FileList
+        <details
+          id="episode-files"
+          :open="filesOpen"
+          class="detail-section technical-details"
+          @toggle="filesOpen = $event.target.open"
+        >
+          <summary>Available files</summary>
+          <p
+            v-if="capabilities.length"
+            class="detail-notice"
+          >
+            {{ capabilities.join(' · ') }}
+          </p>
+          <FileList
             :files="episode.Files || []"
             @play="file => store.playEpisode(episode.id, { fileId: file.id })"
           />
@@ -136,9 +224,18 @@
   </div>
 </template>
 <script setup>
-import { playbackLabel, formatDate } from '@/utils/media'
+import { formatDate } from '@/utils/media'
+import { useEpisodeSpoilers, episodeSpoilerState } from '@/composables/useEpisodeSpoilers'
+import { tvProviderLinks } from '@/utils/tvDetails'
+import { moviePlaybackDetails } from '@/utils/movieDetails'
+import MovieSaveButtons from '@/components/details/MovieSaveButtons.vue'
+import MovieProgress from '@/components/details/MovieProgress.vue'
+import DetailActionsMenu from '@/components/details/DetailActionsMenu.vue'
+import EpisodeChapters from '@/components/details/EpisodeChapters.vue'
+import EpisodeCard from '@/components/details/EpisodeCard.vue'
+import FullCrew from '@/components/details/FullCrew.vue'
 import PlaybackButton from '@/components/remote/PlaybackButton.vue'
-import { computed } from 'vue'
+import { computed, ref, watch, nextTick } from 'vue'
 import { useRoute } from 'vue-router'
 import { useAppStore } from '@/stores/app'
 import { useMediaStore } from '@/stores/media'
@@ -154,11 +251,27 @@ const route = useRoute()
 const store = useAppStore()
 const media = useMediaStore()
 const { item: episode, loading, error, reload } = useMediaDetails(() => route.params.episodeId, id => oblectoClient.episodeLibrary.getInfo(id), undefined, 'episode')
+const { title: safeTitle, overview: safeOverview, hidden, reveal, preference } = useEpisodeSpoilers(episode)
+const filesOpen = ref(false)
+watch(() => episode.value?.id, () => { filesOpen.value = false })
+const playLabel = computed(() => {
+  const details = moviePlaybackDetails({ ...episode.value, TrackMovies: episode.value?.TrackEpisodes })
+  return details.resuming ? 'Resume' : details.watched ? 'Watch again' : 'Play'
+})
+const providerLinks = computed(() => tvProviderLinks('episode', episode.value))
+function updateUserState (state) { episode.value = { ...episode.value, userState: { ...episode.value.userState, ...state } } }
 const { data: context, loading: contextLoading, error: contextError, reload: reloadContext } = useDetailResource(
   () => route.params.episodeId,
   id => oblectoClient.episodeLibrary.getContext(id),
   null, value => Boolean(value?.season), { watchState: true }
 )
+const navigatorElement = ref(null)
+watch([() => episode.value?.id, () => Boolean(context.value?.nearby?.length)], async () => {
+  await nextTick()
+  const container = navigatorElement.value
+  const current = container?.querySelector('.current')
+  if (current) container.scrollLeft = Math.max(0, current.offsetLeft - container.offsetLeft - (container.clientWidth - current.clientWidth) / 2)
+}, { flush: 'post' })
 const seriesId = computed(() => episode.value?.Series?.id || episode.value?.seriesId)
 const seriesRoute = computed(() => seriesId.value ? {
   name: 'SeriesView',
@@ -177,14 +290,14 @@ const contextSummary = computed(() => {
   const season = context.value?.season
   if (!season) return ''
   const name = String(season.number) === '0' ? 'Specials' : `Season ${season.number}`
-  const parts = [`${name} · Episode ${season.position} of ${season.episodeCount}`, `${season.watchedCount} watched`]
+  const parts = [`${name} · Episode ${season.position} of ${season.episodeCount} in library`, `${season.watchedCount} watched`]
   if (season.runtimeMinutes) parts.push(`${formatRuntime(season.runtimeMinutes)} total`)
   if (season.averageRating) parts.push(`Average rating ${season.averageRating}`)
   return parts.join(' · ')
 })
 function episodeLabel (item) {
   const number = item.airedSeason != null && item.airedEpisodeNumber != null ? `S${item.airedSeason} E${item.airedEpisodeNumber} · ` : ''
-  return `${number}${item.episodeName || 'Untitled episode'}`
+  return `${number}${episodeSpoilerState(media.withProgress('episode', item), preference.value).title}`
 }
 function updateWatchState (track) { episode.value = { ...episode.value, TrackEpisodes: [track] } }
 const metadata = computed(() => {
@@ -197,6 +310,54 @@ const metadata = computed(() => {
 })
 </script>
 <style scoped lang="sass">
+.reveal-spoilers
+  min-height: 44px
+  margin-top: 12px
+  padding: 0
+  border: 0
+  background: transparent
+  color: var(--color-brand-turquoise)
+  font: inherit
+  font-size: 0.8rem
+  cursor: pointer
+.nearby-episodes
+  display: grid
+  grid-auto-flow: column
+  grid-auto-columns: min(64vw, 240px)
+  justify-content: start
+  gap: 16px
+  overflow-x: auto
+  padding: 24px 0 16px
+  > div
+    position: relative
+    min-width: 0
+    border: 1px solid transparent
+    border-radius: var(--radius-sm)
+    padding: 6px
+  .current
+    border-color: var(--color-brand-turquoise)
+.current-label
+  position: absolute
+  left: 6px
+  top: -22px
+  color: var(--color-brand-turquoise)
+  font-size: 0.75rem
+.next-unwatched
+  display: inline-flex
+  align-items: center
+  min-height: 44px
+  margin: 8px 0 16px
+  color: var(--color-brand-turquoise)
+.provider-links
+  display: flex
+  gap: 16px
+  flex-wrap: wrap
+  margin-top: 20px
+  a
+    display: inline-flex
+    align-items: center
+    min-height: 44px
+    color: var(--color-brand-turquoise)
 .context-summary
   color: var(--color-text-muted)
   line-height: 1.6

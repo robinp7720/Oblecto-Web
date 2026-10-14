@@ -2,7 +2,7 @@
   <div class="wrapper">
     <fieldset
       class="settings-fields"
-      :disabled="!me"
+      :disabled="!me || state.status === 'busy'"
     >
       <div class="settings-card">
         <h2 class="settings-section-title">
@@ -43,6 +43,27 @@
         <p class="settings-description">
           {{ t('account.preferences.playbackHint') }}
         </p>
+        <div class="form-group">
+          <label for="preference-spoilers">Episode spoilers</label>
+          <select
+            id="preference-spoilers"
+            :value="preferences.episodeSpoilers"
+            @change="update('episodeSpoilers', $event.target.value)"
+          >
+            <option value="off">
+              Show episode details
+            </option>
+            <option value="hide">
+              Hide unwatched artwork and synopsis
+            </option>
+            <option value="hide-titles">
+              Also hide unwatched episode titles
+            </option>
+          </select>
+          <p class="form-hint">
+            Applies to episode pages and navigation. You can reveal individual episodes without changing this preference.
+          </p>
+        </div>
         <div class="form-grid">
           <div class="form-group">
             <label for="preference-audio">{{ t('account.preferences.audioLanguage') }}</label>
@@ -160,6 +181,7 @@ import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 import SaveState from '@/components/system/SaveState.vue'
 import { createSaveState } from '@/composables/useSaveState'
+import { useMediaStore } from '@/stores/media'
 import { useAuthStore } from '@/stores/auth'
 import { LOCALES, languageName } from '@/i18n'
 import { TRACK_LANGUAGES, displayCode } from '@/playback/languages'
@@ -170,6 +192,7 @@ const SUBTITLE_MODES = ['auto', 'forced', 'off']
 
 const { t, locale: interfaceLocale } = useI18n()
 const authStore = useAuthStore()
+const media = useMediaStore()
 const me = computed(() => authStore.me)
 const preferences = computed(() => authStore.preferences)
 const state = createSaveState()
@@ -204,15 +227,20 @@ const parseQuality = value => ['original', 'auto'].includes(value) ? value : Num
 
 // Saved as soon as it changes; shown at once and put back if the server refuses.
 async function update (key, value) {
+  if (!authStore.me || state.status === 'busy') return
+  const epoch = media.epoch
   const previous = authStore.me
 
   authStore.setMe({ ...previous, preferences: { ...previous.preferences, [key]: value } })
 
   const ok = await state.run(
-    async () => authStore.setMe(await oblectoClient.account.update({ preferences: { [key]: value } })),
+    async () => {
+      const updated = await oblectoClient.account.update({ preferences: { [key]: value } })
+      if (epoch === media.epoch) authStore.setMe(updated)
+    },
     { busy: t('account.preferences.saving'), ok: t('account.preferences.saved'), error: t('account.preferences.saveFailed') }
   )
 
-  if (!ok) authStore.setMe(previous)
+  if (!ok && epoch === media.epoch) authStore.setMe(previous)
 }
 </script>

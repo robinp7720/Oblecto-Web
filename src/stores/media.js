@@ -12,6 +12,7 @@ function createLibraryState () {
       sort: 'createdAt',
       order: 'desc',
       watched: 'all',
+      list: 'all',
       genre: [],
       libraryPath: '',
       yearFrom: '',
@@ -48,6 +49,7 @@ function createBrowseParams (filters, cursor = null) {
     yearFrom: filters.yearFrom ? Number(filters.yearFrom) : undefined,
     yearTo: filters.yearTo ? Number(filters.yearTo) : undefined,
     watched: filters.watched || 'all',
+    list: filters.list !== 'all' ? filters.list : undefined,
     libraryPath: filters.libraryPath || undefined,
     personId: filters.personId || undefined,
     creditRole: filters.personId ? filters.creditRole || 'any' : undefined

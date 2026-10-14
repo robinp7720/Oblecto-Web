@@ -174,10 +174,10 @@ export function formatStreamLabel (stream, type) {
   const title = stream.tags_title || stream.tags?.title || ''
   const codec = CODEC_NAMES[String(stream.codec_name).toLowerCase()] || ''
   const details = type === 'audio'
-    ? [channelLayout(stream.channels), codec]
+    ? [channelLayout(stream.channels), codec, disposition('comment') ? 'Commentary' : '', disposition('visual_impaired') ? 'Audio description' : '', disposition('hearing_impaired') ? 'Hearing impaired' : '']
     : [disposition('forced') ? 'Forced' : '', disposition('hearing_impaired') ? 'SDH' : '', codec]
 
-  return [streamLanguage(stream) || 'Unknown language', title, ...details].filter(Boolean).join(' · ')
+  return [...new Set([streamLanguage(stream) || 'Unknown language', title, ...details, disposition('default') ? 'Default' : ''].filter(Boolean))].join(' · ')
 }
 
 function formatSize (bytes) {
