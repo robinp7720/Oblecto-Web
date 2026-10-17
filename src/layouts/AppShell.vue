@@ -206,7 +206,6 @@
     <main
       id="main-content"
       class="content"
-      :class="{ 'content-home': ['Main', 'MovieInfo', 'SeriesView', 'EpisodeInfo'].includes(route.name) }"
       tabindex="-1"
     >
       <slot />
@@ -585,9 +584,6 @@ async function logout () {
 .content
   min-width: 0
   min-height: calc(100vh - 230px)
-  padding: 40px max(var(--page-gutter), var(--safe-right)) 80px max(var(--page-gutter), var(--safe-left))
-.content-home
-  padding: 0 0 80px
 .shell-footer
   display: flex
   align-items: center
@@ -678,10 +674,6 @@ async function logout () {
     max-width: 240px
   .caret
     display: none
-  .content
-    padding-top: 24px
-  .content-home
-    padding-top: 0
 @media (max-width: 520px)
   .shell-header
     column-gap: 12px

@@ -29,10 +29,15 @@
             :css="!cardTransitionActive"
             @after-leave="pageLeft"
           >
-            <component
-              :is="Component"
+            <!-- Spacing belongs to the keyed page, so the outgoing view keeps
+                 its geometry until its fade finishes when the route changes. -->
+            <div
               :key="pageKey(viewRoute)"
-            />
+              class="page-content"
+              :class="{ 'page-content-bleed': ['Main', 'MovieInfo', 'SeriesView', 'EpisodeInfo'].includes(viewRoute.name) }"
+            >
+              <component :is="Component" />
+            </div>
           </Transition>
         </AppShell>
         <component
@@ -232,6 +237,16 @@ watch(playerCoversPage, locked => {
     background: var(--color-bg-1)
     min-height: 100vh
     color: var(--color-text)
+
+  .page-content
+    min-width: 0
+    padding: 40px max(var(--page-gutter), var(--safe-right)) 80px max(var(--page-gutter), var(--safe-left))
+
+    @media (max-width: 760px)
+      padding-top: 24px
+
+    &.page-content-bleed
+      padding: 0 0 80px
 
   :focus-visible
     outline: 2px solid white
