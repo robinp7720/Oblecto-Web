@@ -726,7 +726,7 @@ function leaveFor (target) {
   router.push(destination)
 }
 
-async function updateSession (offset = null) {
+async function updateSession (offset = null, requestedAt) {
   const file = files.value[playingFileId.value]
   if (!file || !videoEl.value || !controller) return
 
@@ -742,7 +742,7 @@ async function updateSession (offset = null) {
       ? null
       : Number.isInteger(selectedSubtitleStreamIndex.value) ? selectedSubtitleStreamIndex.value : undefined,
     subtitleMode: subtitleMode.value
-  })
+  }, requestedAt)
 
   if (!session) return
 
@@ -778,7 +778,7 @@ async function reconfigurePlayback () {
   resumeAfterStreamChange.value = !paused.value
   initialProgress.value = absoluteTime
 
-  await updateSession(initialProgress.value)
+  await updateSession(initialProgress.value, newState.requestedAt)
   attachStream()
 }
 
@@ -1094,7 +1094,7 @@ watch(playing, async newState => {
       // Missing next-episode metadata must not interrupt the current video.
     }
   }
-})
+}, { immediate: true })
 
 // Pages reserve space for the docked mini-player only while it is on screen.
 watch([hasPlayback, isMini, env.narrow], ([active, mini, narrow]) => {

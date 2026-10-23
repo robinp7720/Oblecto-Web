@@ -30,7 +30,7 @@ export default class PlaybackController {
     this.heartbeat = setInterval(() => this.report(), 10000)
   }
   emit(values) { this.changed(values) }
-  open(fileId, options) {
+  open(fileId, options, requestedAt = performance.now()) {
     const generation = ++this.generation
     this.serial = this.serial.catch(() => {}).then(async () => {
       if (generation !== this.generation) return null
@@ -50,7 +50,12 @@ export default class PlaybackController {
           this.session = null
           return null
         }
-        if (this.session?.sessionId !== next.sessionId) { this.telemetry = new PlaybackTelemetry(); this.failureReported = false }
+        if (this.session?.sessionId !== next.sessionId) {
+          this.telemetry = new PlaybackTelemetry()
+          this.failureReported = false
+          this.requestedAt = requestedAt
+          this.firstPlaybackMs = null
+        }
         this.session = next
         this.fileId = fileId
         this.emit({ session: next, loading: true })
@@ -96,7 +101,9 @@ export default class PlaybackController {
       else video.pause()
     })
     on('waiting', () => { this.telemetry.sample(video); this.telemetry.buffering = true; this.emit({ loading: true }); this.report() })
-    on('playing', () => { this.telemetry.buffering = false; this.report(); this.autoplay = true; this.emit({ loading: false, paused: false, error: '', blocked: false }) })
+    on('playing', () => {
+      if (this.firstPlaybackMs === null) this.firstPlaybackMs = Math.round(performance.now() - this.requestedAt)
+      this.telemetry.buffering = false; this.report(); this.autoplay = true; this.emit({ loading: false, paused: false, error: '', blocked: false }) })
     on('pause', () => { this.autoplay = false; this.emit({ paused: true }); this.report() })
     on('timeupdate', () => this.telemetry.sample(video))
     on('seeking', () => this.report())
@@ -162,7 +169,7 @@ export default class PlaybackController {
   report(failed = false) {
     if (!this.session || !this.video || this.video.readyState === 0) return Promise.resolve()
     const session = this.session
-    const body = { revision: session.revision, position: this.video.currentTime, paused: this.video.paused, ...this.telemetry.report(this.video), ...(failed ? { failed: true } : {}) }
+    const body = { revision: session.revision, position: this.video.currentTime, paused: this.video.paused, ...this.telemetry.report(this.video), ...(this.firstPlaybackMs != null ? { firstPlaybackMs: this.firstPlaybackMs } : {}), ...(failed ? { failed: true } : {}) }
     this.progressSerial = this.progressSerial.catch(() => {}).then(() => this.client.progress(session.sessionId, body)).catch(error => {
       if (error.response?.status === 404 && this.session === session) this.fail('Playback session expired. Retry to resume.')
     })

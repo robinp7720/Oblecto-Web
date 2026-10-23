@@ -1,37 +1,37 @@
-import StatisticsView from '@/views/StatisticsView.vue'
+const StatisticsView = () => import('@/views/StatisticsView.vue')
 import { createRouter, createWebHistory } from 'vue-router'
 import oblectoClient from '@/oblectoClient'
 
-import HomeView from '@/views/HomeView.vue'
-import DiscoverView from '@/views/DiscoverView.vue'
-import LibraryView from '@/views/LibraryView.vue'
-import SearchView from '@/views/SearchView.vue'
-import LoginView from '@/views/LoginView.vue'
-import SettingsView from '@/views/SettingsView.vue'
-import SettingsOverview from '@/components/settings/SettingsOverview.vue'
-import MetadataSettings from '@/components/settings/MetadataSettings.vue'
+const HomeView = () => import('@/views/HomeView.vue')
+const DiscoverView = () => import('@/views/DiscoverView.vue')
+const LibraryView = () => import('@/views/LibraryView.vue')
+const SearchView = () => import('@/views/SearchView.vue')
+const LoginView = () => import('@/views/LoginView.vue')
+const SettingsView = () => import('@/views/SettingsView.vue')
+const SettingsOverview = () => import('@/components/settings/SettingsOverview.vue')
+const MetadataSettings = () => import('@/components/settings/MetadataSettings.vue')
 
-import MovieInfo from '@/components/pages/MovieInfo'
-import EpisodeInfo from '@/components/pages/EpisodeInfo'
-import SeriesView from '@/components/pages/SeriesView'
-import PersonInfo from '@/components/pages/PersonInfo.vue'
+const MovieInfo = () => import('@/components/pages/MovieInfo')
+const EpisodeInfo = () => import('@/components/pages/EpisodeInfo')
+const SeriesView = () => import('@/components/pages/SeriesView')
+const PersonInfo = () => import('@/components/pages/PersonInfo.vue')
 
-import Maintenance from '@/components/settings/Maintenance'
-import UserManager from '@/components/settings/UserManager'
-import SignInSettings from '@/components/settings/SignInSettings.vue'
-import Libraries from '@/components/settings/Libraries'
-import Sets from '@/components/settings/Sets'
-import IndexerSettings from '@/components/settings/IndexerSettings'
-import ArtworkSettings from '@/components/settings/ArtworkSettings'
-import FederationSettings from '@/components/settings/FederationSettings'
-import JellyfinSettings from '@/components/settings/JellyfinSettings.vue'
-import SeedboxSettings from '@/components/settings/SeedboxSettings'
-import ProblematicFiles from '@/components/settings/ProblematicFiles'
-import ServerStatus from '@/components/settings/ServerStatus'
-import GroupsSettings from '@/components/settings/GroupsSettings.vue'
-import AccountProfile from '@/components/settings/account/AccountProfile.vue'
-import AccountPassword from '@/components/settings/account/AccountPassword.vue'
-import AccountPreferences from '@/components/settings/account/AccountPreferences.vue'
+const Maintenance = () => import('@/components/settings/Maintenance')
+const UserManager = () => import('@/components/settings/UserManager')
+const SignInSettings = () => import('@/components/settings/SignInSettings.vue')
+const Libraries = () => import('@/components/settings/Libraries')
+const Sets = () => import('@/components/settings/Sets')
+const IndexerSettings = () => import('@/components/settings/IndexerSettings')
+const ArtworkSettings = () => import('@/components/settings/ArtworkSettings')
+const FederationSettings = () => import('@/components/settings/FederationSettings')
+const JellyfinSettings = () => import('@/components/settings/JellyfinSettings.vue')
+const SeedboxSettings = () => import('@/components/settings/SeedboxSettings')
+const ProblematicFiles = () => import('@/components/settings/ProblematicFiles')
+const ServerStatus = () => import('@/components/settings/ServerStatus')
+const GroupsSettings = () => import('@/components/settings/GroupsSettings.vue')
+const AccountProfile = () => import('@/components/settings/account/AccountProfile.vue')
+const AccountPassword = () => import('@/components/settings/account/AccountPassword.vue')
+const AccountPreferences = () => import('@/components/settings/account/AccountPreferences.vue')
 import { pagePermission, visibleGroups } from '@/components/settings/registry'
 import { useAuthStore } from '@/stores/auth'
 import { installCardTransitions, pageKey, pageLeave, scrollHandled } from '@/router/transition'

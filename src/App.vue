@@ -48,16 +48,16 @@
       </Transition>
     </RouterView>
 
-    <PlayerRoot v-if="showShell" />
+    <PlayerRoot v-if="showShell && playing.entity" />
   </div>
 </template>
 
 <script setup>
-import { computed, watch } from 'vue'
+import { computed, defineAsyncComponent, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import { useAppStore } from '@/stores/app'
 import AppShell from '@/layouts/AppShell.vue'
-import PlayerRoot from '@/components/player/PlayerRoot.vue'
+const PlayerRoot = defineAsyncComponent(() => import('@/components/player/PlayerRoot.vue'))
 import { ScreenFormats } from '@/enums/ScreenFormats'
 import ConfirmDialog from '@/components/system/ConfirmDialog.vue'
 import { useAuthStore } from '@/stores/auth'

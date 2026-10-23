@@ -53,6 +53,17 @@
             <div class="info-row">
               <span class="label">Startup:</span><span class="value">{{ session.startupMs === null ? 'Preparing' : `${session.startupMs} ms` }}</span>
             </div>
+            <template v-if="session.timings">
+              <div class="info-row">
+                <span class="label">Preparation:</span><span class="value">{{ Math.round(session.timings.preparationMs) }} ms</span>
+              </div>
+              <div class="info-row">
+                <span class="label">Probe / plan:</span><span class="value">{{ Math.round(session.timings.probeMs) }} / {{ Math.round(session.timings.planMs) }} ms</span>
+              </div>
+              <div class="info-row">
+                <span class="label">Browser start:</span><span class="value">{{ session.timings.firstPlaybackMs === null ? 'Not reported' : `${session.timings.firstPlaybackMs} ms` }}</span>
+              </div>
+            </template>
             <div class="info-row">
               <span class="label">Buffering:</span><span class="value">{{ session.bufferingReports }}</span>
             </div>

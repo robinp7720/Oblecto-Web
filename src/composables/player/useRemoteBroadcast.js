@@ -1,7 +1,7 @@
 import { computed, onBeforeUnmount, ref, watch } from 'vue'
 
 import { clearHandlers, registerHandlers } from '@/remote/receiver'
-import { reportState, startHeartbeat, stopHeartbeat } from '@/remote/transport'
+import { reportState, startHeartbeat, startIdleHeartbeat } from '@/remote/transport'
 
 /**
  * Makes this player controllable from, and visible to, the user's other
@@ -117,19 +117,8 @@ export function useRemoteBroadcast (sources) {
   startHeartbeat(snapshot)
 
   onBeforeUnmount(() => {
-    stopHeartbeat()
     clearHandlers()
-    reportState({
-      status: 'idle',
-      media: null,
-      position: 0,
-      duration: 0,
-      volume: 1,
-      muted: false,
-      canSeek: false,
-      canSetVolume: false,
-      hasNext: false
-    })
+    startIdleHeartbeat()
   })
 
   return {

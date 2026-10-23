@@ -118,7 +118,7 @@ export default {
   methods: {
     summary: fileSummary,
     async getUrl (fileId) {
-      const session = await oblectoClient.sessions.create(fileId, { quality: 'original' })
+      const session = await oblectoClient.sessions.create(fileId, { forceDirect: true })
 
       return oblectoClient.sessions.mediaUrl(session.mediaUrl)
     },

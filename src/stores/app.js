@@ -21,13 +21,14 @@ export const useAppStore = defineStore('app', {
     // `position`: start there (seconds) instead of where the user left off;
     // Start over passes 0. `fileId`: play that version of the title.
     async playLocal (type, id, { continuous = false, position, fileId } = {}) {
+      const requestedAt = performance.now()
       if (continuous) this.playRequest++
       else this.clearPlaying()
       const request = this.playRequest
       const client = type === 'movie' ? oblectoClient.movieLibrary : oblectoClient.episodeLibrary
       const entity = await client.getInfo(id)
       if (request !== this.playRequest) return
-      this.playing = { title: type === 'movie' ? entity.movieName : entity.episodeName, type, entity, continuous, ...(Number.isFinite(position) ? { startAt: position } : {}), ...(fileId !== undefined ? { fileId } : {}) }
+      this.playing = { title: type === 'movie' ? entity.movieName : entity.episodeName, type, entity, continuous, requestedAt, ...(Number.isFinite(position) ? { startAt: position } : {}), ...(fileId !== undefined ? { fileId } : {}) }
     },
     playMovieLocal (id, options) { return this.playLocal('movie', id, options) },
     playEpisodeLocal (id, options) { return this.playLocal('episode', id, options) },

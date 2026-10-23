@@ -19,6 +19,7 @@ export function bindSocket (next) {
   lastSentAt = 0
   clearTimeout(pendingTimer)
   pendingTimer = null
+  if (!next) stopHeartbeat()
 }
 
 /**
@@ -130,4 +131,13 @@ export function startHeartbeat (getState) {
 export function stopHeartbeat () {
   if (heartbeat) clearInterval(heartbeat)
   heartbeat = null
+}
+
+/** Idle devices stay visible even while the player bundle has not been loaded. */
+export function startIdleHeartbeat () {
+  stopHeartbeat()
+  if (!socket) return
+  const snapshot = () => ({ status: 'idle', media: null, position: 0, duration: 0, volume: 1, muted: false, canSeek: false, canSetVolume: false, hasNext: false })
+  reportState(snapshot())
+  startHeartbeat(snapshot)
 }

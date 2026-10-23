@@ -3,7 +3,7 @@ import oblectoClient from '@/oblectoClient'
 import { useConnectionStore } from '@/stores/connection'
 import { getDeviceIdentity } from '@/remote/device'
 import { applyDevices, reset as resetRemote } from '@/remote/state'
-import { bindSocket } from '@/remote/transport'
+import { bindSocket, startIdleHeartbeat } from '@/remote/transport'
 import { bindStore, handleCommand } from '@/remote/receiver'
 import { useMediaStore } from '@/stores/media'
 import { useSeedboxStore } from '@/stores/seedbox'
@@ -68,6 +68,7 @@ export function initSocket ({ app, store, pinia }, host = oblectoClient.axios.de
 
   socket.on('connect', () => {
     connection.markConnected()
+    if (!store.playing?.entity) startIdleHeartbeat()
     media.resync()
   })
 
