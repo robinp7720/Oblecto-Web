@@ -103,10 +103,10 @@ export default class PlaybackController {
     on('waiting', () => { this.telemetry.sample(video); this.telemetry.buffering = true; this.emit({ loading: true }); this.report() })
     on('playing', () => {
       if (this.firstPlaybackMs === null) this.firstPlaybackMs = Math.round(performance.now() - this.requestedAt)
-      this.telemetry.buffering = false; this.report(); this.autoplay = true; this.emit({ loading: false, paused: false, error: '', blocked: false }) })
+      this.telemetry.sample(video); this.telemetry.hasPlayed = true; this.telemetry.seeking = false; this.telemetry.buffering = false; if (this.hls) this.hls.autoLevelCapping = -1; this.report(); this.autoplay = true; this.emit({ loading: false, paused: false, error: '', blocked: false }) })
     on('pause', () => { this.autoplay = false; this.emit({ paused: true }); this.report() })
     on('timeupdate', () => this.telemetry.sample(video))
-    on('seeking', () => this.report())
+    on('seeking', () => { this.telemetry.seeking = true; this.report() })
     on('ratechange', () => this.report())
     on('seeked', () => this.report())
     on('ended', () => this.report())
@@ -114,7 +114,10 @@ export default class PlaybackController {
     const url = this.client.mediaUrl(this.session.mediaUrl)
     if (this.session.method !== 'direct' && Hls.isSupported()) {
       const policy = { default: { maxTimeToFirstByteMs: 60000, maxLoadTimeMs: 60000, timeoutRetry: { maxNumRetry: 0, retryDelayMs: 0, maxRetryDelayMs: 0 }, errorRetry: { maxNumRetry: 0, retryDelayMs: 0, maxRetryDelayMs: 0 } } }
-      this.hls = new Hls({ enableWorker: true, lowLatencyMode: false, manifestLoadPolicy: policy, playlistLoadPolicy: policy, fragLoadPolicy: policy, startPosition: this.session.position || 0 })
+      this.hls = new Hls({ enableWorker: true, lowLatencyMode: false, startLevel: 0, testBandwidth: false, maxBufferLength: 30, maxMaxBufferLength: 60, backBufferLength: 30, manifestLoadPolicy: policy, playlistLoadPolicy: policy, fragLoadPolicy: policy, startPosition: this.session.position || 0 })
+      // Keep the first decoder buffer on one rendition. WebKit can discard
+      // its initial frames if ABR changes resolution before playback begins.
+      this.hls.autoLevelCapping = 0
       this.hls.on(Hls.Events.ERROR, (_event, data) => {
         if (!data.fatal || generation !== this.generation) return
         if (data.type === Hls.ErrorTypes.NETWORK_ERROR && this.networkRetries < 3) {

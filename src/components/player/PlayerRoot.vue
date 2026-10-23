@@ -268,7 +268,7 @@ const speedOptions = [0.5, 0.75, 1, 1.25, 1.5, 2]
 const qualityOptions = [
   { value: 'original', label: 'Original' },
   { value: 'auto', label: 'Auto' },
-  ...[360, 480, 720, 1080].map(height => ({ value: height, label: `${height}p` }))
+  ...[240, 360, 480, 720, 1080].map(height => ({ value: height, label: `${height}p` }))
 ]
 
 const playbackSession = ref({})
@@ -778,7 +778,7 @@ async function reconfigurePlayback () {
   resumeAfterStreamChange.value = !paused.value
   initialProgress.value = absoluteTime
 
-  await updateSession(initialProgress.value, newState.requestedAt)
+  await updateSession(initialProgress.value, performance.now())
   attachStream()
 }
 
@@ -1065,7 +1065,7 @@ watch(playing, async newState => {
 
   resumeAfterStreamChange.value = true
 
-  await updateSession(initialProgress.value)
+  await updateSession(initialProgress.value, newState.requestedAt)
   attachStream()
 
   mediaSession.setMetadata({

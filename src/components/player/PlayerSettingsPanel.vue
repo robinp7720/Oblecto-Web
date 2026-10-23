@@ -196,7 +196,7 @@ const props = defineProps({
   currentTime: { type: Number, default: 0 },
   files: { type: Array, default: () => [] },
   fileIndex: { type: Number, default: 0 },
-  quality: { type: [String, Number], default: 'original' },
+  quality: { type: [String, Number], default: 'auto' },
   qualityOptions: { type: Array, default: () => [] },
   audioStreams: { type: Array, default: () => [] },
   audioIndex: { type: Number, default: null },

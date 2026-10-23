@@ -28,3 +28,7 @@ See [AGENTS.md](AGENTS.md) for how the app is organised, and [DESIGN_GUIDE.md](D
 ![Movie Listings](https://raw.githubusercontent.com/robinp7720/Oblecto-Web/master/images/movies.jpg)
 ### Search View
 ![Search View](https://raw.githubusercontent.com/robinp7720/Oblecto-Web/master/images/search.jpg)
+
+### Playback on slow connections
+
+Unset account preferences use Auto, starting at the lowest available rendition and adapting to bandwidth. Saved Original and fixed-height preferences are preserved. Available output includes 240p. The player targets 30 seconds ahead, caps forward buffering at 60 seconds and retains 30 seconds behind. Server status reports buffered/stalled time and queue/generation timing when supported by the backend. See the parent repository’s `docs/STREAMING.md` for encoder modes and performance acceptance.

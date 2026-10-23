@@ -67,6 +67,14 @@
             <div class="info-row">
               <span class="label">Buffering:</span><span class="value">{{ session.bufferingReports }}</span>
             </div>
+            <template v-if="session.delivery">
+              <div class="info-row">
+                <span class="label">Buffered / stalled:</span><span class="value">{{ session.delivery.bufferedSeconds.toFixed(1) }} s / {{ (session.delivery.rebufferDurationMs / 1000).toFixed(1) }} s</span>
+              </div>
+              <div class="info-row">
+                <span class="label">Queue / generation:</span><span class="value">{{ Math.round(session.delivery.queueWaitMs) }} / {{ Math.round(session.delivery.generationMs) }} ms</span>
+              </div>
+            </template>
             <div class="info-row">
               <span class="label">Encoding:</span><span class="value">{{ session.encodingSpeed ? `${session.encodingSpeed.toFixed(1)}×` : '—' }}</span>
             </div>

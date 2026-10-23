@@ -187,7 +187,7 @@ import { LOCALES, languageName } from '@/i18n'
 import { TRACK_LANGUAGES, displayCode } from '@/playback/languages'
 import oblectoClient from '@/oblectoClient'
 
-const QUALITIES = ['original', 'auto', 1080, 720, 480, 360]
+const QUALITIES = ['original', 'auto', 1080, 720, 480, 360, 240]
 const SUBTITLE_MODES = ['auto', 'forced', 'off']
 
 const { t, locale: interfaceLocale } = useI18n()

@@ -27,7 +27,7 @@ const DEFAULT_PREFERENCES = {
   audioLanguage: null,
   subtitleLanguage: null,
   subtitleMode: 'auto',
-  quality: 'original',
+  quality: 'auto',
   autoplayNext: true,
   episodeSpoilers: 'off',
   stillWatchingPrompt: true

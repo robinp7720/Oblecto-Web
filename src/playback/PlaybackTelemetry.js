@@ -8,11 +8,19 @@ export default class PlaybackTelemetry {
     this.sequence = 0
     this.last = null
     this.buffering = false
+    this.hasPlayed = false
+    this.seeking = false
+    this.rebufferDurationMs = 0
   }
 
   sample(video) {
     const at = this.now()
     const position = video.currentTime
+    // Attribute elapsed time to the preceding state; a pause/seek event ends
+    // the stall at this sample rather than erasing the time before the event.
+    if (this.last?.rebuffering) {
+      this.rebufferDurationMs += Math.max(0, Math.min(60000, at - this.last.at))
+    }
     if (this.last?.playing && !video.seeking) {
       const elapsed = (at - this.last.at) / 1000
       const media = (position - this.last.position) / this.last.rate
@@ -21,6 +29,7 @@ export default class PlaybackTelemetry {
       }
     }
     this.last = {
+      rebuffering: this.hasPlayed && this.buffering && !video.paused && !video.seeking && !this.seeking && !video.ended,
       at, position, rate: video.playbackRate || 1,
       playing: !video.paused && !video.seeking && !video.ended && !this.buffering && video.readyState >= 3
     }
@@ -36,6 +45,13 @@ export default class PlaybackTelemetry {
     }
   }
 
+  bufferedSeconds(video) {
+    for (let i = 0; i < (video.buffered?.length || 0); i++) {
+      if (video.buffered.start(i) <= video.currentTime && video.buffered.end(i) >= video.currentTime) return video.buffered.end(i) - video.currentTime
+    }
+    return 0
+  }
+
   report(video) {
     this.sample(video)
     return {
@@ -43,7 +59,9 @@ export default class PlaybackTelemetry {
       activeSeconds: this.activeSeconds,
       playedRanges: this.ranges.map(range => [...range]),
       playbackRate: video.playbackRate || 1,
-      buffering: this.buffering
+      buffering: this.buffering,
+      bufferedSeconds: this.bufferedSeconds(video),
+      rebufferDurationMs: Math.round(this.rebufferDurationMs)
     }
   }
 }
