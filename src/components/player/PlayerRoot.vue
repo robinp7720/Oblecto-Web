@@ -23,6 +23,7 @@
         v-if="!isMini"
         class="player-surfaces"
         :inert="watchingPrompt"
+        @pointermove="$event.pointerType === 'mouse' && visibility.notifyActivity()"
       >
         <PlayerGestureLayer
           ref="gestureLayer"
