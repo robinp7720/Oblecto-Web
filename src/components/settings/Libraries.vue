@@ -1,5 +1,28 @@
 <template>
   <div class="Libraries">
+    <div
+      class="library-statistics-status"
+      aria-live="polite"
+    >
+      <p v-if="statisticsLoading">
+        Loading library statistics…
+      </p>
+      <p
+        v-if="statisticsError"
+        role="alert"
+      >
+        {{ statisticsError }}
+      </p>
+      <button
+        type="button"
+        class="btn"
+        :disabled="statisticsLoading"
+        @click="refreshStatistics"
+      >
+        {{ statisticsError ? 'Retry library statistics' : 'Refresh library statistics' }}
+      </button>
+      <LibraryStatisticsNote />
+    </div>
     <!-- Adding and removing paths has its own endpoint, so only the advanced
          options wait for the settings to load; a failed load there no
          longer locks the path buttons too. -->
@@ -97,7 +120,13 @@
                 <td class="id">
                   {{ index + 1 }}
                 </td>
-                <td>{{ library.path }}</td>
+                <td class="library-path">
+                  <span>{{ library.path }}</span>
+                  <LibraryMetrics
+                    v-if="statisticsFor('movies', library.path)"
+                    :library="statisticsFor('movies', library.path)"
+                  />
+                </td>
                 <td class="actions">
                   <button
                     type="button"
@@ -249,7 +278,13 @@
                 <td class="id">
                   {{ index + 1 }}
                 </td>
-                <td>{{ library.path }}</td>
+                <td class="library-path">
+                  <span>{{ library.path }}</span>
+                  <LibraryMetrics
+                    v-if="statisticsFor('tvshows', library.path)"
+                    :library="statisticsFor('tvshows', library.path)"
+                  />
+                </td>
                 <td class="actions">
                   <button
                     type="button"
@@ -286,6 +321,9 @@
 </template>
 
 <script>
+  import LibraryMetrics from '@/components/statistics/LibraryMetrics.vue'
+  import LibraryStatisticsNote from '@/components/statistics/LibraryStatisticsNote.vue'
+  import { useLibraryStatistics } from '@/composables/useLibraryStatistics'
   import { mapActions, mapState } from 'pinia'
   import { useLibrariesStore } from '@/stores/libraries'
   import oblectoClient from '@/oblectoClient'
@@ -307,6 +345,8 @@
   export default {
     name: 'Libraries',
     components: {
+      LibraryMetrics,
+      LibraryStatisticsNote,
       FontAwesomeIcon,
       TagInput,
       LibraryAdd,
@@ -314,6 +354,7 @@
       SettingsFormStatus
     },
     mixins: [settingsForm({ moviesConfig: 'movies', tvConfig: 'tvshows' })],
+    setup () { return useLibraryStatistics() },
     data () {
       return {
         showAdd: false,
@@ -394,3 +435,12 @@
     }
   }
 </script>
+
+<style scoped lang="sass">
+.library-path
+  white-space: normal
+  overflow-wrap: anywhere
+  min-width: 0
+.library-statistics-status
+  margin-bottom: 24px
+</style>

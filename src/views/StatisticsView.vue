@@ -229,6 +229,24 @@
           <span>{{ key }}</span><strong>{{ number(library[key]) }}</strong>
         </article>
       </div><p>{{ bytes(library.localBytes) }} in known local files · {{ library.remoteFiles }} remote files · {{ library.missingSize }} files without size metadata · {{ library.problematicFiles }} problematic files</p>
+      <div
+        v-if="Array.isArray(library.libraries)"
+        class="folder-statistics"
+      >
+        <h3>By library folder</h3>
+        <LibraryStatisticsNote />
+        <p v-if="!library.libraries.length">
+          No library folders configured.
+        </p>
+        <article
+          v-for="(folder, index) in library.libraries"
+          :key="`${folder.type}:${folder.path}:${index}`"
+          class="folder-statistics-row"
+        >
+          <h4>{{ folder.type === 'movies' ? 'Movies' : 'TV shows' }} · {{ folder.path }}</h4>
+          <LibraryMetrics :library="folder" />
+        </article>
+      </div>
     </section>
     <section v-if="health">
       <h2>Server playback health</h2><p class="muted">
@@ -258,6 +276,8 @@
 import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { useAuthStore } from '@/stores/auth'
 import oblectoClient from '@/oblectoClient'
+import LibraryMetrics from '@/components/statistics/LibraryMetrics.vue'
+import LibraryStatisticsNote from '@/components/statistics/LibraryStatisticsNote.vue'
 import StatisticsChart from '@/components/statistics/StatisticsChart.vue'
 const props = defineProps({ admin: { type: Boolean, default: false } })
 const auth = useAuthStore()
@@ -575,4 +595,15 @@ onBeforeUnmount(() => { clearInterval(timer); clear() })
     gap: 10px
     article
       padding: 16px
+</style>
+
+<style scoped lang="sass">
+.folder-statistics
+  margin-top: 24px
+.folder-statistics-row
+  border-top: 1px solid var(--color-border)
+  padding: 16px 0
+  h4
+    margin: 0
+    overflow-wrap: anywhere
 </style>
