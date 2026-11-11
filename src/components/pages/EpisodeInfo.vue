@@ -24,14 +24,27 @@
         type="episode"
         focused
         :title="safeTitle"
-        :subtitle="subtitle"
         :overview="hidden ? 'Synopsis hidden until you reveal episode details.' : safeOverview"
         :facts="capabilities"
         :backdrop="hidden ? '' : banner"
         :poster="poster"
         :back-to="seriesRoute"
-        :back-label="episode.Series?.seriesName || episode.seriesName || 'TV Shows'"
+        :back-label="seriesName || 'TV Shows'"
       >
+        <template
+          v-if="seriesName || subtitle"
+          #subtitle
+        >
+          <RouterLink
+            v-if="seriesName && seriesId"
+            :to="seriesRoute"
+            class="episode-series-link"
+          >
+            {{ seriesName }}
+          </RouterLink>
+          <span v-else-if="seriesName">{{ seriesName }}</span>
+          <span v-if="subtitle">{{ seriesName ? ' · ' : '' }}{{ subtitle }}</span>
+        </template>
         <PlaybackButton
           :label="playLabel"
           @play="store.playEpisode(episode.id)"
@@ -273,6 +286,7 @@ watch([() => episode.value?.id, () => Boolean(context.value?.nearby?.length)], a
   if (current) container.scrollLeft = Math.max(0, current.offsetLeft - container.offsetLeft - (container.clientWidth - current.clientWidth) / 2)
 }, { flush: 'post' })
 const seriesId = computed(() => episode.value?.Series?.id || episode.value?.seriesId)
+const seriesName = computed(() => episode.value?.Series?.seriesName || episode.value?.seriesName)
 const seriesRoute = computed(() => seriesId.value ? {
   name: 'SeriesView',
   params: { seriesId: seriesId.value },
@@ -283,7 +297,7 @@ const poster = computed(() => seriesId.value ? media.artworkUrl(store.host, 'ser
 const capabilities = computed(() => mediaCapabilities(episode.value?.Files || []))
 const subtitle = computed(() => {
   const data = episode.value || {}
-  return [data.Series?.seriesName || data.seriesName, data.airedSeason != null && data.airedEpisodeNumber != null ? `S${data.airedSeason} · E${data.airedEpisodeNumber}` : null, formatRuntime(data.runtime), ratingLabel(data)].filter(Boolean).join(' · ')
+  return [data.airedSeason != null && data.airedEpisodeNumber != null ? `S${data.airedSeason} · E${data.airedEpisodeNumber}` : null, formatRuntime(data.runtime), ratingLabel(data)].filter(Boolean).join(' · ')
 })
 const keyCrew = computed(() => (episode.value?.credits?.crew || []).filter(credit => credit.roles?.some(role => ['Director', 'Writer', 'Screenplay', 'Story'].includes(role.job))))
 const contextSummary = computed(() => {
@@ -310,6 +324,11 @@ const metadata = computed(() => {
 })
 </script>
 <style scoped lang="sass">
+.episode-series-link
+  color: inherit
+  &:hover, &:focus-visible
+    color: var(--color-brand-turquoise)
+    text-decoration: underline
 .reveal-spoilers
   min-height: 44px
   margin-top: 12px

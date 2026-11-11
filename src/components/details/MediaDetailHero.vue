@@ -33,10 +33,12 @@
             {{ title }}
           </h1>
           <p
-            v-if="subtitle"
+            v-if="subtitle || $slots.subtitle"
             class="detail-subtitle"
           >
-            {{ subtitle }}
+            <slot name="subtitle">
+              {{ subtitle }}
+            </slot>
           </p>
           <p
             v-if="tagline && !focused"
