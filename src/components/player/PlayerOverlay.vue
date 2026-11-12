@@ -139,19 +139,6 @@
         <span class="spacer" />
 
         <button
-          v-if="subtitlesAvailable"
-          type="button"
-          class="icon-button"
-          :class="{ on: subtitlesOn }"
-          :aria-label="subtitlesOn ? 'Turn subtitles off' : 'Turn subtitles on'"
-          title="Subtitles (C)"
-          :aria-pressed="subtitlesOn ? 'true' : 'false'"
-          @click="$emit('toggle-subtitles')"
-        >
-          <PlayerIcon name="captions" />
-        </button>
-
-        <button
           v-if="!compact"
           type="button"
           class="icon-button rate"
@@ -164,13 +151,38 @@
 
         <div class="settings-anchor">
           <button
-            ref="settingsButton"
+            v-if="audioAvailable"
             type="button"
             class="icon-button"
+            data-player-menu="audio"
+            aria-label="Audio tracks"
+            title="Audio tracks"
+            :aria-expanded="menuPage === 'audio'"
+            @click="$emit('toggle-menu', 'audio')"
+          >
+            <PlayerIcon name="audio" />
+          </button>
+          <button
+            v-if="subtitlesAvailable"
+            type="button"
+            class="icon-button"
+            :class="{ on: subtitlesOn }"
+            data-player-menu="subtitles"
+            aria-label="Subtitles"
+            title="Subtitles (C to toggle)"
+            :aria-expanded="menuPage === 'subtitles'"
+            @click="$emit('toggle-menu', 'subtitles')"
+          >
+            <PlayerIcon name="captions" />
+          </button>
+          <button
+            type="button"
+            class="icon-button"
+            data-player-menu="settings"
             aria-label="Playback settings"
             title="Settings (? for shortcuts)"
-            :aria-expanded="settingsOpen ? 'true' : 'false'"
-            @click="$emit('toggle-settings')"
+            :aria-expanded="Boolean(menuPage) && !['audio', 'subtitles'].includes(menuPage)"
+            @click="$emit('toggle-menu', 'settings')"
           >
             <PlayerIcon name="settings" />
           </button>
@@ -227,10 +239,9 @@ const props = defineProps({
   volumeSupported: { type: Boolean, default: true },
   playbackRate: { type: Number, default: 1 },
   subtitlesOn: { type: Boolean, default: false },
-  // The file has subtitle tracks; without any, the captions button would only
-  // ever toggle nothing.
   subtitlesAvailable: { type: Boolean, default: true },
-  settingsOpen: { type: Boolean, default: false },
+  audioAvailable: { type: Boolean, default: false },
+  menuPage: { type: String, default: null },
   pipSupported: { type: Boolean, default: false },
   fullscreenSupported: { type: Boolean, default: false },
   isFullscreen: { type: Boolean, default: false },
@@ -243,7 +254,7 @@ const props = defineProps({
 defineEmits([
   'activity', 'minimize', 'pip', 'stop', 'view-show', 'toggle-play', 'seek-by',
   'scrub-start', 'scrub', 'scrub-end', 'set-volume', 'toggle-mute',
-  'toggle-subtitles', 'cycle-rate', 'toggle-settings', 'toggle-fullscreen'
+  'cycle-rate', 'toggle-menu', 'toggle-fullscreen'
 ])
 
 const showCentreTransport = computed(() => props.compact)
@@ -401,6 +412,8 @@ button.subtitle
 .settings-anchor
   position: relative
   display: inline-flex
+  gap: inherit
+  flex: none
 
 
 

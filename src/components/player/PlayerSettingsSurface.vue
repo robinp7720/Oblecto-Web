@@ -1,6 +1,7 @@
 <template>
   <div
     v-if="open"
+    ref="surface"
     class="surface"
     :class="sheet ? 'as-sheet' : 'as-popover'"
   >
@@ -14,7 +15,7 @@
       class="container"
       :role="sheet ? 'dialog' : 'group'"
       :aria-modal="sheet ? 'true' : undefined"
-      aria-label="Playback settings"
+      :aria-label="anchor === 'audio' ? 'Audio tracks' : anchor === 'subtitles' ? 'Subtitles' : 'Playback settings'"
       :style="sheetStyle"
       @keydown="onKeydown"
     >
@@ -31,7 +32,10 @@
           aria-hidden="true"
         />
       </div>
-      <div class="body">
+      <div
+        ref="body"
+        class="body"
+      >
         <slot />
       </div>
     </div>
@@ -43,6 +47,8 @@ import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 
 const props = defineProps({
   open: { type: Boolean, default: false },
+  page: { type: String, default: null },
+  anchor: { type: String, default: 'settings' },
   // True on coarse pointers / narrow viewports: the panel becomes a bottom
   // sheet rather than a popover anchored to the gear.
   sheet: { type: Boolean, default: false }
@@ -50,15 +56,18 @@ const props = defineProps({
 
 const emit = defineEmits(['close'])
 
+const surface = ref(null)
 const container = ref(null)
+const body = ref(null)
+const anchorOffset = ref(0)
 const dragOffset = ref(0)
 
 let drag = null
 let restoreFocus = null
 
 const sheetStyle = computed(() => {
-  if (!props.sheet || !dragOffset.value) return null
-  return { transform: `translateY(${dragOffset.value}px)` }
+  if (!props.sheet) return { right: `${anchorOffset.value}px` }
+  return dragOffset.value ? { transform: `translateY(${dragOffset.value}px)` } : null
 })
 
 const FOCUSABLE = 'button:not(:disabled), [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
@@ -134,26 +143,53 @@ function onHandleUp (event) {
 function onDocumentPointerDown (event) {
   if (!props.open || props.sheet) return
   if (container.value?.contains(event.target)) return
-  // The gear itself toggles; closing here too would immediately reopen it.
-  if (event.target.closest?.('[aria-label="Playback settings"]')) return
+  // Menu triggers handle toggling/switching without closing and reopening.
+  if (surface.value?.parentElement?.contains(event.target.closest?.('[data-player-menu]'))) return
 
   emit('close')
 }
 
-onMounted(() => document.addEventListener('pointerdown', onDocumentPointerDown, true))
+function trigger () {
+  return surface.value?.parentElement?.querySelector(`[data-player-menu="${props.anchor}"]`)
+}
 
-watch(() => props.open, async isOpen => {
+function positionPopover () {
+  if (!props.open || props.sheet) return
+  const button = trigger()?.getBoundingClientRect()
+  const parent = surface.value?.parentElement?.getBoundingClientRect()
+  if (!button || !parent) return
+  const width = container.value?.getBoundingClientRect().width || 0
+  // Align with the trigger, keeping the left edge inside small/docked players.
+  anchorOffset.value = Math.min(parent.right - button.right, parent.right - width - 16)
+}
+
+onMounted(() => {
+  document.addEventListener('pointerdown', onDocumentPointerDown, true)
+  window.addEventListener('resize', positionPopover)
+})
+
+watch(() => [props.open, props.page, props.anchor, props.sheet], async ([isOpen, page, anchor], previous) => {
+  const [wasOpen, previousPage, previousAnchor] = previous || []
   if (isOpen) {
-    restoreFocus = document.activeElement
     dragOffset.value = 0
     await nextTick()
-    focusable()[0]?.focus()
+    if (!props.open) return
+    if (!wasOpen || anchor !== previousAnchor) restoreFocus = trigger() || document.activeElement
+    positionPopover()
+    if (body.value) body.value.scrollTop = 0
+    const returningCategory = page === 'settings' && previousPage
+      ? container.value?.querySelector(`[data-category="${previousPage}"]`)
+      : null
+    const selected = container.value?.querySelector('[aria-checked="true"]:not(:disabled)')
+    const target = returningCategory || selected || focusable()[0]
+    target?.focus({ preventScroll: true })
+    // Selected tracks can be deep in a long list.
+    if (selected && !returningCategory) selected.scrollIntoView({ block: 'nearest' })
     return
   }
 
-  // Send focus back to whatever opened the panel, not to the document body.
-  if (restoreFocus instanceof HTMLElement && document.contains(restoreFocus)) {
-    restoreFocus.focus()
+  if (wasOpen && restoreFocus instanceof HTMLElement && document.contains(restoreFocus)) {
+    restoreFocus.focus({ preventScroll: true })
   }
   restoreFocus = null
 })
@@ -161,6 +197,7 @@ watch(() => props.open, async isOpen => {
 onBeforeUnmount(() => {
   drag = null
   document.removeEventListener('pointerdown', onDocumentPointerDown, true)
+  window.removeEventListener('resize', positionPopover)
 })
 </script>
 
@@ -177,6 +214,7 @@ onBeforeUnmount(() => {
 
 .body
   overflow-y: auto
+  scroll-padding-top: 52px
   overscroll-behavior: contain
   touch-action: pan-y
 

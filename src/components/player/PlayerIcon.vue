@@ -72,6 +72,29 @@
       <path d="M4 9.5h3L11 6v12l-4-3.5H4z" />
       <path d="m15.5 9.5 5 5M20.5 9.5l-5 5" />
     </template>
+    <template v-else-if="name === 'audio'">
+      <path d="M4 14v-3a8 8 0 0 1 16 0v3" />
+      <rect
+        x="3"
+        y="12"
+        width="4"
+        height="8"
+        rx="2"
+      />
+      <rect
+        x="17"
+        y="12"
+        width="4"
+        height="8"
+        rx="2"
+      />
+    </template>
+    <template v-else-if="name === 'chevron-left'">
+      <path d="m14 6-6 6 6 6" />
+    </template>
+    <template v-else-if="name === 'chevron-right'">
+      <path d="m10 6 6 6-6 6" />
+    </template>
     <template v-else-if="name === 'captions'">
       <rect
         x="2.5"

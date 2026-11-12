@@ -1,11 +1,42 @@
 <template>
-  <div class="panel">
+  <div
+    class="panel"
+    @keydown="onKeydown"
+  >
+    <header class="menu-header">
+      <button
+        v-if="isSettingsCategory"
+        type="button"
+        class="back-button"
+        aria-label="Back to playback settings"
+        @click="$emit('navigate', 'settings')"
+      >
+        <PlayerIcon name="chevron-left" />
+      </button>
+      <h4>{{ title }}</h4>
+    </header>
     <section
-      v-if="chapters.length"
+      v-if="page === 'settings'"
+      class="section"
+      aria-label="Settings categories"
+    >
+      <button
+        v-for="category in categories"
+        :key="category.page"
+        type="button"
+        :data-category="category.page"
+        @click="$emit('navigate', category.page)"
+      >
+        <span>{{ category.label }}</span>
+        <small class="current-value">{{ category.value }}</small>
+        <PlayerIcon name="chevron-right" />
+      </button>
+    </section>
+    <section
+      v-if="page === 'chapters'"
       class="section"
       aria-label="Chapters"
     >
-      <h4>Chapters</h4>
       <button
         v-for="(chapter, index) in chapters"
         :key="chapter.start"
@@ -19,11 +50,11 @@
     </section>
 
     <section
+      v-if="page === 'quality'"
       class="section"
       role="radiogroup"
       aria-label="Quality"
     >
-      <h4>Quality</h4>
       <button
         v-for="option in qualityOptions"
         :key="`quality-${option.value}`"
@@ -38,12 +69,11 @@
     </section>
 
     <section
-      v-if="files.length > 1"
+      v-if="page === 'source'"
       class="section"
       role="radiogroup"
       aria-label="Source file"
     >
-      <h4>Source</h4>
       <button
         v-for="(file, index) in files"
         :key="file.id"
@@ -62,12 +92,11 @@
     </section>
 
     <section
-      v-if="audioStreams.length > 0"
+      v-if="page === 'audio'"
       class="section"
       role="radiogroup"
       aria-label="Audio track"
     >
-      <h4>Audio</h4>
       <button
         v-for="stream in audioStreams"
         :key="`audio-${stream.index}`"
@@ -82,10 +111,10 @@
     </section>
 
     <section
+      v-if="page === 'subtitles'"
       class="section"
       aria-label="Subtitles"
     >
-      <h4>Subtitles</h4>
       <div
         class="modes"
         role="radiogroup"
@@ -148,11 +177,11 @@
     </section>
 
     <section
+      v-if="page === 'speed'"
       class="section"
       role="radiogroup"
       aria-label="Playback speed"
     >
-      <h4>Speed</h4>
       <div class="speeds">
         <button
           v-for="rate in speedOptions"
@@ -170,7 +199,7 @@
     </section>
 
     <button
-      v-if="keyboard"
+      v-if="keyboard && page === 'settings'"
       type="button"
       class="shortcuts-link"
       @click="$emit('show-shortcuts')"
@@ -182,6 +211,7 @@
 
 <script setup>
 import { computed } from 'vue'
+import PlayerIcon from './PlayerIcon.vue'
 import { formatSeconds } from '@/utils/time'
 import { fileSummary, formatStreamLabel } from '@/utils/media'
 
@@ -192,6 +222,7 @@ const MODE_LABELS = {
 }
 
 const props = defineProps({
+  page: { type: String, default: 'settings' },
   chapters: { type: Array, default: () => [] },
   currentTime: { type: Number, default: 0 },
   files: { type: Array, default: () => [] },
@@ -210,6 +241,22 @@ const props = defineProps({
   keyboard: { type: Boolean, default: false }
 })
 
+const TITLES = { settings: 'Playback settings', audio: 'Audio', subtitles: 'Subtitles', quality: 'Quality', speed: 'Speed', source: 'Source', chapters: 'Chapters' }
+const title = computed(() => TITLES[props.page])
+const isSettingsCategory = computed(() => ['quality', 'speed', 'source', 'chapters'].includes(props.page))
+const categories = computed(() => {
+  const items = [
+    { page: 'quality', label: 'Quality', value: props.qualityOptions.find(option => String(option.value) === String(props.quality))?.label || String(props.quality) },
+    { page: 'speed', label: 'Speed', value: `${props.playbackRate}x` }
+  ]
+  if (props.files.length > 1) items.push({ page: 'source', label: 'Source', value: `${props.fileIndex + 1} of ${props.files.length}` })
+  if (props.chapters.length) {
+    const index = props.chapters.findIndex(chapter => props.currentTime >= chapter.start && props.currentTime < chapter.end)
+    items.push({ page: 'chapters', label: 'Chapters', value: index < 0 ? String(props.chapters.length) : `${index + 1} of ${props.chapters.length}` })
+  }
+  return items
+})
+
 // Two tracks can read alike (two English commentaries); number the repeats so
 // the choice is still a choice.
 function labelsFor (streams, type) {
@@ -226,7 +273,23 @@ function labelsFor (streams, type) {
 }
 const labels = computed(() => ({ audio: labelsFor(props.audioStreams, 'audio'), subtitle: labelsFor(props.subtitleStreams, 'subtitle') }))
 
+// Arrow keys belong to the focused radio group, not the player's seek/volume shortcuts.
+function onKeydown (event) {
+  if (event.target.getAttribute('role') !== 'radio') return
+  if (!['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(event.key)) return
+  const items = Array.from(event.target.closest('[role="radiogroup"]').querySelectorAll('[role="radio"]:not(:disabled)'))
+  const index = items.indexOf(event.target)
+  if (index < 0) return
+  event.preventDefault()
+  event.stopPropagation()
+  const next = event.key === 'Home' ? 0 : event.key === 'End' ? items.length - 1
+    : (index + (['ArrowUp', 'ArrowLeft'].includes(event.key) ? -1 : 1) + items.length) % items.length
+  items[next].focus()
+  items[next].click()
+}
+
 defineEmits([
+  'navigate',
   'select-chapter',
   'select-quality',
   'select-file',
@@ -239,19 +302,49 @@ defineEmits([
 </script>
 
 <style scoped lang="sass">
-@use '@/assets/sass/player' as p
-
 .panel
   display: grid
-  gap: 18px
+  gap: 8px
+
+.menu-header
+  position: sticky
+  top: 0
+  z-index: 1
+  background: var(--color-surface-card)
+  display: flex
+  align-items: center
+  gap: 4px
+  min-height: 44px
+  padding: 0 12px
+  h4
+    margin: 0
+    font-size: 0.95rem
+
+.back-button
+  display: grid
+  place-items: center
+  width: 44px
+  height: 44px
+  margin-left: -12px
+  border: 0
+  border-radius: var(--radius-sm)
+  background: transparent
+  color: var(--color-text)
+  cursor: pointer
+  &:hover
+    background: rgba(255, 255, 255, 0.08)
+
+.current-value
+  margin-left: auto
+  color: var(--color-text-muted)
+
+.section > button > .player-icon
+  width: 16px
+  height: 16px
 
 .section
   display: grid
   gap: 2px
-
-  h4
-    +p.player-label
-    padding: 0 12px 6px
 
   > button, .tracks > button
     display: flex
@@ -267,6 +360,7 @@ defineEmits([
     color: var(--color-text)
     font-size: 0.9rem
     text-align: left
+    overflow-wrap: anywhere
     cursor: pointer
     &:hover:not(:disabled)
       background: rgba(255, 255, 255, 0.08)
@@ -313,7 +407,7 @@ defineEmits([
 
 .mode,
 .speed
-  min-height: 36px
+  min-height: 44px
   padding: 6px 14px
   border: 1px solid var(--color-border)
   border-radius: 999px

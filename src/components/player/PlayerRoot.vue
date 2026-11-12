@@ -64,7 +64,8 @@
           :playback-rate="video.playbackRate.value"
           :subtitles-on="subtitlesShowing"
           :subtitles-available="subtitleStreams.length > 0"
-          :settings-open="settingsOpen"
+          :menu-page="menuPage"
+          :audio-available="audioStreams.length > 0"
           :pip-supported="env.pipSupported.value"
           :fullscreen-supported="env.fullscreenSupported.value"
           :is-fullscreen="isFullscreenMode"
@@ -81,18 +82,20 @@
           @scrub-end="onScrubEnd"
           @set-volume="video.setVolume"
           @toggle-mute="video.toggleMute"
-          @toggle-subtitles="toggleSubtitles"
           @cycle-rate="cycleRate"
-          @toggle-settings="settingsOpen = !settingsOpen"
+          @toggle-menu="toggleMenu"
           @toggle-fullscreen="toggleFullscreen"
         >
           <template #settings>
             <PlayerSettingsSurface
-              :open="settingsOpen"
+              :open="Boolean(menuPage)"
+              :page="menuPage"
+              :anchor="menuAnchor"
               :sheet="useSheet"
-              @close="settingsOpen = false"
+              @close="menuPage = null"
             >
               <PlayerSettingsPanel
+                :page="menuPage"
                 :files="files"
                 :file-index="playingFileId"
                 :quality="selectedQuality"
@@ -107,6 +110,7 @@
                 :keyboard="!env.coarsePointer.value"
                 :chapters="chapters"
                 :current-time="video.currentTime.value"
+                @navigate="menuPage = $event"
                 @select-chapter="seekToChapter"
                 @select-quality="selectQuality"
                 @select-file="changeFileId"
@@ -114,7 +118,7 @@
                 @select-subtitle="selectSubtitleTrack"
                 @set-subtitle-mode="setSubtitleMode"
                 @set-rate="video.setRate"
-                @show-shortcuts="settingsOpen = false; shortcutsOpen = true"
+                @show-shortcuts="menuPage = null; shortcutsOpen = true"
               />
             </PlayerSettingsSurface>
           </template>
@@ -276,7 +280,8 @@ const playbackSession = ref({})
 const playbackError = ref('')
 const loading = ref(false)
 const paused = ref(true)
-const settingsOpen = ref(false)
+const menuPage = ref(null)
+const menuAnchor = computed(() => ['audio', 'subtitles'].includes(menuPage.value) ? menuPage.value : 'settings')
 const shortcutsOpen = ref(false)
 const scrubPreview = ref(null)
 const announcement = ref('')
@@ -368,7 +373,7 @@ function skipSegment () {
 
 function seekToChapter (position) {
   video.seekTo(position, duration.value)
-  settingsOpen.value = false
+  menuPage.value = null
   visibility.notifyActivity()
 }
 
@@ -430,7 +435,7 @@ const useSheet = computed(() => env.narrow.value || env.coarsePointer.value)
 // The chrome stays up while the user is doing something with it, or while
 // there is something to read.
 const chromePinned = computed(() => Boolean(
-  settingsOpen.value || shortcutsOpen.value || playbackError.value || scrubPreview.value !== null
+  menuPage.value || shortcutsOpen.value || playbackError.value || scrubPreview.value !== null
 ))
 
 const visibility = useControlsVisibility({
@@ -500,7 +505,7 @@ usePlayerHotkeys({
   adjustRate,
   showShortcuts: () => {
     if (isMini.value) return
-    settingsOpen.value = false
+    menuPage.value = null
     shortcutsOpen.value = !shortcutsOpen.value
   },
   escape: () => {
@@ -508,8 +513,8 @@ usePlayerHotkeys({
       shortcutsOpen.value = false
       return
     }
-    if (settingsOpen.value) {
-      settingsOpen.value = false
+    if (menuPage.value) {
+      menuPage.value = null
       return
     }
     if (isFullscreenMode.value) setMode(ScreenFormats.LARGE)
@@ -554,7 +559,11 @@ function setMode (mode) {
 }
 
 function openSettings () {
-  settingsOpen.value = true
+  menuPage.value = 'source'
+}
+
+function toggleMenu (menu) {
+  menuPage.value = menuPage.value && menuAnchor.value === menu ? null : menu
 }
 
 function togglePlay () {
@@ -795,7 +804,7 @@ async function changeFileId (id) {
 
   await updateSession(initialProgress.value)
 
-  settingsOpen.value = false
+  menuPage.value = null
   loading.value = true
   attachStream()
 }
@@ -865,7 +874,7 @@ function showWatchingPrompt () {
   watchingPrompt.value = true
   ended.value = true
   countdownStart.value = null
-  settingsOpen.value = false
+  menuPage.value = null
   shortcutsOpen.value = false
   video.pause()
   if (isMini.value) setMode(ScreenFormats.LARGE)
@@ -918,7 +927,7 @@ function stopPlaying () {
   store.clearPlaying()
   mediaStore.scheduleRefresh('watch')
 
-  settingsOpen.value = false
+  menuPage.value = null
   paused.value = true
   loading.value = false
   autoplaying.value = false
@@ -1027,7 +1036,7 @@ watch(playing, async newState => {
   initialProgress.value = 0
   // A particular version asked for by id ("Play this version"), else the first.
   playingFileId.value = Math.max(0, (newState?.entity?.Files || []).findIndex(file => file.id === newState?.fileId))
-  settingsOpen.value = false
+  menuPage.value = null
   shortcutsOpen.value = false
   paused.value = true
   loading.value = false
